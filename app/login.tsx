@@ -5,13 +5,13 @@ import { router } from "expo-router";
 import axios from "axios";
 
 interface loginForm {
-  email: string;
+  emailOrUsername: string;
   password: string;
 }
 
 const Login = () => {
   const [form, setForm] = useState<loginForm>({
-    email: "",
+    emailOrUsername: "",
     password: "",
   });
   const [error, setError] = useState<string | null>(null);
@@ -32,8 +32,8 @@ const Login = () => {
   };
 
   const areValidFields = () => {
-    if (form.email.trim().length === 0) {
-      setError("Please enter a valid email.");
+    if (form.emailOrUsername.trim().length === 0) {
+      setError("Please enter a valid email or username.");
       return false;
     }
 
@@ -64,7 +64,7 @@ const Login = () => {
 
       if (response.status === 200) {
         console.log("Login success: ", response.data);
-        router.replace("/home"); // Redirigir a la pantalla principal
+        router.replace("/home");
       }
     } catch (err: any) {
       if (err.response && err.response.status === 401) {
@@ -76,15 +76,15 @@ const Login = () => {
   };
 
   const handleCreateAccount = () => {
-    router.push("/register"); // Navegar a la pantalla de registro
+    router.push("/register");
   };
-
+  
   return (
     <View style={styles.container}>
       <TextInput
         label="Email"
-        value={form.email}
-        onChangeText={(text) => handleChange("email", text)}
+        value={form.emailOrUsername}
+        onChangeText={(text) => handleChange("emailOrUsername", text)}
         style={styles.input}
         keyboardType="email-address"
         autoCapitalize="none"
@@ -92,11 +92,11 @@ const Login = () => {
         theme={{
           colors: {
             background: "white",
-            onSurfaceVariant: error && form.email.length === 0 ? "red" : "black",
+            onSurfaceVariant: error && form.emailOrUsername.length === 0 ? "red" : "black",
           },
         }}
-        outlineColor={error && form.email.length === 0 ? "red" : "gray"}
-        activeOutlineColor={error && form.email.length === 0 ? "red" : "blue"}
+        outlineColor={error && form.emailOrUsername.length === 0 ? "red" : "gray"}
+        activeOutlineColor={error && form.emailOrUsername.length === 0 ? "red" : "blue"}
       />
       <TextInput
         label="Password"
