@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput, } from "react-native";
-import { TextInput , Button, Text, Title } from "react-native-paper";
+import { TextInput , Button, Text, IconButton } from "react-native-paper";
 import { router } from "expo-router";
 import axios from "axios";
 
@@ -102,6 +102,13 @@ const Register = () => {
   
   return (
     <View style={styles.container}>
+      <IconButton
+        icon="arrow-left"
+        size={24}
+        onPress={() => router.back()} // Navegar hacia atrás
+        style={styles.backButton}
+        iconColor="white"
+      />
         <TextInput
           label="Name"
           value={form.username}
@@ -205,6 +212,11 @@ const styles = StyleSheet.create({
   LoginbuttonText: {
     color: "#000000",
     fontSize: 16,
+  },
+  backButton: {
+    position: "absolute",
+    top: 40,
+    left: 20,
   },
   error: {
     color: "red",
