@@ -1,4 +1,6 @@
 import React, { useState, useRef } from "react";
+import { useAtom } from "jotai";
+import { authenticatedAtom } from "../atoms/authAtom"; // Replace with the correct path to your atom
 import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput, } from "react-native";
 import { TextInput , Button, Text, IconButton } from "react-native-paper";
 import { router } from "expo-router";
@@ -19,6 +21,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const [, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
   const emailRef = useRef<RNTextInput | null>(null);
   const passwordRef = useRef<RNTextInput | null>(null);
@@ -63,7 +66,7 @@ const Register = () => {
       return false;
     }
 
-    setError(null); // Limpiar errores si los campos son válidos
+    setError(null);
     return true;
   };
 
@@ -83,9 +86,15 @@ const Register = () => {
       }
     );
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         console.log("Register success: ", response.data);
-        router.replace("/");
+
+        const {data, token} = response.data;
+        const {id, email, username} = data;
+        
+        setIsAuthenticated({id, email, username, token});
+        router.replace("/home");
+        
       }
     } catch (err: any) {
       if (err.response && err.response.status === 400) {
@@ -95,17 +104,13 @@ const Register = () => {
       }
     }
   };
-
-  const handleCreateAccount = () => {
-    router.push("/register");
-  };
   
   return (
     <View style={styles.container}>
       <IconButton
         icon="arrow-left"
         size={24}
-        onPress={() => router.back()} // Navegar hacia atrás
+        onPress={() => router.back()}
         style={styles.backButton}
         iconColor="white"
       />
@@ -175,8 +180,8 @@ const Register = () => {
         />
 
       {error && <Text style={styles.error}>{error}</Text>}
-      <Button mode="contained" onPress={handleRegister} style={styles.Loginbutton}>
-        <Text style={styles.LoginbuttonText}>Register</Text>
+      <Button mode="contained" onPress={handleRegister} style={styles.RegisterButton}>
+        <Text style={styles.RegisterButtonText}>Register</Text>
       </Button> 
     </View>
   );
@@ -203,13 +208,13 @@ const styles = StyleSheet.create({
     width: "100%",
     marginBottom: 15,
   },
-  Loginbutton: {
+  RegisterButton: {
     backgroundColor: "#FFFFFF",
     borderRadius: 5,
     marginTop: 10,
     width: "100%",
   },
-  LoginbuttonText: {
+  RegisterButtonText: {
     color: "#000000",
     fontSize: 16,
   },

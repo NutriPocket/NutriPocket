@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
-import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput, } from "react-native";
-import { TextInput , Button, Text, Title } from "react-native-paper";
+import { useAtom } from "jotai";
+import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput } from "react-native";
+import { authenticatedAtom } from "../atoms/authAtom"; // Replace with the correct path to your atom
+import { TextInput , Button, Text } from "react-native-paper";
 import { router } from "expo-router";
 import axios from "axios";
 
@@ -14,6 +16,8 @@ const Login = () => {
     emailOrUsername: "",
     password: "",
   });
+  
+  const [, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
   const emailRef = useRef<RNTextInput | null>(null);
   const passwordRef = useRef<RNTextInput | null>(null);
@@ -64,6 +68,11 @@ const Login = () => {
 
       if (response.status === 200) {
         console.log("Login success: ", response.data);
+        
+        const {data, token} = response.data;
+        const {id, email, username} = data;
+
+        setIsAuthenticated({id, email, username, token});
         router.replace("/home");
       }
     } catch (err: any) {

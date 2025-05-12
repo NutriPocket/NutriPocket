@@ -4,7 +4,7 @@ export default function RootLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: false, // Oculta el encabezado en todas las pantallas
+        headerShown: false, // Hide the header for all screens
       }}
     />
   );
