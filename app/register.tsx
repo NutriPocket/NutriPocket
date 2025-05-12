@@ -93,8 +93,8 @@ const Register = () => {
         const {id, email, username} = data;
         
         setIsAuthenticated({id, email, username, token});
-        router.replace("/home");
-        
+        router.replace("/anthropometricRegister");
+
       }
     } catch (err: any) {
       if (err.response && err.response.status === 400) {
@@ -130,7 +130,7 @@ const Register = () => {
         activeOutlineColor={error && form.username.length === 0 ? "red" : "blue"}
         />
       <TextInput
-        label="Email"
+        label="Mail"
         value={form.email}
         onChangeText={(text) => handleChange("email", text)}
         style={styles.input}
@@ -147,7 +147,7 @@ const Register = () => {
         activeOutlineColor={error && form.email.length === 0 ? "red" : "blue"}
       />
       <TextInput
-        label="Password"
+        label="Contraseña"
         value={form.password}
         onChangeText={(text) => handleChange("password", text)}
         style={styles.input}
@@ -163,7 +163,7 @@ const Register = () => {
         activeOutlineColor={error && form.password.length === 0 ? "red" : "blue"}
       />
         <TextInput
-            label="Confirm Password"
+            label="Confirmar Contraseña"
             value={form.confirmPassword}
             onChangeText={(text) => handleChange("confirmPassword", text)}
             style={styles.input}

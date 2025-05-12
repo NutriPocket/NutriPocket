@@ -91,7 +91,7 @@ const Login = () => {
   return (
     <View style={styles.container}>
       <TextInput
-        label="Email"
+        label="Mail"
         value={form.emailOrUsername}
         onChangeText={(text) => handleChange("emailOrUsername", text)}
         style={styles.input}
@@ -108,7 +108,7 @@ const Login = () => {
         activeOutlineColor={error && form.emailOrUsername.length === 0 ? "red" : "blue"}
       />
       <TextInput
-        label="Password"
+        label="Contraseña"
         value={form.password}
         onChangeText={(text) => handleChange("password", text)}
         style={styles.input}
