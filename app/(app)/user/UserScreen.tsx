@@ -1,12 +1,23 @@
 import React, { useState } from "react";
-import { View, Text } from "react-native";
+import { ScrollView, View, Text, Keyboard } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { TextInput, Button } from "react-native-paper";
-import { Formik } from 'formik';
+import { Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import axios from "axios";
 import { styles } from "../home/styles";
+
+type UserFormValues = {
+  username: string;
+  email: string;
+  birthdate: string;
+  height: string;
+  weight: string;
+  muscleMass: string;
+  bodyFatPercentage: string;
+  boneMass: string;
+};
 
 export default function UserScreen() {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
@@ -36,6 +47,62 @@ export default function UserScreen() {
     boneMass: Yup.number().typeError('La masa ósea debe ser un número válido').min(0).max(100).nullable(),
   });
 
+  const handleSubmitForm = async (
+    values: UserFormValues,
+    { setSubmitting, resetForm }: FormikHelpers<UserFormValues>
+  ) => {
+    setError(null);
+    setSuccess(null);
+    try {
+      const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
+      const userId = auth?.id;
+      await axios.put(
+        `${BASE_URL}/users/${userId}/fixedData/`,
+        {
+          birthday: values.birthdate,
+          height: parseInt(values.height, 10),
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${auth?.token}`,
+          },
+        }
+      );
+
+
+      await axios.put(
+        `${BASE_URL}/users/${userId}/anthropometrics/`,
+        {
+          weight: parseFloat(values.weight),
+          muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
+          fat_mass: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : null,
+          bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${auth?.token}`,
+          },
+        }
+      );
+      setIsAuthenticated((prev) => prev ? {
+        ...prev,
+        ...values,
+        height: parseInt(values.height, 10),
+        weight: parseFloat(values.weight),
+        muscleMass: values.muscleMass ? parseFloat(values.muscleMass) : undefined,
+        bodyFatPercentage: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : undefined,
+        boneMass: values.boneMass ? parseFloat(values.boneMass) : undefined,
+      } : prev);
+      setSuccess("Datos actualizados correctamente.");
+      setEditMode(false);
+    } catch (err: any) {
+      setError("Ocurrió un error al guardar los cambios.");
+    }
+    setSubmitting(false);
+  };
+
   return (
     <Formik
       initialValues={{
@@ -50,68 +117,19 @@ export default function UserScreen() {
       }}
       validationSchema={validationSchema}
       enableReinitialize
-      onSubmit={async (values, { setSubmitting, resetForm }) => {
-        setError(null);
-        setSuccess(null);
-        try {
-          const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
-          const userId = auth?.id;
-          await axios.put(
-            `${BASE_URL}/users/${userId}/fixedData/`,
-            {
-              birthday: values.birthdate,
-              height: parseInt(values.height, 10),
-            },
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${auth?.token}`,
-              },
-            }
-          );
-          await axios.put(
-            `${BASE_URL}/users/${userId}/anthropometrics/`,
-            {
-              weight: parseFloat(values.weight),
-              muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
-              fat_mass: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : null,
-              bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
-            },
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${auth?.token}`,
-              },
-            }
-          );
-          setIsAuthenticated((prev) => prev ? {
-            ...prev,
-            ...values,
-            height: parseInt(values.height, 10),
-            weight: parseFloat(values.weight),
-            muscleMass: values.muscleMass ? parseFloat(values.muscleMass) : undefined,
-            bodyFatPercentage: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : undefined,
-            boneMass: values.boneMass ? parseFloat(values.boneMass) : undefined,
-          } : prev);
-          setSuccess("Datos actualizados correctamente.");
-          setEditMode(false);
-        } catch (err: any) {
-          setError("Ocurrió un error al guardar los cambios.");
-        }
-        setSubmitting(false);
-      }}
+      onSubmit={handleSubmitForm}
     >
-      {({ values, handleChange, handleBlur, handleSubmit, errors, touched, isSubmitting, setFieldValue, resetForm }) => (
+      {({ values, handleBlur, handleSubmit, errors, touched, isSubmitting, setFieldValue, resetForm }) => (
         <View style={styles.formContainer}>
           <Text style={styles.sectionTitle}>Tus datos personales y antropométricos</Text>
           {error && <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>}
           {success && <Text style={{ color: '#287D76', marginBottom: 10 }}>{success}</Text>}
-          <View style={styles.formFields}>
+          <ScrollView style={styles.formFields}>
             {fields.map((item, index) => (
               <View key={item.key} style={[styles.listRow, index % 2 === 0 ? styles.zebra0 : styles.zebra1]}>
                 <Text style={styles.listLabel}>{item.label}</Text>
                 <TextInput
-                  value={values[item.key]}
+                  value={values[item.key]}  
                   onChangeText={v => setFieldValue(item.key, v)}
                   onBlur={handleBlur(item.key)}
                   style={styles.listInput}
@@ -128,7 +146,6 @@ export default function UserScreen() {
                       background: 'transparent',
                     },
                   }}
-                  blurOnSubmit={true}
                   onFocus={e => {
                     if (!editMode) e.target.blur();
                   }}
@@ -140,23 +157,29 @@ export default function UserScreen() {
                 <Text key={item.key + '-err'} style={{ color: 'red', marginLeft: 10, marginBottom: -5, fontSize: 13 }}>{errors[item.key]}</Text>
               ) : null
             ))}
-          </View>
+          </ScrollView>
           {editMode ? (
             <View style={{ width: '100%', marginTop: 20 }}>
               <Button mode="contained" onPress={handleSubmit as any} disabled={isSubmitting} style={{ backgroundColor: '#287D76', width: '100%' }}>
                 Confirmar
               </Button>
               <Button mode="outlined" onPress={() => {
+                Keyboard.dismiss();
                 setEditMode(false);
                 setError(null);
                 setSuccess(null);
                 resetForm();
+
               }} style={{ width: '100%', marginTop: 10 }}>
                 Volver
               </Button>
             </View>
           ) : (
-            <Button mode="contained" onPress={() => setEditMode(true)} style={{ marginTop: 20, backgroundColor: '#287D76', width: '100%' }}>
+            <Button mode="contained" onPress={() => {
+              setEditMode(true);
+              resetForm();
+
+          }} style={{ marginTop: 20, backgroundColor: '#287D76', width: '100%' }}>
               Editar
             </Button>
           )}
