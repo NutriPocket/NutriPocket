@@ -28,10 +28,10 @@ const Login = () => {
       }
     );
       if (response.status === 200) {
-        const {data, token} = response.data;
-        const {id, email, username} = data;
-        setIsAuthenticated({id, email, username, token});
-        router.replace("/home");
+        const { data, token } = response.data;
+        const { id, email, username } = data;
+        setIsAuthenticated({ id, email, username, token });
+        router.replace("/home"); // Redirige a la pantalla de tabs Home
       }
     } catch (err: any) {
       if (err.response && err.response.status === 401) {

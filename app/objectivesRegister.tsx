@@ -72,7 +72,7 @@ const ObjectivesRegister = () => {
           ...prev,
           objectives: data,
         } : prev);
-        router.replace("/");
+        router.replace("/home");
       }
     } catch (err: any) {
       if (err.response && err.response.status === 401) {
