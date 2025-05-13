@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../atoms/authAtom";
 import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput } from "react-native";

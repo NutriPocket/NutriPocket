@@ -16,8 +16,8 @@ const validationSchema = Yup.object({
     .required("Por favor, ingresa tu peso objetivo"),
   muscleMassGoal: Yup.number()
     .typeError("La masa muscular objetivo debe ser un número válido")
-    .min(0, "La masa muscular no puede ser negativa")
-    .max(100, "La masa muscular no puede superar los 100 kg")
+    .min(0, "El porcentaje de masa muscular debe ser al menos 0%")
+    .max(100, "El porcentaje de masa muscular no puede superar el 100%")
     .optional(),
   fatMassGoal: Yup.number()
     .typeError("El porcentaje de grasa objetivo debe ser un número válido")
@@ -26,8 +26,8 @@ const validationSchema = Yup.object({
     .optional(),
     boneMassGoal: Yup.number()
     .typeError("La masa ósea objetivo debe ser un número válido")
-    .min(0, "La masa ósea no puede ser negativa")
-    .max(100, "La masa ósea no puede superar los 100 kg")
+    .min(0, "El porcentaje de masa ósea debe ser al menos 0%")
+    .max(100, "El porcentaje de masa ósea no puede superar el 100%")
     .optional(),
   targetDate: Yup.string()
     .required("Por favor, ingresa la fecha objetivo")
@@ -98,9 +98,24 @@ const ObjetivesRegister = () => {
       {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
         <View style={styles.container}>
           <Text style={styles.title}>Cargar Objetivos</Text>
-
+          
           <TextInput
-            label="Peso objetivo (kg)"
+            label="Fecha objetivo (YYYY-MM-DD)"
+            value={values.targetDate}
+            onChangeText={handleChange("targetDate")}
+            onBlur={handleBlur("targetDate")}
+            style={styles.input}
+            keyboardType="default"
+            theme={{ colors: { background: "white", onSurfaceVariant: touched.targetDate && errors.targetDate ? "red" : "black" } }}
+            outlineColor={touched.targetDate && errors.targetDate ? "red" : "gray"}
+            activeOutlineColor={touched.targetDate && errors.targetDate ? "red" : "blue"}
+            placeholder="YYYY-MM-DD"
+          />
+          {touched.targetDate && errors.targetDate && (
+            <Text style={styles.error}>{errors.targetDate}</Text>
+          )}
+          <TextInput
+            label="Peso objetivo (%)"
             value={values.weightGoal}
             onChangeText={handleChange("weightGoal")}
             onBlur={handleBlur("weightGoal")}
@@ -115,7 +130,7 @@ const ObjetivesRegister = () => {
           )}
 
           <TextInput
-            label="Masa muscular objetivo (kg) (opcional)"
+            label="Masa muscular objetivo (%) (opcional)"
             value={values.muscleMassGoal}
             onChangeText={handleChange("muscleMassGoal")}
             onBlur={handleBlur("muscleMassGoal")}
@@ -145,23 +160,7 @@ const ObjetivesRegister = () => {
           )}
 
           <TextInput
-            label="Fecha objetivo (YYYY-MM-DD)"
-            value={values.targetDate}
-            onChangeText={handleChange("targetDate")}
-            onBlur={handleBlur("targetDate")}
-            style={styles.input}
-            keyboardType="default"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.targetDate && errors.targetDate ? "red" : "black" } }}
-            outlineColor={touched.targetDate && errors.targetDate ? "red" : "gray"}
-            activeOutlineColor={touched.targetDate && errors.targetDate ? "red" : "blue"}
-            placeholder="YYYY-MM-DD"
-          />
-          {touched.targetDate && errors.targetDate && (
-            <Text style={styles.error}>{errors.targetDate}</Text>
-          )}
-
-          <TextInput
-            label="Masa ósea objetivo (kg) (opcional)"
+            label="Masa ósea objetivo (%) (opcional)"
             value={values.boneMassGoal}
             onChangeText={handleChange("boneMassGoal")}
             onBlur={handleBlur("boneMassGoal")}
@@ -171,11 +170,11 @@ const ObjetivesRegister = () => {
             outlineColor={touched.boneMassGoal && errors.boneMassGoal ? "red" : "gray"}
             activeOutlineColor={touched.boneMassGoal && errors.boneMassGoal ? "red" : "blue"}
 
-          
           />
           {touched.boneMassGoal && errors.boneMassGoal && (
             <Text style={styles.error}>{errors.boneMassGoal}</Text>
           )}
+
 
           {error && <Text style={styles.error}>{error}</Text>}
 

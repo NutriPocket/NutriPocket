@@ -1,6 +1,7 @@
 export type UserAuth = {
     id: string;
     username: string;
+    birthdate?: string;
     email: string;
     weight?: number;
     height?: number;

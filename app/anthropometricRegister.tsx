@@ -16,8 +16,8 @@ const validationSchema = Yup.object({
     .required("Por favor, ingresa tu peso"),
   muscleMass: Yup.number()
     .typeError("La masa muscular debe ser un número válido")
-    .min(0, "La masa muscular no puede ser negativa")
-    .max(100, "La masa muscular no puede superar los 100 kg")
+    .min(0, "El porcentaje de masa muscular debe ser al menos 0%")
+    .max(100, "El porcentaje de masa muscular no puede superar el 100%")
     .optional(),
   bodyFatPercentage: Yup.number()
     .typeError("El porcentaje de grasa debe ser un número válido")
@@ -27,7 +27,7 @@ const validationSchema = Yup.object({
   boneMass: Yup.number()
     .typeError("La masa ósea debe ser un número válido")
     .min(0, "La masa ósea no puede ser negativa")
-    .max(100, "La masa ósea no puede superar los 100 kg")
+    .max(100, "La masa ósea no puede superar los 100%")
     .optional(),
 });
 
@@ -103,26 +103,6 @@ const AnthropometricRegister = () => {
         <View style={styles.container}>
           <Text style={styles.title}>Cargar Datos Antropométricos</Text>
 
-          {/* <TextInput
-            label="Altura (cm)"
-            value={values.height}
-            onChangeText={handleChange("height")}
-            onBlur={handleBlur("height")}
-            style={styles.input}
-            keyboardType="numeric"
-            theme={{
-              colors: {
-                background: "white",
-                onSurfaceVariant: touched.height && errors.height ? "red" : "black",
-              },
-            }}
-            outlineColor={touched.height && errors.height ? "red" : "gray"}
-            activeOutlineColor={touched.height && errors.height ? "red" : "blue"}
-          />
-          {touched.height && errors.height && (
-            <Text style={styles.error}>{errors.height}</Text>
-          )} */}
-
           <TextInput
             label="Peso (kg)"
             value={values.weight}
@@ -144,7 +124,7 @@ const AnthropometricRegister = () => {
           )}
 
           <TextInput
-            label="Masa Muscular (kg) (opcional) "
+            label="Masa Muscular (%) (opcional) "
             value={values.muscleMass}
             onChangeText={handleChange("muscleMass")}
             onBlur={handleBlur("muscleMass")}
@@ -194,7 +174,7 @@ const AnthropometricRegister = () => {
           )}
 
           <TextInput
-            label="Masa ósea (kg) (opcional)"
+            label="Masa ósea (%) (opcional)"
             value={values.boneMass}
             onChangeText={handleChange("boneMass")}
             onBlur={handleBlur("boneMass")}
@@ -226,7 +206,6 @@ const AnthropometricRegister = () => {
   );
 };
 
-const window = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
