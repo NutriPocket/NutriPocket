@@ -1,42 +1,9 @@
 import React from "react";
-import { View, StyleSheet, Text } from "react-native";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAtom } from "jotai";
-import { authenticatedAtom } from "../../../atoms/authAtom";
-
-// Pantalla Home principal
-function HomeScreen() {
-  const [auth] = useAtom(authenticatedAtom);
-  return (
-    <View style={styles.screenContainer}>
-      <Text style={styles.welcome}>¡Bienvenido/a, {auth?.username || 'usuario'}!</Text>
-      <Text style={styles.info}>Aquí verás tu resumen y novedades.</Text>
-    </View>
-  );
-}
-
-// Pantalla para modificar datos antropométricos
-function UserScreen() {
-  return (
-    <View style={styles.screenContainer}>
-      <Text style={styles.sectionTitle}>Tus datos antropométricos</Text>
-      <Text style={styles.info}>Aquí podrás modificar tus datos antropométricos.</Text>
-      {/* Aquí puedes agregar un botón o formulario para editar los datos */}
-    </View>
-  );
-}
-
-// Pantalla para establecer un nuevo plan de comidas
-function MealPlanScreen() {
-  return (
-    <View style={styles.screenContainer}>
-      <Text style={styles.sectionTitle}>Plan de comidas</Text>
-      <Text style={styles.info}>Aquí podrás establecer o modificar tu plan de comidas.</Text>
-      {/* Aquí puedes agregar un formulario o lista de planes */}
-    </View>
-  );
-}
+import HomeScreen from "./HomeScreen";
+import UserScreen from "../user/UserScreen";
+import MealPlanScreen from "../mealplan/MealPlanScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -84,32 +51,3 @@ export default function HomeTabs() {
     </Tab.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  welcome: {
-    fontSize: 24,
-    color: '#287D76',
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    color: '#287D76',
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  info: {
-    fontSize: 16,
-    color: '#287D76',
-    textAlign: 'center',
-  },
-});
