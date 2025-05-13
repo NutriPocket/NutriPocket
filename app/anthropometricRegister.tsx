@@ -71,7 +71,7 @@ const AnthropometricRegister = () => {
           ...prev,
           ...values,
         }));
-        router.replace("/");
+        router.replace("/objectivesRegister");
       }
     } catch (err: any) {
       if (err.response && err.response.status === 401) {
