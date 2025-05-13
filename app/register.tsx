@@ -1,194 +1,217 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import { useAtom } from "jotai";
-import { authenticatedAtom } from "../atoms/authAtom"; // Replace with the correct path to your atom
-import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput, } from "react-native";
+import { authenticatedAtom } from "../atoms/authAtom";
+import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput } from "react-native";
 import { TextInput , Button, Text, IconButton } from "react-native-paper";
 import { router } from "expo-router";
 import axios from "axios";
+import { Formik } from "formik";
+import * as Yup from "yup";
 
-interface RegisterForm {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
+
+const validationSchema = Yup.object({
+  username: Yup.string().required("Por favor, ingresa tu nombre de usuario."),
+  // birthdate: Yup.string()
+  //   .required("Por favor, ingresa tu fecha de nacimiento.")
+  //   .matches(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)")
+  //   .test("is-future-date", "La fecha de nacimiento no puede ser futura", (value) => {
+  //     if (!value) return true; // Skip validation if value is empty
+  //     const today = new Date();
+  //     const birthdate = new Date(value);
+  //     return birthdate < today;
+  //   }).required("Por favor, ingresa tu fecha de nacimiento."),
+  // height: Yup.number()
+  //   .typeError("La altura debe ser un número válido")
+  //   .min(50, "La altura debe ser al menos 50 cm")
+  //   .max(300, "La altura no puede superar los 300 cm")
+  //   .required("Por favor, ingresa tu altura"),
   
-}
+  email: Yup.string().email("Email inválido").required("Por favor, ingresa tu email."),
+  password: Yup.string().required("Por favor, ingresa tu contraseña."),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password'), ''], 'Las contraseñas no coinciden')
+    .required('Por favor, confirma tu contraseña.'),
+});
 
 const Register = () => {
-  const [form, setForm] = useState<RegisterForm>({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [, setIsAuthenticated] = useAtom(authenticatedAtom);
-  const [error, setError] = useState<string | null>(null);
-  const emailRef = useRef<RNTextInput | null>(null);
-  const passwordRef = useRef<RNTextInput | null>(null);
-  const confirmPasswordRef = useRef<RNTextInput | null>(null);
-  const nameRef = useRef<RNTextInput | null>(null);
+  const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleChange = (name: keyof RegisterForm, value: string) => {
-    setForm({
-      ...form,
-      [name]: value,
-    });
-  };
+  // const handleProgressData = async (userId: string, values: any) => {
+  //   const data = {
+  //     birthdate: values.birthdate ? values.birthdate : "",
+  //     height: values.height ? parseFloat(values.height) : 0,
+  //   };
+  //   const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
+  //   const response = await axios.put(
+  //     `${BASE_URL}/users/${userId}/fixedData/`,
+  //     data,
+  //     { headers: { 'Content-Type': 'application/json' } }
+  //   );
+  //   if (response.status === 200 || response.status === 201) {
+  //     const { data } = response.data;
+  //     const { birthdate, height } = data;
+  //     return { birthdate, height };
+  //   }
+  //   throw new Error("Progress update failed");
+  // };
 
-  const closeInput = () => {
-    Keyboard.dismiss();
-    emailRef.current?.blur();
-    passwordRef.current?.blur();
-    confirmPasswordRef.current?.blur();
-    nameRef.current?.blur();
-  };
-
-  const areValidFields = () => {
-    if (form.email.trim().length === 0) {
-      setError("Please enter a valid email.");
-      return false;
-    }
-
-    if (form.password.trim().length === 0) {
-      setError("Please enter a valid password.");
-      return false;
-    }
-    if (form.confirmPassword.trim().length === 0) {
-      setError("Please confirm your password.");
-      return false;
-    }
-    if (form.username.trim().length === 0) {
-      setError("Please enter your name.");
-      return false;
-    }
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match.");
-      return false;
-    }
-
-    setError(null);
-    return true;
-  };
-
-  const handleRegister = async () => {
-    closeInput();
-
-    if (!areValidFields()) {
-      return;
-    }
-
+  const handleRegister = async (values: any) => {
     try {
-      const REGISTER_URL = process.env.USER_SERVICE_REGISTER_URL || "http://localhost:8080/auth/register";
-      const response = await axios.post(REGISTER_URL, {
-        ...form,
-      },
-      {
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+        console.log("Form values: ", values);
+        const data = {
+          username: values.username,
+          email: values.email,
+          password: values.password,
+        };
 
-      if (response.status === 201) {
-        console.log("Register success: ", response.data);
+        const BASE_URL = process.env.USER_SERVICE_REGISTER_URL || "http://localhost:8080/auth/register";
+        const response = await axios.post(`${BASE_URL}`,
+          data,
+          { headers: { "Content-Type": "application/json" } }
+        );
 
-        const {data, token} = response.data;
-        const {id, email, username} = data;
-        
-        setIsAuthenticated({id, email, username, token});
+        if (response.status === 201) {
+          const { data, token } = response.data;
+          const { id, email, username } = data;
+          setIsAuthenticated({ id, email, username, token });
+        }
+
         router.replace("/anthropometricRegister");
+      } catch (err: any) {
 
+        if (err.response && err.response.status === 400) {
+          setError("Invalid email or password");
+        } else {
+          setError("An error occurred. Please try again later.");
+        }
       }
-    } catch (err: any) {
-      if (err.response && err.response.status === 400) {
-        setError("Invalid email or password");
-      } else {
-        setError("An error occurred. Please try again later.");
-      }
-    }
   };
   
   return (
-    <View style={styles.container}>
-      <IconButton
-        icon="arrow-left"
-        size={24}
-        onPress={() => router.back()}
-        style={styles.backButton}
-        iconColor="white"
-      />
-        <TextInput
-          label="Name"
-          value={form.username}
-          onChangeText={(text) => handleChange("username", text)}
-          style={styles.input}
-          ref={nameRef}
-          theme={{
-            colors: {
-              background: "white",
-              onSurfaceVariant: error && form.username.length === 0 ? "red" : "black",
-            },
-          }}
-        outlineColor={error && form.username.length === 0 ? "red" : "gray"}
-        activeOutlineColor={error && form.username.length === 0 ? "red" : "blue"}
-        />
-      <TextInput
-        label="Mail"
-        value={form.email}
-        onChangeText={(text) => handleChange("email", text)}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        ref={emailRef}
-        theme={{
-          colors: {
-            background: "white",
-            onSurfaceVariant: error && form.email.length === 0 ? "red" : "black",
-          },
-        }}
-        outlineColor={error && form.email.length === 0 ? "red" : "gray"}
-        activeOutlineColor={error && form.email.length === 0 ? "red" : "blue"}
-      />
-      <TextInput
-        label="Contraseña"
-        value={form.password}
-        onChangeText={(text) => handleChange("password", text)}
-        style={styles.input}
-        secureTextEntry
-        ref={passwordRef}
-        theme={{
-          colors: {
-            background: "white",
-            onSurfaceVariant: error && form.password.length === 0 ? "red" : "black",
-          },
-        }}
-        outlineColor={error && form.password.length === 0 ? "red" : "gray"}
-        activeOutlineColor={error && form.password.length === 0 ? "red" : "blue"}
-      />
-        <TextInput
-            label="Confirmar Contraseña"
-            value={form.confirmPassword}
-            onChangeText={(text) => handleChange("confirmPassword", text)}
+    <Formik
+      initialValues={{ username: "", email: "", password: "", confirmPassword: "" }}
+      validationSchema={validationSchema}
+      onSubmit={handleRegister}
+    >
+      {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+        <View style={styles.container}>
+          <IconButton
+            icon="arrow-left"
+            size={24}
+            onPress={() => router.back()}
+            style={styles.backButton}
+            iconColor="white"
+          />
+          <TextInput
+            label="Nombre"
+            value={values.username}
+            onChangeText={handleChange("username")}
+            onBlur={handleBlur("username")}
+            style={styles.input}
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant: touched.username && errors.username ? "red" : "black",
+              },
+            }}
+            outlineColor={touched.username && errors.username ? "red" : "gray"}
+            activeOutlineColor={touched.username && errors.username ? "red" : "blue"}
+          />
+          {touched.username && errors.username && (
+            <Text style={styles.error}>{errors.username}</Text>
+          )}
+
+          {/*           
+          <TextInput
+            label="Altura (cm)"
+            value={values.height}
+            onChangeText={handleChange("height")}
+            onBlur={handleBlur("height")}
+            style={styles.input}
+            keyboardType="numeric"
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant: touched.height && errors.height ? "red" : "black",
+              },
+            }}
+            outlineColor={touched.height && errors.height ? "red" : "gray"}
+            activeOutlineColor={touched.height && errors.height ? "red" : "blue"}
+          />
+          {touched.height && errors.height && (
+            <Text style={styles.error}>{errors.height}</Text>
+          )} */}
+
+          <TextInput
+            label="Mail"
+            value={values.email}
+            onChangeText={handleChange("email")}
+            onBlur={handleBlur("email")}
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant: touched.email && errors.email ? "red" : "black",
+              },
+            }}
+            outlineColor={touched.email && errors.email ? "red" : "gray"}
+            activeOutlineColor={touched.email && errors.email ? "red" : "blue"}
+          />
+          {touched.email && errors.email && (
+            <Text style={styles.error}>{errors.email}</Text>
+          )}
+          <TextInput
+            label="Contraseña"
+            value={values.password}
+            onChangeText={handleChange("password")}
+            onBlur={handleBlur("password")}
             style={styles.input}
             secureTextEntry
-            ref={confirmPasswordRef}
             theme={{
-            colors: {
+              colors: {
                 background: "white",
-                onSurfaceVariant: error && form.confirmPassword.length === 0 ? "red" : "black",
-            },
+                onSurfaceVariant: touched.password && errors.password ? "red" : "black",
+              },
             }}
-            outlineColor={error && form.confirmPassword.length === 0 ? "red" : "gray"}
-            activeOutlineColor={error && form.confirmPassword.length === 0 ? "red" : "blue"}
-        />
-
-      {error && <Text style={styles.error}>{error}</Text>}
-      <Button mode="contained" onPress={handleRegister} style={styles.RegisterButton}>
-        <Text style={styles.RegisterButtonText}>Register</Text>
-      </Button> 
-    </View>
+            outlineColor={touched.password && errors.password ? "red" : "gray"}
+            activeOutlineColor={touched.password && errors.password ? "red" : "blue"}
+          />
+          {touched.password && errors.password && (
+            <Text style={styles.error}>{errors.password}</Text>
+          )}
+          <TextInput
+            label="Confirmar Contraseña"
+            value={values.confirmPassword}
+            onChangeText={handleChange("confirmPassword")}
+            onBlur={handleBlur("confirmPassword")}
+            style={styles.input}
+            secureTextEntry
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant: touched.confirmPassword && errors.confirmPassword ? "red" : "black",
+              },
+            }}
+            outlineColor={touched.confirmPassword && errors.confirmPassword ? "red" : "gray"}
+            activeOutlineColor={touched.confirmPassword && errors.confirmPassword ? "red" : "blue"}
+          />
+          {touched.confirmPassword && errors.confirmPassword && (
+            <Text style={styles.error}>{errors.confirmPassword}</Text>
+          )}
+          
+          <Button mode="contained" onPress={handleSubmit as any} style={styles.RegisterButton}>
+            <Text style={styles.RegisterButtonText}>Register</Text>
+          </Button>
+        </View>
+      )}
+    </Formik>
   );
 };
 
-const window = Dimensions.get("window");
+
 
 const styles = StyleSheet.create({
   container: {

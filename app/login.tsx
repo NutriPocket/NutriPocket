@@ -1,78 +1,35 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import { useAtom } from "jotai";
 import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput } from "react-native";
 import { authenticatedAtom } from "../atoms/authAtom";
 import { TextInput , Button, Text } from "react-native-paper";
 import { router } from "expo-router";
 import axios from "axios";
+import { Formik } from "formik";
+import * as Yup from "yup";
 
-interface loginForm {
-  emailOrUsername: string;
-  password: string;
-}
+const validationSchema = Yup.object({
+  emailOrUsername: Yup.string().required("Por favor, ingresa tu email o usuario."),
+  password: Yup.string().required("Por favor, ingresa tu contraseña."),
+});
 
 const Login = () => {
-  const [form, setForm] = useState<loginForm>({
-    emailOrUsername: "",
-    password: "",
-  });
-  
   const [, setIsAuthenticated] = useAtom(authenticatedAtom);
-  const [error, setError] = useState<string | null>(null);
-  const emailRef = useRef<RNTextInput | null>(null);
-  const passwordRef = useRef<RNTextInput | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleChange = (name: keyof loginForm, value: string) => {
-    setForm({
-      ...form,
-      [name]: value,
-    });
-  };
-
-  const closeInput = () => {
-    Keyboard.dismiss();
-    emailRef.current?.blur();
-    passwordRef.current?.blur();
-  };
-
-  const areValidFields = () => {
-    if (form.emailOrUsername.trim().length === 0) {
-      setError("Please enter a valid email or username.");
-      return false;
-    }
-
-    if (form.password.trim().length === 0) {
-      setError("Please enter a valid password.");
-      return false;
-    }
-
-    setError(null); // Limpiar errores si los campos son válidos
-    return true;
-  };
-
-  const handleLogin = async () => {
-    closeInput();
-
-    if (!areValidFields()) {
-      return;
-    }
-
+  const handleLogin = async (values: any) => {
     try {
       const LOGIN_URL = process.env.USER_SERVICE_LOGIN_URL || "http://localhost:8080/auth/login";
       const response = await axios.post(LOGIN_URL, {
-        ...form,
+        ...values,
       },
       {
         headers: { 'Content-Type': 'application/json' }
       }
     );
-
       if (response.status === 200) {
-        console.log("Login success: ", response.data);
-        
         const {data, token} = response.data;
         const {id, email, username} = data;
-
         setIsAuthenticated({id, email, username, token});
         router.replace("/home");
       }
@@ -88,59 +45,71 @@ const Login = () => {
   const handleCreateAccount = () => {
     router.push("/register");
   };
-  
-  return (
-    <View style={styles.container}>
-      <TextInput
-        label="Mail"
-        value={form.emailOrUsername}
-        onChangeText={(text) => handleChange("emailOrUsername", text)}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        ref={emailRef}
-        theme={{
-          colors: {
-            background: "white",
-            onSurfaceVariant: error && form.emailOrUsername.length === 0 ? "red" : "black",
-          },
-        }}
-        outlineColor={error && form.emailOrUsername.length === 0 ? "red" : "gray"}
-        activeOutlineColor={error && form.emailOrUsername.length === 0 ? "red" : "blue"}
-      />
-      <TextInput
-        label="Contraseña"
-        value={form.password}
-        onChangeText={(text) => handleChange("password", text)}
-        style={styles.input}
-        secureTextEntry
-        ref={passwordRef}
-        theme={{
-          colors: {
-            background: "white",
-            onSurfaceVariant: error && form.password.length === 0 ? "red" : "black",
-          },
-        }}
-        outlineColor={error && form.password.length === 0 ? "red" : "gray"}
-        activeOutlineColor={error && form.password.length === 0 ? "red" : "blue"}
-      />
-      {error && <Text style={styles.error}>{error}</Text>}
-      <Button mode="contained" onPress={handleLogin} style={styles.Loginbutton}>
-        <Text style={styles.LoginbuttonText}>Login</Text>
-      </Button>
 
-      <Button
-        mode="outlined"
-        onPress={handleCreateAccount}
-        style={styles.NewAccountButton}
-      >
-        <Text style={styles.NewAccountButtonText}>Create New Account</Text>
-      </Button>
-    </View>
+  return (
+    <Formik
+      initialValues={{ emailOrUsername: "", password: "" }}
+      validationSchema={validationSchema}
+      onSubmit={handleLogin}
+    >
+      {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+        <View style={styles.container}>
+          <TextInput
+            label="Mail"
+            value={values.emailOrUsername}
+            onChangeText={handleChange("emailOrUsername")}
+            onBlur={handleBlur("emailOrUsername")}
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant: touched.emailOrUsername && errors.emailOrUsername ? "red" : "black",
+              },
+            }}
+            outlineColor={touched.emailOrUsername && errors.emailOrUsername ? "red" : "gray"}
+            activeOutlineColor={touched.emailOrUsername && errors.emailOrUsername ? "red" : "blue"}
+          />
+          {touched.emailOrUsername && errors.emailOrUsername && (
+            <Text style={styles.error}>{errors.emailOrUsername}</Text>
+          )}
+          <TextInput
+            label="Contraseña"
+            value={values.password}
+            onChangeText={handleChange("password")}
+            onBlur={handleBlur("password")}
+            style={styles.input}
+            secureTextEntry
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant: touched.password && errors.password ? "red" : "black",
+              },
+            }}
+            outlineColor={touched.password && errors.password ? "red" : "gray"}
+            activeOutlineColor={touched.password && errors.password ? "red" : "blue"}
+          />
+          {touched.password && errors.password && (
+            <Text style={styles.error}>{errors.password}</Text>
+          )}
+          {error && <Text style={styles.error}>{error}</Text>}
+          <Button mode="contained" onPress={handleSubmit as any} style={styles.Loginbutton}>
+            <Text style={styles.LoginbuttonText}>Login</Text>
+          </Button>
+          <Button
+            mode="outlined"
+            onPress={handleCreateAccount}
+            style={styles.NewAccountButton}
+          >
+            <Text style={styles.NewAccountButtonText}>Create New Account</Text>
+          </Button>
+        </View>
+      )}
+    </Formik>
   );
 };
 
-const window = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
