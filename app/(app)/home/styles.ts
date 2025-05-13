@@ -13,7 +13,8 @@ export const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    padding: 20,
+    padding: 40,
+    marginBottom: 20,
     width: '100%',
   },
   formFields: {
@@ -30,6 +31,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    width: '100%',
   },
   listLabel: {
     flex: 1.2,
@@ -40,10 +42,10 @@ export const styles = StyleSheet.create({
   listInput: {
     flex: 1.8,
     backgroundColor: 'transparent',
-    marginLeft: 10,
     fontSize: 15,
     borderRadius: 4,
     minHeight: 36,
+    width: '100%',
   },
   zebra0: {
     backgroundColor: '#f7faf9',
