@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useAtom } from "jotai";
 import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput } from "react-native";
-import { authenticatedAtom } from "../atoms/authAtom"; // Replace with the correct path to your atom
+import { authenticatedAtom } from "../atoms/authAtom";
 import { TextInput , Button, Text } from "react-native-paper";
 import { router } from "expo-router";
 import axios from "axios";
@@ -58,7 +58,8 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:8080/auth/login", {
+      const LOGIN_URL = process.env.USER_SERVICE_LOGIN_URL || "http://localhost:8080/auth/login";
+      const response = await axios.post(LOGIN_URL, {
         ...form,
       },
       {

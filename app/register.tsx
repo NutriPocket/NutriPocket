@@ -78,7 +78,8 @@ const Register = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:8080/auth/register", {
+      const REGISTER_URL = process.env.USER_SERVICE_REGISTER_URL || "http://localhost:8080/auth/register";
+      const response = await axios.post(REGISTER_URL, {
         ...form,
       },
       {
