@@ -10,22 +10,7 @@ import * as Yup from "yup";
 
 
 const validationSchema = Yup.object({
-  username: Yup.string().required("Por favor, ingresa tu nombre de usuario."),
-  // birthdate: Yup.string()
-  //   .required("Por favor, ingresa tu fecha de nacimiento.")
-  //   .matches(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)")
-  //   .test("is-future-date", "La fecha de nacimiento no puede ser futura", (value) => {
-  //     if (!value) return true; // Skip validation if value is empty
-  //     const today = new Date();
-  //     const birthdate = new Date(value);
-  //     return birthdate < today;
-  //   }).required("Por favor, ingresa tu fecha de nacimiento."),
-  // height: Yup.number()
-  //   .typeError("La altura debe ser un número válido")
-  //   .min(50, "La altura debe ser al menos 50 cm")
-  //   .max(300, "La altura no puede superar los 300 cm")
-  //   .required("Por favor, ingresa tu altura"),
-  
+  username: Yup.string().required("Por favor, ingresa tu nombre de usuario."),  
   email: Yup.string().email("Email inválido").required("Por favor, ingresa tu email."),
   password: Yup.string().required("Por favor, ingresa tu contraseña."),
   confirmPassword: Yup.string()
@@ -36,25 +21,6 @@ const validationSchema = Yup.object({
 const Register = () => {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = React.useState<string | null>(null);
-
-  // const handleProgressData = async (userId: string, values: any) => {
-  //   const data = {
-  //     birthdate: values.birthdate ? values.birthdate : "",
-  //     height: values.height ? parseFloat(values.height) : 0,
-  //   };
-  //   const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
-  //   const response = await axios.put(
-  //     `${BASE_URL}/users/${userId}/fixedData/`,
-  //     data,
-  //     { headers: { 'Content-Type': 'application/json' } }
-  //   );
-  //   if (response.status === 200 || response.status === 201) {
-  //     const { data } = response.data;
-  //     const { birthdate, height } = data;
-  //     return { birthdate, height };
-  //   }
-  //   throw new Error("Progress update failed");
-  // };
 
   const handleRegister = async (values: any) => {
     try {
@@ -77,7 +43,7 @@ const Register = () => {
           setIsAuthenticated({ id, email, username, token });
         }
 
-        router.replace("/anthropometricRegister");
+        router.replace("/extraInfoRegister");
       } catch (err: any) {
 
         if (err.response && err.response.status === 400) {
@@ -89,6 +55,7 @@ const Register = () => {
   };
   
   return (
+    
     <Formik
       initialValues={{ username: "", email: "", password: "", confirmPassword: "" }}
       validationSchema={validationSchema}
@@ -103,6 +70,10 @@ const Register = () => {
             style={styles.backButton}
             iconColor="white"
           />
+
+          <Text style={styles.title}>Crea una cuenta</Text>
+          <Text style={styles.subTitle}>Ingresa su información personal</Text>
+
           <TextInput
             label="Nombre"
             value={values.username}
@@ -122,26 +93,6 @@ const Register = () => {
             <Text style={styles.error}>{errors.username}</Text>
           )}
 
-          {/*           
-          <TextInput
-            label="Altura (cm)"
-            value={values.height}
-            onChangeText={handleChange("height")}
-            onBlur={handleBlur("height")}
-            style={styles.input}
-            keyboardType="numeric"
-            theme={{
-              colors: {
-                background: "white",
-                onSurfaceVariant: touched.height && errors.height ? "red" : "black",
-              },
-            }}
-            outlineColor={touched.height && errors.height ? "red" : "gray"}
-            activeOutlineColor={touched.height && errors.height ? "red" : "blue"}
-          />
-          {touched.height && errors.height && (
-            <Text style={styles.error}>{errors.height}</Text>
-          )} */}
 
           <TextInput
             label="Mail"
@@ -222,11 +173,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     color: "white",
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 20,
+  },
+  subTitle: {
+    fontSize: 16,
+    color: "white",
+    fontWeight: "normal",
+    textAlign: "center",
+    marginTop: -20,
+    marginBottom: 30,
   },
   input: {
     width: "100%",

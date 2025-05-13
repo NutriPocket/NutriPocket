@@ -42,7 +42,7 @@ const validationSchema = Yup.object({
   
 });
 
-const ObjetivesRegister = () => {
+const ObjectivesRegister = () => {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,7 +98,6 @@ const ObjetivesRegister = () => {
       {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
         <View style={styles.container}>
           <Text style={styles.title}>Cargar Objetivos</Text>
-          
           <TextInput
             label="Fecha objetivo (YYYY-MM-DD)"
             value={values.targetDate}
@@ -230,4 +229,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ObjetivesRegister;
+export default ObjectivesRegister;
