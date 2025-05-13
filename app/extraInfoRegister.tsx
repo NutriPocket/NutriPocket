@@ -53,10 +53,22 @@ const ExtraInfoRegister = () => {
             }
             );
             if (response.status === 200 || response.status === 201) {
-                setIsAuthenticated((prev) => prev ? {
-                    ...prev,
-                    extraInfo: data,
-                } : null);
+                setIsAuthenticated((prev) => prev
+                    ? {
+                        ...prev,
+                        birthday: data.birthday,
+                        height: data.height,
+                        username: prev.username,
+                        birthdate: prev.birthdate,
+                        email: prev.email,
+                        weight: prev.weight,
+                        muscleMass: prev.muscleMass,
+                        bodyFatPercentage: prev.bodyFatPercentage,
+                        boneMass: prev.boneMass,
+                        token: prev.token,
+                    }
+                    : prev
+                );
                 console.log("Extra info registered successfully");
                 console.log("Response data: ", response.data);
 
@@ -115,7 +127,7 @@ const ExtraInfoRegister = () => {
             label="Fecha de nacimiento"
             value={values.birthday}
             onChangeText={handleChange("birthday")}
-            onBlur={handleBlur("birthdays")}
+            onBlur={handleBlur("birthday")}
             style={styles.input}
             placeholder="YYYY-MM-DD"
             theme={{
