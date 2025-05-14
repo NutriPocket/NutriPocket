@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import axios from "axios";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { Image } from "react-native";
 
 const validationSchema = Yup.object({
   emailOrUsername: Yup.string().required("Por favor, ingresa tu email o usuario."),
@@ -54,6 +55,11 @@ const Login = () => {
     >
       {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
         <View style={styles.container}>
+            <Image
+            source={require("../assets/images/logo_primary.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <TextInput
             label="Mail"
             value={values.emailOrUsername}
@@ -158,6 +164,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
   },
+  logo: {
+    width: 300,
+    height: 300,
+    marginBottom: 20,
+    alignSelf: "center",
+},
 });
 
 export default Login;
