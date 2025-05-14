@@ -41,9 +41,13 @@ export default function UserScreen() {
       try {
         const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
         const userId = auth?.id;
+        
         if (!userId) {
-          setError("No se pudo obtener el ID del usuario.");
           return;
+        }
+
+        if (!auth?.token){
+          return
         }
 
         const response = await axios.get(`${BASE_URL}/users/${userId}/anthropometrics/`, {
@@ -53,13 +57,14 @@ export default function UserScreen() {
           },
         });
 
-        console.log("User data: ", response.data);
+        const data = response.data.data[0]
+      
         
         setUserData({
-          weight: response.data.weight,
-          muscleMass: response.data.muscleMass,
-          bodyFatPercentage: response.data.bodyFatPercentage,
-          boneMass: response.data.boneMass,
+          weight: data.weight ? data.weight.toString() : '',
+          muscleMass: data.muscle_mass ? data.muscle_mass.toString() : '',
+          bodyFatPercentage: data.fat_mass ? data.fat_mass.toString() : '',
+          boneMass: data.bone_mass ? data.bone_mass.toString() : '',
         });
         console.log("User data set: ", userData);
 
@@ -70,11 +75,13 @@ export default function UserScreen() {
     if (auth?.id && auth?.token) {
       fetchUserData();
     }
-  }, [auth?.id, auth?.token]);
+  }, [auth?.id, auth?.token, auth?.weight, auth?.muscleMass, auth?.bodyFatPercentage, auth?.boneMass]);
 
   // Construir initialValues solo con los campos definidos en fields y userData
   const initialValues = fields.reduce((acc, item) => {
     acc[item.key] = userData?.[item.key]?.toString() || '';
+    console.log("userData", userData)
+
     return acc;
   }, {} as Record<string, string>);
 
@@ -89,6 +96,8 @@ export default function UserScreen() {
       const userId = auth?.id;
       await axios.put(
         `${BASE_URL}/users/${userId}/anthropometrics/`,
+        
+        
         {
           weight: parseFloat(values.weight),
           muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
@@ -110,6 +119,7 @@ export default function UserScreen() {
         bodyFatPercentage: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : undefined,
         boneMass: values.boneMass ? parseFloat(values.boneMass) : undefined,
       } : prev);
+
       setSuccess("Datos actualizados correctamente.");
       setEditMode(false);
     } catch (err: any) {
@@ -138,7 +148,7 @@ export default function UserScreen() {
                   <TextInput
                     value={values[item.key]}
                     onChangeText={v => setFieldValue(item.key, v)}
-                    onBlur={handleBlur(item.key)}
+                    onBlur={() => {handleBlur(item.key); touched[item.key]=false}}
                     style={styles.listInput}
                     keyboardType={item.keyboardType as any}
                     editable={editMode}
