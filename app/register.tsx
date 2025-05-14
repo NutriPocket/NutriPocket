@@ -36,20 +36,22 @@ const Register = () => {
           data,
           { headers: { "Content-Type": "application/json" } }
         );
-
+        
         if (response.status === 201) {
           const { data, token } = response.data;
           const { id, email, username } = data;
           setIsAuthenticated({ id, email, username, token });
         }
 
+       
+
         router.replace("/extraInfoRegister");
       } catch (err: any) {
 
         if (err.response && err.response.status === 400) {
           setError("Invalid email or password");
-        } else {
-          setError("An error occurred. Please try again later.");
+        } else if (err.response && err.response.status === 409) {
+          setError("Username or email already exists, please try again.");
         }
       }
   };
@@ -73,11 +75,11 @@ const Register = () => {
 
           <Text style={styles.title}>Crea una cuenta</Text>
           <Text style={styles.subTitle}>Ingresa su información personal</Text>
-
+          {error && (<Text style={{ color: "red", textAlign: "center", marginBottom: 10 }}>{error}</Text> )}  
           <TextInput
             label="Nombre"
             value={values.username}
-            onChangeText={handleChange("username")}
+            onChangeText={text => {handleChange("username")(text); setError(null)}} 
             onBlur={handleBlur("username")}
             style={styles.input}
             theme={{
@@ -97,7 +99,7 @@ const Register = () => {
           <TextInput
             label="Mail"
             value={values.email}
-            onChangeText={handleChange("email")}
+            onChangeText={text => {handleChange("email")(text); setError(null)}}
             onBlur={handleBlur("email")}
             style={styles.input}
             keyboardType="email-address"
