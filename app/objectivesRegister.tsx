@@ -114,7 +114,7 @@ const ObjectivesRegister = () => {
             <Text style={styles.error}>{errors.targetDate}</Text>
           )}
           <TextInput
-            label="Peso objetivo (%)"
+            label="Peso objetivo (kg)"
             value={values.weightGoal}
             onChangeText={handleChange("weightGoal")}
             onBlur={handleBlur("weightGoal")}
