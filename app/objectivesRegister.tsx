@@ -2,45 +2,12 @@ import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { Formik } from "formik";
-import * as Yup from "yup";
 import { router } from "expo-router";
 import axios from "axios";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../atoms/authAtom";
+import { objectiveValidationSchema } from "../utils/validationSchemas";
 
-const validationSchema = Yup.object({
-  weightGoal: Yup.number()
-    .typeError("El peso objetivo debe ser un número válido")
-    .min(10, "El peso debe ser al menos 10 kg")
-    .max(300, "El peso no puede superar los 300 kg")
-    .required("Por favor, ingresa tu peso objetivo"),
-  muscleMassGoal: Yup.number()
-    .typeError("La masa muscular objetivo debe ser un número válido")
-    .min(0, "El porcentaje de masa muscular debe ser al menos 0%")
-    .max(100, "El porcentaje de masa muscular no puede superar el 100%")
-    .optional(),
-  fatMassGoal: Yup.number()
-    .typeError("El porcentaje de grasa objetivo debe ser un número válido")
-    .min(0, "El porcentaje de grasa debe ser al menos 0%")
-    .max(100, "El porcentaje de grasa no puede superar el 100%")
-    .optional(),
-    boneMassGoal: Yup.number()
-    .typeError("La masa ósea objetivo debe ser un número válido")
-    .min(0, "El porcentaje de masa ósea debe ser al menos 0%")
-    .max(100, "El porcentaje de masa ósea no puede superar el 100%")
-    .optional(),
-  targetDate: Yup.string()
-    .required("Por favor, ingresa la fecha objetivo")
-    .matches(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)")
-    .test("is-future-date", "La fecha objetivo debe ser futura", (value) => {
-      if (!value) return true; // Skip validation if value is empty
-      const today = new Date();
-      const targetDate = new Date(value);
-      return targetDate > today;
-    }
-  ),
-  
-});
 
 const ObjectivesRegister = () => {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
@@ -92,7 +59,7 @@ const ObjectivesRegister = () => {
         boneMassGoal: "",
         targetDate: "",
       }}
-      validationSchema={validationSchema}
+      validationSchema={objectiveValidationSchema}
       onSubmit={handleSubmit}
     >
       {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (

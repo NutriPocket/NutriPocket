@@ -2,30 +2,13 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { Formik } from "formik";
-import * as Yup from "yup";
 import axios from "axios";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../atoms/authAtom";
 import { router } from "expo-router";
+import { extraInfoValidationSchema } from "../utils/validationSchemas";
 
 
-
-const validationSchema = Yup.object({
-  height: Yup.number()
-    .typeError("La altura debe ser un número válido")
-    .min(50, "La altura debe ser al menos 50 cm")
-    .max(300, "La altura no puede superar los 300 cm")
-    .required("Por favor, ingresa tu altura"),
-  birthday: Yup.string()
-    .required("Por favor, ingresa tu fecha de nacimiento.")
-    .matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/, "Formato de fecha inválido (YYYY-MM-DD)")
-    .test("is-future-date", "La fecha de nacimiento no puede ser futura", (value) => {
-      if (!value) return true;
-      const today = new Date();
-      const birthday = new Date(value);
-      return birthday < today;
-    }),
-});
 
 const ExtraInfoRegister = () => {
 
@@ -95,7 +78,7 @@ const ExtraInfoRegister = () => {
   return (
     <Formik
       initialValues={{ height: "", birthday: "" }}
-      validationSchema={validationSchema}
+      validationSchema={extraInfoValidationSchema}
       onSubmit={handleExtraRegister}
     >
       {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (

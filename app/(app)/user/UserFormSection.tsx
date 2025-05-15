@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { Formik, FormikHelpers } from 'formik';
-import { styles } from '../home/styles';
+import { styles } from '../../../styles/homeStyles';
 
 interface Field {
   key: string;

@@ -6,13 +6,9 @@ import { TextInput , Button, Text } from "react-native-paper";
 import { router } from "expo-router";
 import axios from "axios";
 import { Formik } from "formik";
-import * as Yup from "yup";
 import { Image } from "react-native";
+import { loginValidationSchema } from "../utils/validationSchemas";
 
-const validationSchema = Yup.object({
-  emailOrUsername: Yup.string().required("Por favor, ingresa tu email o usuario."),
-  password: Yup.string().required("Por favor, ingresa tu contraseña."),
-});
 
 const Login = () => {
   const [, setIsAuthenticated] = useAtom(authenticatedAtom);
@@ -36,9 +32,9 @@ const Login = () => {
       }
     } catch (err: any) {
       if (err.response && err.response.status === 401) {
-        setError("Invalid email or password");
+        setError("Mail o contraseña incorrectos");
       } else {
-        setError("An error occurred. Please try again later.");
+        setError("Un error inesperado ha ocurrido, intenta nuevamente.");
       }
     }
   };
@@ -50,7 +46,7 @@ const Login = () => {
   return (
     <Formik
       initialValues={{ emailOrUsername: "", password: "" }}
-      validationSchema={validationSchema}
+      validationSchema={loginValidationSchema}
       onSubmit={handleLogin}
     >
       {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (

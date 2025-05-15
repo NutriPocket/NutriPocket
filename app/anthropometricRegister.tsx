@@ -2,34 +2,13 @@ import { useState } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { Formik } from "formik";
-import * as Yup from "yup";
 import { router } from "expo-router";
 import axios from "axios";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../atoms/authAtom";
+import { anthropometricValidationSchema } from "../utils/validationSchemas";
 
-const validationSchema = Yup.object({
-  weight: Yup.number()
-    .typeError("El peso debe ser un número válido")
-    .min(10, "El peso debe ser al menos 10 kg")
-    .max(300, "El peso no puede superar los 300 kg")
-    .required("Por favor, ingresa tu peso"),
-  muscleMass: Yup.number()
-    .typeError("La masa muscular debe ser un número válido")
-    .min(0, "El porcentaje de masa muscular debe ser al menos 0%")
-    .max(100, "El porcentaje de masa muscular no puede superar el 100%")
-    .optional(),
-  bodyFatPercentage: Yup.number()
-    .typeError("El porcentaje de grasa debe ser un número válido")
-    .min(0, "El porcentaje de grasa debe ser al menos 0%")
-    .max(100, "El porcentaje de grasa no puede superar el 100%")
-    .optional(),
-  boneMass: Yup.number()
-    .typeError("La masa ósea debe ser un número válido")
-    .min(0, "La masa ósea no puede ser negativa")
-    .max(100, "La masa ósea no puede superar los 100%")
-    .optional(),
-});
+
 
 const AnthropometricRegister = () => {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
@@ -89,7 +68,7 @@ const AnthropometricRegister = () => {
         bodyFatPercentage: "",
         boneMass: "",
       }}
-      validationSchema={validationSchema}
+      validationSchema={anthropometricValidationSchema}
       onSubmit={handleSubmit}
     >
       {({
