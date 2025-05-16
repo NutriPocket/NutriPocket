@@ -7,3 +7,8 @@ export const castDateToString = (date: Date | string) => {
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
+
+export const castStringToDate = (date: string) => {
+    const [year, month, day] = date.split('-');
+    return new Date(`${year}-${month}-${day}`);
+  };

@@ -15,11 +15,11 @@ const ObjectivesRegister = () => {
 
   const handleSubmit = async (values: any) => {
     const data = {
-      weight: parseFloat(values.weightGoal),
-      muscle_mass: values.muscleMassGoal ? parseFloat(values.muscleMassGoal) : null,
-      fat_mass: values.fatMassGoal ? parseFloat(values.fatMassGoal) : null,
-      bone_mass: values.boneMassGoal ? parseFloat(values.boneMassGoal) : null,
-      deadline: values.targetDate,
+      weight: parseFloat(values.weight),
+      muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
+      fat_mass: values.fatMass ? parseFloat(values.fatMass) : null,
+      bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
+      deadline: values.deadline ? values.deadline : null,
     };
     try {
       const userId = auth?.id;
@@ -53,11 +53,11 @@ const ObjectivesRegister = () => {
   return (
     <Formik
       initialValues={{
-        weightGoal: "",
-        muscleMassGoal: "",
-        fatMassGoal: "",
-        boneMassGoal: "",
-        targetDate: "",
+        weight: "",
+        muscleMass: "",
+        fatMass: "",
+        boneMass: "",
+        deadline: "",
       }}
       validationSchema={objectiveValidationSchema}
       onSubmit={handleSubmit}
@@ -67,78 +67,78 @@ const ObjectivesRegister = () => {
           <Text style={styles.title}>Cargar Objetivos</Text>
           <TextInput
             label="Fecha objetivo (YYYY-MM-DD)"
-            value={values.targetDate}
-            onChangeText={handleChange("targetDate")}
-            onBlur={handleBlur("targetDate")}
+            value={values.deadline}
+            onChangeText={handleChange("deadline")}
+            onBlur={handleBlur("deadline")}
             style={styles.input}
             keyboardType="default"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.targetDate && errors.targetDate ? "red" : "black" } }}
-            outlineColor={touched.targetDate && errors.targetDate ? "red" : "gray"}
-            activeOutlineColor={touched.targetDate && errors.targetDate ? "red" : "blue"}
+            theme={{ colors: { background: "white", onSurfaceVariant: touched.deadline && errors.deadline ? "red" : "black" } }}
+            outlineColor={touched.deadline && errors.deadline ? "red" : "gray"}
+            activeOutlineColor={touched.deadline && errors.deadline ? "red" : "blue"}
             placeholder="YYYY-MM-DD"
           />
-          {touched.targetDate && errors.targetDate && (
-            <Text style={styles.error}>{errors.targetDate}</Text>
+          {touched.deadline && errors.deadline && (
+            <Text style={styles.error}>{errors.deadline}</Text>
           )}
           <TextInput
             label="Peso objetivo (kg)"
-            value={values.weightGoal}
-            onChangeText={handleChange("weightGoal")}
-            onBlur={handleBlur("weightGoal")}
+            value={values.weight}
+            onChangeText={handleChange("weight")}
+            onBlur={handleBlur("weight")}
             style={styles.input}
             keyboardType="numeric"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.weightGoal && errors.weightGoal ? "red" : "black" } }}
-            outlineColor={touched.weightGoal && errors.weightGoal ? "red" : "gray"}
-            activeOutlineColor={touched.weightGoal && errors.weightGoal ? "red" : "blue"}
+            theme={{ colors: { background: "white", onSurfaceVariant: touched.weight && errors.weight ? "red" : "black" } }}
+            outlineColor={touched.weight && errors.weight ? "red" : "gray"}
+            activeOutlineColor={touched.weight && errors.weight ? "red" : "blue"}
           />
-          {touched.weightGoal && errors.weightGoal && (
-            <Text style={styles.error}>{errors.weightGoal}</Text>
+          {touched.weight && errors.weight && (
+            <Text style={styles.error}>{errors.weight}</Text>
           )}
 
           <TextInput
             label="Masa muscular objetivo (%) (opcional)"
-            value={values.muscleMassGoal}
-            onChangeText={handleChange("muscleMassGoal")}
-            onBlur={handleBlur("muscleMassGoal")}
+            value={values.muscleMass}
+            onChangeText={handleChange("muscleMass")}
+            onBlur={handleBlur("muscleMass")}
             style={styles.input}
             keyboardType="numeric"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.muscleMassGoal && errors.muscleMassGoal ? "red" : "black" } }}
-            outlineColor={touched.muscleMassGoal && errors.muscleMassGoal ? "red" : "gray"}
-            activeOutlineColor={touched.muscleMassGoal && errors.muscleMassGoal ? "red" : "blue"}
+            theme={{ colors: { background: "white", onSurfaceVariant: touched.muscleMass && errors.muscleMass ? "red" : "black" } }}
+            outlineColor={touched.muscleMass && errors.muscleMass ? "red" : "gray"}
+            activeOutlineColor={touched.muscleMass && errors.muscleMass ? "red" : "blue"}
           />
-          {touched.muscleMassGoal && errors.muscleMassGoal && (
-            <Text style={styles.error}>{errors.muscleMassGoal}</Text>
+          {touched.muscleMass && errors.muscleMass && (
+            <Text style={styles.error}>{errors.muscleMass}</Text>
           )}
 
           <TextInput
             label="Porcentaje de grasa objetivo (%) (opcional)"
-            value={values.fatMassGoal}
-            onChangeText={handleChange("fatMassGoal")}
-            onBlur={handleBlur("fatMassGoal")}
+            value={values.fatMass}
+            onChangeText={handleChange("fatMass")}
+            onBlur={handleBlur("fatMass")}
             style={styles.input}
             keyboardType="numeric"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.fatMassGoal && errors.fatMassGoal ? "red" : "black" } }}
-            outlineColor={touched.fatMassGoal && errors.fatMassGoal ? "red" : "gray"}
-            activeOutlineColor={touched.fatMassGoal && errors.fatMassGoal ? "red" : "blue"}
+            theme={{ colors: { background: "white", onSurfaceVariant: touched.fatMass && errors.fatMass ? "red" : "black" } }}
+            outlineColor={touched.fatMass && errors.fatMass ? "red" : "gray"}
+            activeOutlineColor={touched.fatMass && errors.fatMass ? "red" : "blue"}
           />
-          {touched.fatMassGoal && errors.fatMassGoal && (
-            <Text style={styles.error}>{errors.fatMassGoal}</Text>
+          {touched.fatMass && errors.fatMass && (
+            <Text style={styles.error}>{errors.fatMass}</Text>
           )}
 
           <TextInput
             label="Masa ósea objetivo (%) (opcional)"
-            value={values.boneMassGoal}
-            onChangeText={handleChange("boneMassGoal")}
-            onBlur={handleBlur("boneMassGoal")}
+            value={values.boneMass}
+            onChangeText={handleChange("boneMass")}
+            onBlur={handleBlur("boneMass")}
             style={styles.input}
             keyboardType="numeric"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.boneMassGoal && errors.boneMassGoal ? "red" : "black" } }}
-            outlineColor={touched.boneMassGoal && errors.boneMassGoal ? "red" : "gray"}
-            activeOutlineColor={touched.boneMassGoal && errors.boneMassGoal ? "red" : "blue"}
+            theme={{ colors: { background: "white", onSurfaceVariant: touched.boneMass && errors.boneMass ? "red" : "black" } }}
+            outlineColor={touched.boneMass && errors.boneMass ? "red" : "gray"}
+            activeOutlineColor={touched.boneMass && errors.boneMass ? "red" : "blue"}
 
           />
-          {touched.boneMassGoal && errors.boneMassGoal && (
-            <Text style={styles.error}>{errors.boneMassGoal}</Text>
+          {touched.boneMass && errors.boneMass && (
+            <Text style={styles.error}>{errors.boneMass}</Text>
           )}
 
 

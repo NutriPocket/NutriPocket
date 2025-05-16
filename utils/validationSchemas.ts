@@ -18,22 +18,22 @@ import * as Yup from 'yup';
 
 
   export const objectiveValidationSchema = Yup.object({
-  weightGoal: Yup.number()
+  weight: Yup.number()
     .typeError("El peso objetivo debe ser un número válido")
     .min(10, "El peso debe ser al menos 10 kg")
     .max(300, "El peso no puede superar los 300 kg")
     .required("Por favor, ingresa tu peso objetivo"),
-  muscleMassGoal: Yup.number()
+  muscleMass: Yup.number()
     .typeError("La masa muscular objetivo debe ser un número válido")
     .min(0, "El porcentaje de masa muscular debe ser al menos 0%")
     .max(100, "El porcentaje de masa muscular no puede superar el 100%")
     .optional(),
-  fatMassGoal: Yup.number()
+  fatMass: Yup.number()
     .typeError("El porcentaje de grasa objetivo debe ser un número válido")
     .min(0, "El porcentaje de grasa debe ser al menos 0%")
     .max(100, "El porcentaje de grasa no puede superar el 100%")
     .optional(),
-    boneMassGoal: Yup.number()
+    boneMass: Yup.number()
     .typeError("La masa ósea objetivo debe ser un número válido")
     .min(0, "El porcentaje de masa ósea debe ser al menos 0%")
     .max(100, "El porcentaje de masa ósea no puede superar el 100%")
@@ -106,29 +106,3 @@ export const registerValidationSchema = Yup.object({
     .oneOf([Yup.ref('password'), ''], 'Las contraseñas no coinciden')
     .required('Por favor, confirma tu contraseña.'),
 });
-
-
-  // export const validationAnthropometricSchema = Yup.object({
-  //   weight: Yup.number().typeError('El peso debe ser un número válido').min(10).max(300).required('El peso es obligatorio'),
-  //   muscleMass: Yup.number().typeError('La masa muscular debe ser un número válido').min(0).max(100).nullable(),
-  //   bodyFatPercentage: Yup.number().typeError('El porcentaje de grasa debe ser un número válido').min(0).max(100).nullable(),
-  //   boneMass: Yup.number().typeError('La masa ósea debe ser un número válido').min(0).max(100).nullable(),
-  // });
-
-
-  // export const validationObjectivesSchema = Yup.object({
-  //   weight: Yup.number()
-  //     .typeError('El peso debe ser un número válido')
-  //     .min(10)
-  //     .max(300)
-  //     .required('El peso es obligatorio'),
-    
-  //   muscleMass: Yup.number()
-  //   .typeError('La masa muscular debe ser un número válido')
-  //   .min(0)
-  //   .max(100)
-  //   .optional(),
-  //   bodyFatPercentage: Yup.number().typeError('El porcentaje de grasa debe ser un número válido').min(0).max(100).optional(),
-  //   boneMass: Yup.number().typeError('La masa ósea debe ser un número válido').min(0).max(100).optional(),
-  //   deadline: Yup.date().typeError('El tiempo objetivo debe ser una fecha válida').min(new Date()).max(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)).required('El tiempo objetivo es obligatorio'),
-  // });

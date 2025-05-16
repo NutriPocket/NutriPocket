@@ -9,7 +9,8 @@ import UserFormSection from "./UserFormSection";
 import { FormikHelpers } from 'formik';
 import { anthropometricFields, objectivesFields, objectiveValidationSchema, anthropometricValidationSchema  } from "../../../utils/validationSchemas";
 import { AnthropometricType, ObjectiveType } from "../../../types/anthropometricTypes";
-import { castDateToString } from "../../../utils/casts";
+import { castDateToString, castStringToDate } from "../../../utils/date";
+import useAxiosInstance from "@/hooks/useAxios"
 
 
 export default function UserScreen() {
@@ -22,13 +23,11 @@ export default function UserScreen() {
   const [successAnthropometric, setSuccessAnthropometric] = useState<string | null>(null);
   const [userData, setUserData] = useState<AnthropometricType | null>(null);
   const [objectives, setObjectives] = useState<ObjectiveType | null>(null);
-
-
+  const axiosProgress = useAxiosInstance('progress');
 
 
    const fetchObjectiveData = async () => {
       try {
-        const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
         const userId = auth?.id;
         
         if (!userId) {
@@ -39,16 +38,9 @@ export default function UserScreen() {
           return;
         }
 
-        const response = await axios.get(`${BASE_URL}/users/${userId}/objectives/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${auth?.token}`,
-          },
-        });
+        const response = await axiosProgress.get(`/users/${userId}/objectives/`);
 
         const data = response.data.data;
-        console.log("data objetivo", data)
-        console.log("response objective", response.data)
 
         setObjectives({
           weight: data.weight ? data.weight.toString() : '',
@@ -57,7 +49,8 @@ export default function UserScreen() {
           boneMass: data.bone_mass ? data.bone_mass.toString() : '',
           deadline: data.deadline ? castDateToString(data.deadline) : '',
         });
-        console.log("User data set: ", userData);
+        
+
       } catch (err) {
         console.log("Error fetching objectives: ", err);
         setObjectivesError("No se pudieron obtener los datos de los objetivos.");
@@ -66,23 +59,17 @@ export default function UserScreen() {
 
     const fetchAnthropometricData = async () => {
       try {
-        const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
         const userId = auth?.id;
         
         if (!userId) {
           return;
         }
-
+        
         if (!auth?.token){
           return
         }
 
-        const response = await axios.get(`${BASE_URL}/users/${userId}/anthropometrics/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${auth?.token}`,
-          },
-        });
+        const response = await axiosProgress.get(`/users/${userId}/anthropometrics/`);
 
         const data = response.data.data[0];
 
@@ -108,7 +95,6 @@ export default function UserScreen() {
   // Construir initialValues solo con los campos definidos en fields y userData
   const initialAnthropometricValues = anthropometricFields.reduce((acc, item) => {
     acc[item.key] = userData?.[item.key]?.toString() || '';
-    console.log("userData", userData)
 
     return acc;
   }, {} as Record<string, string>);
@@ -119,8 +105,6 @@ export default function UserScreen() {
   }, {} as Record<string, string>);
 
 
-
-
   const handleSubmitAnthropometricForm = async (
     values: Record<string, string>,
     { setSubmitting }: FormikHelpers<Record<string, string>>
@@ -128,31 +112,24 @@ export default function UserScreen() {
     setAnthropometricError(null);
     setSuccessObjectives(null);
     try {
-      const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
       const userId = auth?.id;
-      await axios.put(
-        `${BASE_URL}/users/${userId}/anthropometrics/`,
+      await axiosProgress.put( `/users/${userId}/anthropometrics/`,
         {
           weight: parseFloat(values.weight),
           muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
-          fat_mass: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : null,
+          fat_mass: values.fatMass ? parseFloat(values.fatMass) : null,
           bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
         },
         {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${auth?.token}`,
-          },
+          headers: { 'Content-Type': 'application/json' }
         }
       );
-      
-
 
       setIsAuthenticated((prev) => prev ? {
         ...prev,
         weight: parseFloat(values.weight),
         muscleMass: values.muscleMass ? parseFloat(values.muscleMass) : undefined,
-        bodyFatPercentage: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : undefined,
+        bodyFatPercentage: values.fatMass ? parseFloat(values.fatMass) : undefined,
         boneMass: values.boneMass ? parseFloat(values.boneMass) : undefined,
       } : prev);
 
@@ -179,29 +156,44 @@ export default function UserScreen() {
     setObjectivesError(null);
     setSuccessObjectives(null);
     try {
-      const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
+
       const userId = auth?.id;
-      await axios.put(
-        `${BASE_URL}/users/${userId}/objectives/`,
-        {
-          weight: parseFloat(values.weight),
-          muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
-          fat_mass: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : null,
-          bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
-          deadline: values.deadline ? parseInt(values.deadline) : null,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${auth?.token}`,
+
+      if (!userId) {
+        return;
+      }
+
+      if (!auth?.token) {
+        return;
+      }
+
+      useAxiosInstance
+      await axiosProgress.put( `/users/${userId}/objectives/`,
+          {
+            weight: parseFloat(values.weight),
+            muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
+            fat_mass: values.bodyMass ? parseFloat(values.bodyMass) : null,
+            bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
+            deadline: values.deadline ? values.deadline : null,
           },
-        }
+          {
+            headers: { 'Content-Type': 'application/json' }
+          }
       );
 
+      setObjectives({
+        weight: values.weight,
+        muscleMass: values.muscleMass ? values.muscleMass : "",
+        bodyMass: values.bodyMass ? values.bodyMass : "",
+        boneMass: values.boneMass ? values.boneMass : "",
+        deadline: values.deadline ? values.deadline : "",
+      });
+
       setSuccessObjectives("Datos actualizados correctamente.");
-      console.log("User data set: ", userData);
+      console.log("Objetives set: ", objectives);
       setEditObjectivesMode(false);
     } catch (err: any) {
+      console.log("Error: ", err);
       setObjectivesError("Ocurrió un error al guardar los cambios.");
     }
     setSubmitting(false);
