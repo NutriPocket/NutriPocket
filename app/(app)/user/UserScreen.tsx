@@ -1,200 +1,234 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, View, Text } from "react-native";
+import { ScrollView } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
-import { TextInput, Button } from "react-native-paper";
-import { Formik, FormikHelpers } from 'formik';
-import * as Yup from 'yup';
+import { objectivesAtom } from "../../../atoms/objectiveAtom";
 import axios from "axios";
-import { styles } from "../home/styles";
+import { styles } from "../../../styles/homeStyles";
+import UserFormSection from "./UserFormSection";
+import { FormikHelpers } from 'formik';
+import { anthropometricFields, objectivesFields, objectiveValidationSchema, anthropometricValidationSchema  } from "../../../utils/validationSchemas";
+import { AnthropometricType, ObjectiveType } from "../../../types/anthropometricTypes";
+import { castDateToString, castStringToDate } from "../../../utils/date";
+import useAxiosInstance from "@/hooks/useAxios"
 
-type UserFormValues = {
-  weight: string;
-  muscleMass: string;
-  bodyFatPercentage: string;
-  boneMass: string;
-};
 
 export default function UserScreen() {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
-  const [editMode, setEditMode] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [userData, setUserData] = useState<UserFormValues | null>(null); 
+  const [editAnthropometricMode, setEditAnthropometricMode] = useState(false);
+  const [editObjectivesMode, setEditObjectivesMode] = useState(false);
+  const [errorAnthropometric, setAnthropometricError] = useState<string | null>(null);
+  const [errorObjectives, setObjectivesError] = useState<string | null>(null);
+  const [successObjectives, setSuccessObjectives] = useState<string | null>(null);
+  const [successAnthropometric, setSuccessAnthropometric] = useState<string | null>(null);
+  const [userData, setUserData] = useState<AnthropometricType | null>(null);
+  const [objectives, setObjectives] = useState<ObjectiveType | null>(null);
+  const axiosProgress = useAxiosInstance('progress');
 
-  const fields = [
-    { key: 'weight', label: 'Peso (kg)', keyboardType: 'numeric', placeholder: undefined },
-    { key: 'muscleMass', label: 'Masa muscular (%)', keyboardType: 'numeric', placeholder: undefined },
-    { key: 'bodyFatPercentage', label: 'Porcentaje de grasa (%)', keyboardType: 'numeric', placeholder: undefined },
-    { key: 'boneMass', label: 'Masa ósea (%)', keyboardType: 'numeric', placeholder: undefined },
-  ] as const;
 
-  const validationSchema = Yup.object({
-    weight: Yup.number().typeError('El peso debe ser un número válido').min(10).max(300).required('El peso es obligatorio'),
-    muscleMass: Yup.number().typeError('La masa muscular debe ser un número válido').min(0).max(100).nullable(),
-    bodyFatPercentage: Yup.number().typeError('El porcentaje de grasa debe ser un número válido').min(0).max(100).nullable(),
-    boneMass: Yup.number().typeError('La masa ósea debe ser un número válido').min(0).max(100).nullable(),
-  });
-
-  useEffect(() => {
-    const fetchUserData = async () => {
+   const fetchObjectiveData = async () => {
       try {
-        const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
         const userId = auth?.id;
         
         if (!userId) {
           return;
         }
 
+        if (!auth?.token) {
+          return;
+        }
+
+        const response = await axiosProgress.get(`/users/${userId}/objectives/`);
+
+        const data = response.data.data;
+
+        setObjectives({
+          weight: data.weight ? data.weight.toString() : '',
+          muscleMass: data.muscle_mass ? data.muscle_mass.toString() : '',
+          bodyMass: data.fat_mass ? data.fat_mass.toString() : '',
+          boneMass: data.bone_mass ? data.bone_mass.toString() : '',
+          deadline: data.deadline ? castDateToString(data.deadline) : '',
+        });
+        
+
+      } catch (err) {
+        console.log("Error fetching objectives: ", err);
+        setObjectivesError("No se pudieron obtener los datos de los objetivos.");
+      }
+    };
+
+    const fetchAnthropometricData = async () => {
+      try {
+        const userId = auth?.id;
+        
+        if (!userId) {
+          return;
+        }
+        
         if (!auth?.token){
           return
         }
 
-        const response = await axios.get(`${BASE_URL}/users/${userId}/anthropometrics/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${auth?.token}`,
-          },
-        });
+        const response = await axiosProgress.get(`/users/${userId}/anthropometrics/`);
 
-        const data = response.data.data[0]
-      
-        
+        const data = response.data.data[0];
+
         setUserData({
           weight: data.weight ? data.weight.toString() : '',
           muscleMass: data.muscle_mass ? data.muscle_mass.toString() : '',
-          bodyFatPercentage: data.fat_mass ? data.fat_mass.toString() : '',
+          bodyMass: data.fat_mass ? data.fat_mass.toString() : '',
           boneMass: data.bone_mass ? data.bone_mass.toString() : '',
         });
-        console.log("User data set: ", userData);
 
       } catch (err) {
-        setError("No se pudieron obtener los datos del usuario.");
+        setAnthropometricError("No se pudieron obtener los datos del usuario.");
       }
     };
+  useEffect(() => {
+   
     if (auth?.id && auth?.token) {
-      fetchUserData();
+      fetchAnthropometricData();
+      fetchObjectiveData();
     }
-  }, [auth?.id, auth?.token, auth?.weight, auth?.muscleMass, auth?.bodyFatPercentage, auth?.boneMass]);
+  }, []);
 
   // Construir initialValues solo con los campos definidos en fields y userData
-  const initialValues = fields.reduce((acc, item) => {
+  const initialAnthropometricValues = anthropometricFields.reduce((acc, item) => {
     acc[item.key] = userData?.[item.key]?.toString() || '';
-    console.log("userData", userData)
 
     return acc;
   }, {} as Record<string, string>);
 
-  const handleSubmitForm = async (
+  const initialObjectivesValues = objectivesFields.reduce((acc, item) => {
+    acc[item.key] = objectives?.[item.key]?.toString() || '';
+    return acc;
+  }, {} as Record<string, string>);
+
+
+  const handleSubmitAnthropometricForm = async (
     values: Record<string, string>,
-    { setSubmitting, resetForm }: FormikHelpers<Record<string, string>>
+    { setSubmitting }: FormikHelpers<Record<string, string>>
   ) => {
-    setError(null);
-    setSuccess(null);
+    setAnthropometricError(null);
+    setSuccessObjectives(null);
     try {
-      const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
       const userId = auth?.id;
-      await axios.put(
-        `${BASE_URL}/users/${userId}/anthropometrics/`,
-        
-        
+      await axiosProgress.put( `/users/${userId}/anthropometrics/`,
         {
           weight: parseFloat(values.weight),
           muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
-          fat_mass: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : null,
+          fat_mass: values.fatMass ? parseFloat(values.fatMass) : null,
           bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
         },
         {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${auth?.token}`,
-          },
+          headers: { 'Content-Type': 'application/json' }
         }
       );
-      // Actualizar solo los campos del atom
+
       setIsAuthenticated((prev) => prev ? {
         ...prev,
         weight: parseFloat(values.weight),
         muscleMass: values.muscleMass ? parseFloat(values.muscleMass) : undefined,
-        bodyFatPercentage: values.bodyFatPercentage ? parseFloat(values.bodyFatPercentage) : undefined,
+        bodyFatPercentage: values.fatMass ? parseFloat(values.fatMass) : undefined,
         boneMass: values.boneMass ? parseFloat(values.boneMass) : undefined,
       } : prev);
 
-      setSuccess("Datos actualizados correctamente.");
-      setEditMode(false);
+      setUserData({
+        weight: values.weight,
+        muscleMass: values.muscleMass ? values.muscleMass : "",
+        bodyMass: values.bodyMass ? values.bodyMass : "",
+        boneMass: values.boneMass ? values.boneMass : "",
+      });
+
+      setSuccessObjectives("Datos actualizados correctamente.");
+      setEditAnthropometricMode(false);
+
     } catch (err: any) {
-      setError("Ocurrió un error al guardar los cambios.");
+      setAnthropometricError("Ocurrió un error al guardar los cambios.");
+    }
+    setSubmitting(false);
+  };
+
+  const handleSubmitObjectivesForm = async (
+    values: Record<string, string>,
+    {setSubmitting}: FormikHelpers<Record<string, string>>
+  ) => {
+    setObjectivesError(null);
+    setSuccessObjectives(null);
+    try {
+
+      const userId = auth?.id;
+
+      if (!userId) {
+        return;
+      }
+
+      if (!auth?.token) {
+        return;
+      }
+
+      useAxiosInstance
+      await axiosProgress.put( `/users/${userId}/objectives/`,
+          {
+            weight: parseFloat(values.weight),
+            muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
+            fat_mass: values.bodyMass ? parseFloat(values.bodyMass) : null,
+            bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
+            deadline: values.deadline ? values.deadline : null,
+          },
+          {
+            headers: { 'Content-Type': 'application/json' }
+          }
+      );
+
+      setObjectives({
+        weight: values.weight,
+        muscleMass: values.muscleMass ? values.muscleMass : "",
+        bodyMass: values.bodyMass ? values.bodyMass : "",
+        boneMass: values.boneMass ? values.boneMass : "",
+        deadline: values.deadline ? values.deadline : "",
+      });
+
+      setSuccessObjectives("Datos actualizados correctamente.");
+      console.log("Objetives set: ", objectives);
+      setEditObjectivesMode(false);
+    } catch (err: any) {
+      console.log("Error: ", err);
+      setObjectivesError("Ocurrió un error al guardar los cambios.");
     }
     setSubmitting(false);
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      enableReinitialize
-      onSubmit={handleSubmitForm}
-    >
-      {({ values, handleBlur, handleSubmit, errors, touched, isSubmitting, setFieldValue, resetForm }) => (
-        <View style={styles.formContainer}>
-          <Text style={styles.sectionTitle}>Tus datos personales y antropométricos</Text>
-          {error && <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>}
-          {success && <Text style={{ color: '#287D76', marginBottom: 10 }}>{success}</Text>}
-          <View style={styles.formFields}>
-            {fields.map((item, index) => (
-              <View key={item.key} style={[styles.listRow, index % 2 === 0 ? styles.zebra0 : styles.zebra1, { flexDirection: 'column', alignItems: 'flex-start' }]}> 
-                <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
-                  <Text style={styles.listLabel}>{item.label}</Text>
-                  <TextInput
-                    value={values[item.key]}
-                    onChangeText={v => setFieldValue(item.key, v)}
-                    onBlur={() => {handleBlur(item.key); touched[item.key]=false}}
-                    style={styles.listInput}
-                    keyboardType={item.keyboardType as any}
-                    editable={editMode}
-                    underlineColor="transparent"
-                    placeholder={item.placeholder}
-                    error={editMode && !!(touched[item.key] && errors[item.key])}
-                    selectionColor={editMode ? '#287D76' : 'transparent'}
-                    theme={{
-                      colors: {
-                        primary: editMode ? '#287D76' : 'transparent',
-                        outline: 'transparent',
-                        background: 'transparent',
-                      },
-                    }}
-                  />
-                </View>
-                {editMode && touched[item.key] && errors[item.key] && typeof errors[item.key] === 'string' && (
-                  <Text style={{ color: 'red', marginLeft: 10, marginTop: 4, fontSize: 13 }}>{errors[item.key]}</Text>
-                )}
-              </View>
-            ))}
-          </View>
-          {editMode ? (
-            <View style={{ width: '100%', marginTop:50 }}>
-              <Button mode="contained" onPress={handleSubmit as any} disabled={isSubmitting} style={{ backgroundColor: '#287D76', width: '100%' }}>
-                Confirmar
-              </Button>
-              <Button mode="outlined" onPress={() => {
-                setEditMode(false);
-                setError(null);
-                setSuccess(null);
-                resetForm();
-              }} style={{ width: '100%', marginTop: 10 }}>
-                Volver
-              </Button>
-            </View>
-          ) : (
-            <Button mode="contained" onPress={() => {
-              setEditMode(true);
-              resetForm();
-            }} style={{ marginTop: 20, backgroundColor: '#287D76', width: '100%' }}>
-              Editar
-            </Button>
-          )}
-        </View>
-      )}
-    </Formik>
+    <ScrollView contentContainerStyle={styles.formContainer}>
+      
+      <UserFormSection
+        title="Tus datos personales y antropométricos"
+        fields={anthropometricFields.slice()}
+        initialValues={initialAnthropometricValues}
+        validationSchema={anthropometricValidationSchema}
+        onSubmit={handleSubmitAnthropometricForm}
+        editMode={editAnthropometricMode}
+        setEditMode={setEditAnthropometricMode}
+        error={errorAnthropometric}
+        success={successAnthropometric}
+        setError={setAnthropometricError}
+        setSuccess={setSuccessAnthropometric}
+      />
+      <UserFormSection
+        title="Tus objetivos"
+        fields={objectivesFields.slice()}
+        initialValues={initialObjectivesValues}
+        validationSchema={objectiveValidationSchema}
+        onSubmit={handleSubmitObjectivesForm}
+        editMode={editObjectivesMode}
+        setEditMode={setEditObjectivesMode}
+        error={errorObjectives}
+        success={successObjectives}
+        setError={setObjectivesError}
+        setSuccess={setSuccessObjectives}
+      />
+
+    </ScrollView>
   );
 }
