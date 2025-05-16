@@ -9,16 +9,16 @@ export const styles = StyleSheet.create({
     padding: 20,
   },
   formContainer: {
-    flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start',
     padding: 40,
     marginBottom: 20,
     width: '100%',
+    
   },
   formFields: {
-    width: '100%',
+    width: 350,
     marginTop: 20,
     borderRadius: 10,
     overflow: 'hidden',

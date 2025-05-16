@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { styles } from "../home/styles";
+import { styles } from "../../../styles/homeStyles";
 
 export default function MealPlanScreen() {
   return (

@@ -4,10 +4,19 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from "./HomeScreen";
 import UserScreen from "../user/UserScreen";
 import MealPlanScreen from "../mealplan/MealPlanScreen";
+import { useAtom } from "jotai";
+import { authenticatedAtom } from "../../../atoms/authAtom";
+import { Redirect } from "expo-router";
 
 const Tab = createBottomTabNavigator();
 
 export default function HomeTabs() {
+
+  const isAuthenticated = useAtom(authenticatedAtom);
+
+  if (!isAuthenticated) {
+    return <Redirect href="/login" />;
+  }
   return (
     <Tab.Navigator
       initialRouteName="Home"

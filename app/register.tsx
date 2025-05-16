@@ -6,17 +6,10 @@ import { TextInput , Button, Text, IconButton } from "react-native-paper";
 import { router } from "expo-router";
 import axios from "axios";
 import { Formik } from "formik";
-import * as Yup from "yup";
+import { registerValidationSchema } from "../utils/validationSchemas";
 
 
-const validationSchema = Yup.object({
-  username: Yup.string().required("Por favor, ingresa tu nombre de usuario."),  
-  email: Yup.string().email("Email inválido").required("Por favor, ingresa tu email."),
-  password: Yup.string().required("Por favor, ingresa tu contraseña."),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), ''], 'Las contraseñas no coinciden')
-    .required('Por favor, confirma tu contraseña.'),
-});
+
 
 const Register = () => {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
@@ -60,7 +53,7 @@ const Register = () => {
     
     <Formik
       initialValues={{ username: "", email: "", password: "", confirmPassword: "" }}
-      validationSchema={validationSchema}
+      validationSchema={registerValidationSchema}
       onSubmit={handleRegister}
     >
       {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
