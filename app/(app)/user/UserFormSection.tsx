@@ -103,7 +103,7 @@ const UserFormSection: React.FC<UserFormSectionProps> = ({
               setEditMode(true);
               resetForm();
             }} style={{ marginTop: 20, backgroundColor: '#287D76', width: '100%' }}>
-              Editar
+              Actualizar
             </Button>
           )}
         </View>
