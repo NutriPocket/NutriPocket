@@ -7,15 +7,16 @@ import axios from "axios";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../atoms/authAtom";
 import { anthropometricValidationSchema } from "../utils/validationSchemas";
+import useAxiosInstance from "@/hooks/useAxios"
 
 
 
 const AnthropometricRegister = () => {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
+  const axiosInstance = useAxiosInstance('progress');
 
   const handleSubmit = async (values: any) => {
-    console.log("Form values: ", values);
 
     const data = {
       user_id: auth?.id,
@@ -29,15 +30,12 @@ const AnthropometricRegister = () => {
       const userId = auth?.id;
       console.log("id del usuario: ", userId);
 
-      const BASE_URL =
-        process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
-      const response = await axios.put(
-        `${BASE_URL}/users/${userId}/anthropometrics/`,
+      const response = await axiosInstance.put(
+        `/users/${userId}/anthropometrics/`,
         data,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${auth?.token}`,
           },
         }
       );

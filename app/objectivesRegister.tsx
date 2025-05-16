@@ -7,11 +7,13 @@ import axios from "axios";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../atoms/authAtom";
 import { objectiveValidationSchema } from "../utils/validationSchemas";
+import useAxiosInstance from "@/hooks/useAxios"
 
 
 const ObjectivesRegister = () => {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
+  const axiosProgress = useAxiosInstance('progress');
 
   const handleSubmit = async (values: any) => {
     const data = {
@@ -23,14 +25,12 @@ const ObjectivesRegister = () => {
     };
     try {
       const userId = auth?.id;
-      const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
-      const response = await axios.put(
-        `${BASE_URL}/users/${userId}/objectives/`,
+      const response = await axiosProgress.put(
+        `/users/${userId}/objectives/`,
         data,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${auth?.token}`,
           },
         }
       );

@@ -7,6 +7,7 @@ import { useAtom } from "jotai";
 import { authenticatedAtom } from "../atoms/authAtom";
 import { router } from "expo-router";
 import { extraInfoValidationSchema } from "../utils/validationSchemas";
+import useAxiosInstance from "@/hooks/useAxios"
 
 
 
@@ -14,10 +15,10 @@ const ExtraInfoRegister = () => {
 
     const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
     const [error, setError] = React.useState<string | null>(null);
+    const axiosInstance  = useAxiosInstance('progress');
   
   
     const handleExtraRegister = async (values: any) => {
-        console.log("Form values: ", values);
         const data = {
             birthday: values.birthday,
             height: parseInt(values.height, 10),
@@ -27,13 +28,13 @@ const ExtraInfoRegister = () => {
 
             const userId = auth?.id;
 
-            const BASE_URL = process.env.PROGRESS_SERVICE_URL || "http://localhost:8081";
-            const response = await axios.put(
-            `${BASE_URL}/users/${userId}/fixedData/`,
-            data,
-            {
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${auth?.token}` },
-            }
+            const response = await axiosInstance.put( `/users/${userId}/fixedData/`,
+                data,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
             );
             if (response.status === 200 || response.status === 201) {
                 setIsAuthenticated((prev) => prev

@@ -8,16 +8,17 @@ import axios from "axios";
 import { Formik } from "formik";
 import { Image } from "react-native";
 import { loginValidationSchema } from "../utils/validationSchemas";
+import useAxiosInstance from "@/hooks/useAxios"
 
 
 const Login = () => {
   const [, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = React.useState<string | null>(null);
+  const axiosInstance = useAxiosInstance('users');
 
   const handleLogin = async (values: any) => {
     try {
-      const LOGIN_URL = process.env.USER_SERVICE_LOGIN_URL || "http://localhost:8080/auth/login";
-      const response = await axios.post(LOGIN_URL, {
+      const response = await axiosInstance.post("/auth/login", {
         ...values,
       },
       {
