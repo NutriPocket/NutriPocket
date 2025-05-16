@@ -59,7 +59,7 @@ const UserFormSection: React.FC<UserFormSectionProps> = ({
                 <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                   <Text style={styles.listLabel}>{item.label}</Text>
                   <TextInput
-                    value={values[item.key]}
+                    value={values[item.key] ? values[item.key] : (editMode ? "" : "No cargado")}                    
                     onChangeText={v => setFieldValue(item.key, v)}
                     onBlur={() => handleBlur(item.key)}
                     style={styles.listInput}
