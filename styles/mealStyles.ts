@@ -23,4 +23,11 @@ export const mealPlanListStyles = StyleSheet.create({
     fontSize: 15,
     color: "#555",
   },
+  planButtonCreate: {
+    backgroundColor: "#287D76",
+    marginTop: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
 });

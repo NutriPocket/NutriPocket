@@ -1,15 +1,14 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { mealPlanListStyles  } from "../../../styles/mealStyles";
 import { homeStyles } from "../../../styles/homeStyles";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { useEffect, useState } from "react";
-import { TouchableRipple } from "react-native-paper";
+import { TouchableRipple, Button } from "react-native-paper";
 import useAxiosInstance from "@/hooks/useAxios"
-import {MealPlanType} from "../../../types/mealTypes";
-import HomeLayout from "../home/_layout";
-import { parse } from "@babel/core";
+import { MealPlanType } from "../../../types/mealTypes";
+import { router } from "expo-router";
 
 
 export default function MealPlanScreen() {
@@ -51,6 +50,10 @@ export default function MealPlanScreen() {
 
   }
 
+  const handleCreatePlan = () => {
+    router.push("/mealplan/MealPlanCreation");   
+  };  
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -87,6 +90,18 @@ export default function MealPlanScreen() {
   return (  
     <ScrollView contentContainerStyle={homeStyles.formContainer}>
       <Text style={homeStyles.sectionTitle}> Plan de Comidas </Text>
+      <Text style={homeStyles.info}> Elegí un plan o crea uno nuevo </Text>
+      {error && <Text style={{ color: "red", marginBottom: 10 }}>{error}</Text>}
+      <Button
+        mode="contained"
+        onPress={() => {handleCreatePlan()}}
+        style={mealPlanListStyles.planButtonCreate}
+        //style={{ backgroundColor: "#287D76", width: "100%", marginTop: 20 }}
+      >
+        Crea un nuevo plan
+      </Button>
+
+      
       <View style={{ marginTop: 20 }}>
         {mealPlanList.map((plan: MealPlanType) => (
 
