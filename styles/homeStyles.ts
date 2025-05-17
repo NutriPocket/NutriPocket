@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
+export const homeStyles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: '#fff',
@@ -76,5 +76,12 @@ export const styles = StyleSheet.create({
   input: {
     marginBottom: 10,
     backgroundColor: '#fff',
+  },
+  error: {
+    color: 'red',
+    textAlign: 'left',
+    width: '100%',
+    marginTop: -10,
+    marginBottom: 10,
   },
 });

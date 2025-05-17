@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { Formik, FormikHelpers } from 'formik';
-import { styles } from '../../../styles/homeStyles';
+import { homeStyles } from '../../../styles/homeStyles';
 
 interface Field {
   key: string;
@@ -49,20 +49,20 @@ const UserFormSection: React.FC<UserFormSectionProps> = ({
       onSubmit={onSubmit}
     >
       {({ values, handleBlur, handleSubmit, errors, touched, isSubmitting, setFieldValue, resetForm }) => (
-        <View style={styles.formContainer}>
-          <Text style={styles.sectionTitle}>{title}</Text>
+        <View style={homeStyles.formContainer}>
+          <Text style={homeStyles.sectionTitle}>{title}</Text>
           {error && <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>}
           {success && <Text style={{ color: '#287D76', marginBottom: 10 }}>{success}</Text>}
-          <View style={styles.formFields}>
+          <View style={homeStyles.formFields}>
             {fields.map((item, index) => (
-              <View key={item.key} style={[styles.listRow, index % 2 === 0 ? styles.zebra0 : styles.zebra1, { flexDirection: 'column', alignItems: 'flex-start' }]}> 
+              <View key={item.key} style={[homeStyles.listRow, index % 2 === 0 ? homeStyles.zebra0 : homeStyles.zebra1, { flexDirection: 'column', alignItems: 'flex-start' }]}> 
                 <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
-                  <Text style={styles.listLabel}>{item.label}</Text>
+                  <Text style={homeStyles.listLabel}>{item.label}</Text>
                   <TextInput
                     value={values[item.key] ? values[item.key] : (editMode ? "" : "No cargado")}                    
                     onChangeText={v => setFieldValue(item.key, v)}
                     onBlur={() => handleBlur(item.key)}
-                    style={styles.listInput}
+                    style={homeStyles.listInput}
                     keyboardType={item.keyboardType as any}
                     editable={editMode}
                     underlineColor="transparent"
