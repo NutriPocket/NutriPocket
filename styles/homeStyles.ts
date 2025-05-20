@@ -15,7 +15,6 @@ export const homeStyles = StyleSheet.create({
     padding: 40,
     marginBottom: 20,
     width: '100%',
-    
   },
   formFields: {
     width: 350,
@@ -76,12 +75,5 @@ export const homeStyles = StyleSheet.create({
   input: {
     marginBottom: 10,
     backgroundColor: '#fff',
-  },
-  error: {
-    color: 'red',
-    textAlign: 'left',
-    width: '100%',
-    marginTop: -10,
-    marginBottom: 10,
   },
 });
