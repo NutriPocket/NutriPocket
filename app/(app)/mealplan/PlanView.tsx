@@ -5,6 +5,7 @@ import { MealType } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MealPlanType } from "../../../types/mealTypes";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function PlanView() {
   const [meals, setMeals] = useState<MealType[] | null>(null);
@@ -52,6 +53,29 @@ export default function PlanView() {
     }
   };
 
+  const handleDeleteFood = async (foodId: string) => {
+    try {
+      const userId = auth?.id;
+      if (!userId) {
+        return;
+      }
+
+      if (!auth?.token) {
+        return;
+      }
+
+      await axiosInstance.delete(`/food/user/${userId}/foods/${foodId}`);
+
+      setMeals((prevMeals) =>
+        prevMeals ? prevMeals.filter((food) => food.id !== foodId) : null
+      );
+      console.log("Comida eliminada con éxito");
+    } catch (error) {
+      console.error("Error deleting food: ", error);
+      setError("No se pudo eliminar la comida.");
+    }
+  };
+
   useEffect(() => {
     const fetchAll = async () => {
       await fetchPlan();
@@ -73,14 +97,33 @@ export default function PlanView() {
     "Domingo",
   ];
   const MEAL_MOMENTS = ["Desayuno", "Almuerzo", "Merienda", "Cena"];
-  const MOCK_WEEK = WEEK_DAYS.map((day, idx) => ({
+  // const MOCK_WEEK = WEEK_DAYS.map((day, idx) => ({
+  //   day,
+  //   meals: MEAL_MOMENTS.map((moment, mIdx) => ({
+  //     moment,
+  //     meal: {
+  //       id: `${idx}-${mIdx}`,
+  //       meal_name: `Comida ${moment} ${day}`,
+  //       meal_description: `Descripción de ${moment} para adad ${day}`,
+  //     },
+  //   })),
+  // }));
+
+  const MOCK_WEEK: {
+    day: string;
+    meals: {
+      moment: string;
+      meal: {
+        id: string;
+        meal_name: string;
+        meal_description: string;
+      } | null;
+    }[];
+  }[] = WEEK_DAYS.map((day, idx) => ({
     day,
     meals: MEAL_MOMENTS.map((moment, mIdx) => ({
       moment,
-      meal: {
-        meal_name: `Comida ${moment} ${day}`,
-        meal_description: `Descripción de ${moment} para ${day}`,
-      },
+      meal: null,
     })),
   }));
 
@@ -95,40 +138,73 @@ export default function PlanView() {
       >
         {MOCK_WEEK.map(({ day, meals }) => (
           <View key={day} style={styles.planCard}>
-            <Text
-              style={{
-                fontWeight: "bold",
-                fontSize: 18,
-                color: "#287D76",
-                marginBottom: 12,
-                textAlign: "center",
-              }}
-            >
-              {day}
-            </Text>
-            {meals.map(({ moment, meal }) => (
-              <View
-                key={moment}
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 10,
-                  borderWidth: 1,
-                  borderColor: "#e0e0e0",
-                }}
-              >
-                <Text
-                  style={{ fontWeight: "bold", fontSize: 15, color: "#287D76" }}
-                >
-                  {moment}
-                </Text>
-                <Text style={{ fontSize: 14 }}>{meal.meal_name}</Text>
-                <Text style={{ fontSize: 12, color: "#888" }}>
-                  {meal.meal_description}
-                </Text>
-              </View>
-            ))}
+            <Text style={styles.dayTitle}>{day}</Text>
+            <View>
+              {meals.map((moment) => {
+                const meal = moment.meal;
+
+                return (
+                  <View
+                    key={moment.moment}
+                    style={[styles.momentCard, !meal && styles.addFoodCard]}
+                  >
+                    <View style={{ flex: 1, justifyContent: "space-around" }}>
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          fontSize: 15,
+                          color: "#287D76",
+                        }}
+                      >
+                        {moment.moment}
+                      </Text>
+                      {meal ? (
+                        <>
+                          <Text numberOfLines={1} style={{ fontSize: 14 }}>
+                            {meal.meal_name}
+                          </Text>
+
+                          <Text
+                            numberOfLines={1}
+                            style={{ fontSize: 12, color: "#888" }}
+                          >
+                            {meal.meal_description}
+                          </Text>
+                        </>
+                      ) : (
+                        <Text>No hay comida asignada</Text>
+                      )}
+                    </View>
+                    {meal ? (
+                      <View style={{ justifyContent: "center", padding: 10 }}>
+                        <MaterialCommunityIcons
+                          name="trash-can-outline"
+                          size={24}
+                          color="#287D76"
+                          onPress={() => {
+                            if (meal) {
+                              handleDeleteFood(meal.id);
+                            }
+                          }}
+                        />
+                      </View>
+                    ) : (
+                      <View style={{ justifyContent: "center", padding: 10 }}>
+                        <MaterialCommunityIcons
+                          name="plus"
+                          size={28}
+                          color="#287D76"
+                          onPress={() => {
+                            // Aquí pon tu lógica para agregar una comida
+                            // Por ejemplo: openAddFoodModal(moment.moment, day)
+                          }}
+                        />
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -156,20 +232,15 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   planCard: {
-    marginBottom: 20,
     padding: 16,
+    gap: 16,
     backgroundColor: "#f5f5f5",
     borderRadius: 10,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 4,
     width: 340,
-    height: 500,
-    alignSelf: "center",
-    flexDirection: "column",
     justifyContent: "space-between",
-    marginRight: 16,
-    flexShrink: 0,
   },
   cardsContainer: {
     paddingVertical: 20,
@@ -177,5 +248,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "flex-start",
+    gap: 16,
+  },
+  dayTitle: {
+    fontWeight: "bold",
+    fontSize: 18,
+    color: "#287D76",
+    textAlign: "center",
+  },
+  momentCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    flexDirection: "row",
+  },
+  addFoodCard: {
+    borderStyle: "dashed",
+    borderColor: "#287D76",
+    borderWidth: 2,
   },
 });
