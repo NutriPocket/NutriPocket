@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { useEffect } from "react";
 import { TouchableRipple, Button, FAB } from "react-native-paper";
-import useAxiosInstance from "@/hooks/useAxios"
+import useAxiosInstance from "@/hooks/useAxios";
 import { MealPlanType } from "../../../types/mealTypes";
 import { router } from "expo-router";
 import { Formik } from "formik";
@@ -18,14 +18,13 @@ export default function MealPlanScreen() {
   const [error, setError] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
-  const axiosInstance = useAxiosInstance('food');
+  const axiosInstance = useAxiosInstance("food");
   const scrollRef = useRef<ScrollView>(null);
   // Ref para guardar la posición X de la card de nuevo plan
   const [newPlanCardX, setNewPlanCardX] = useState(0);
   const newPlanCardRef = useRef(null);
 
-  const handleSelectPlan =  async (planId: string) => {
-
+  const handleSelectPlan = async (planId: string) => {
     try {
       const userId = auth?.id;
 
@@ -37,9 +36,10 @@ export default function MealPlanScreen() {
         return;
       }
 
-      const response = axiosInstance.put(`/food/users/${userId}/plan`,
+      const response = axiosInstance.put(
+        `/food/users/${userId}/plan`,
         {
-          plan_id: parseInt(planId)
+          plan_id: parseInt(planId),
         },
         {
           headers: {
@@ -48,19 +48,15 @@ export default function MealPlanScreen() {
         }
       );
 
-      router.push(
-        {
-          pathname: "/mealplan/PlanView",
-          params: { userId: auth?.id },
-        }
-      );
+      router.push({
+        pathname: "/mealplan/PlanView",
+        params: { userId: auth?.id },
+      });
       setSelectedPlanId(planId);
-
     } catch (error) {
       console.error("Error selecting plan: ", error);
     }
-
-  }
+  };
 
   const handleCreatePlan = async (value: any) => {
     try {
@@ -78,15 +74,12 @@ export default function MealPlanScreen() {
           },
         }
       );
-    
+
       if (response.status === 200) {
-      
-        router.push(
-          {
-            pathname: "/mealplan/PlanPreferences",
-            params: { userId: auth?.id },
-          }
-        );
+        router.push({
+          pathname: "/mealplan/PlanPreferences",
+          params: { userId: auth?.id },
+        });
       }
     } catch (error: any) {
       if (error.response && error.response.status === 401) {
@@ -95,10 +88,8 @@ export default function MealPlanScreen() {
         setCreateError("Ocurrió un error al crear el plan.");
       }
     }
-      setCreateError(null);
+    setCreateError(null);
   };
-
-
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -124,11 +115,12 @@ export default function MealPlanScreen() {
     }
   }, []);
 
-
   return (
     <View style={mealPlanListStyles.screenContainer}>
       <Text style={mealPlanListStyles.title}>Plan de Comidas</Text>
-      <Text style={mealPlanListStyles.info}>Elegí un plan o creá uno nuevo</Text>
+      <Text style={mealPlanListStyles.info}>
+        Elegí un plan o creá uno nuevo
+      </Text>
       {error && <Text style={{ color: "red", marginBottom: 10 }}>{error}</Text>}
       {/* Scroll horizontal para las tarjetas de planes + tarjeta de nuevo plan */}
       <ScrollView
@@ -144,51 +136,58 @@ export default function MealPlanScreen() {
             style={[
               mealPlanListStyles.planCard,
               { width: 300, marginRight: 16, flexShrink: 0 },
-              selectedPlanId === plan.id_plan && { borderColor: "#287D76", borderWidth: 2 }
+              selectedPlanId === plan.id_plan && {
+                borderColor: "#287D76",
+                borderWidth: 2,
+              },
             ]}
             onPress={() => handleSelectPlan(plan.id_plan)}
           >
             <View style={{ flex: 1, justifyContent: "space-between" }}>
               <View>
                 <Text style={mealPlanListStyles.planName}>{plan.title}</Text>
-                <Text style={mealPlanListStyles.planDescription}>{plan.plan_description}</Text>
-                <Text style={{ fontSize: 13}}>{plan.objective}</Text>
+                <Text style={mealPlanListStyles.planDescription}>
+                  {plan.plan_description}
+                </Text>
+                <Text style={{ fontSize: 13 }}>{plan.objective}</Text>
               </View>
-                {selectedPlanId === plan.id_plan && (
-                  <View>
-                    <Text style={mealPlanListStyles.selection}>
-                      Seleccionado
-                    </Text>
-                  </View>
-                )}
-              
+              {selectedPlanId === plan.id_plan && (
+                <View>
+                  <Text style={mealPlanListStyles.selection}>Seleccionado</Text>
+                </View>
+              )}
             </View>
           </TouchableRipple>
         ))}
         {/* Tarjeta de agregar nuevo plan */}
         <View
           ref={newPlanCardRef}
-          style={[
-            mealPlanListStyles.planCard,
-            mealPlanListStyles.addPlanCard,
-          ]}
-          onLayout={event => {
+          style={[mealPlanListStyles.planCard, mealPlanListStyles.addPlanCard]}
+          onLayout={(event) => {
             setNewPlanCardX(event.nativeEvent.layout.x);
           }}
         >
           <Text style={mealPlanListStyles.planName}>Nuevo plan</Text>
           <Formik
-            initialValues={{ title: '', objective: '', description: '' }}
+            initialValues={{ title: "", objective: "", description: "" }}
             validationSchema={createPlanValidationSchema}
             onSubmit={handleCreatePlan}
           >
-            {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isSubmitting }) => (
-              <View style={{ width: '100%' }}>
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+              isSubmitting,
+            }) => (
+              <View style={{ width: "100%" }}>
                 <PaperTextInput
                   label="Título"
                   value={values.title}
-                  onChangeText={handleChange('title')}
-                  onBlur={handleBlur('title')}
+                  onChangeText={handleChange("title")}
+                  onBlur={handleBlur("title")}
                   style={mealPlanListStyles.input}
                   mode="outlined"
                   activeOutlineColor="#287D76"
@@ -196,13 +195,15 @@ export default function MealPlanScreen() {
                   error={touched.title && !!errors.title}
                 />
                 {touched.title && errors.title && (
-                  <Text style={{ color: 'red', marginBottom: 4 }}>{errors.title}</Text>
+                  <Text style={{ color: "red", marginBottom: 4 }}>
+                    {errors.title}
+                  </Text>
                 )}
                 <PaperTextInput
                   label="Objetivo"
                   value={values.objective}
-                  onChangeText={handleChange('objective')}
-                  onBlur={handleBlur('objective')}
+                  onChangeText={handleChange("objective")}
+                  onBlur={handleBlur("objective")}
                   style={mealPlanListStyles.input}
                   mode="outlined"
                   activeOutlineColor="#287D76"
@@ -210,13 +211,15 @@ export default function MealPlanScreen() {
                   error={touched.objective && !!errors.objective}
                 />
                 {touched.objective && errors.objective && (
-                  <Text style={{ color: 'red', marginBottom: 4 }}>{errors.objective}</Text>
+                  <Text style={{ color: "red", marginBottom: 4 }}>
+                    {errors.objective}
+                  </Text>
                 )}
                 <PaperTextInput
                   label="Descripción"
                   value={values.description}
-                  onChangeText={handleChange('description')}
-                  onBlur={handleBlur('description')}
+                  onChangeText={handleChange("description")}
+                  onBlur={handleBlur("description")}
                   style={mealPlanListStyles.input}
                   mode="outlined"
                   activeOutlineColor="#287D76"
@@ -225,9 +228,15 @@ export default function MealPlanScreen() {
                   error={touched.description && !!errors.description}
                 />
                 {touched.description && errors.description && (
-                  <Text style={{ color: 'red', marginBottom: 4 }}>{errors.description}</Text>
+                  <Text style={{ color: "red", marginBottom: 4 }}>
+                    {errors.description}
+                  </Text>
                 )}
-                {createError && <Text style={{ color: 'red', marginTop: 4 }}>{createError}</Text>}
+                {createError && (
+                  <Text style={{ color: "red", marginTop: 4 }}>
+                    {createError}
+                  </Text>
+                )}
                 <Button
                   mode="contained"
                   onPress={() => handleSubmit()}
@@ -245,7 +254,12 @@ export default function MealPlanScreen() {
       <FAB
         icon="plus"
         label="Crear nuevo plan"
-        style={{ position: 'absolute', right: 24, bottom: 32, backgroundColor: '#287D76' }}
+        style={{
+          position: "absolute",
+          right: 24,
+          bottom: 32,
+          backgroundColor: "#287D76",
+        }}
         color="#fff"
         onPress={() => {
           if (scrollRef.current) {
