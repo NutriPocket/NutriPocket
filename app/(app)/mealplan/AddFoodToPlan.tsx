@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
@@ -12,6 +13,10 @@ import { MealType } from "../../../types/mealTypes";
 import { useRouter } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import { FAB } from "react-native-paper";
+import { TouchableWithoutFeedback } from "react-native";
+import { Formik } from "formik";
+import { createFoodValidationSchema } from "../../../utils/validationSchemas";
+import { TextInput } from "react-native-paper";
 
 export default function AddFoodToPlan() {
   const [auth] = useAtom(authenticatedAtom);
@@ -21,6 +26,8 @@ export default function AddFoodToPlan() {
   const [selectedFood, setSelectedFood] = useState<MealType | null>(null);
   const axiosInstance = useAxiosInstance("food");
   const router = useRouter();
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newFood, setNewFood] = useState<MealType | null>(null);
 
   const fetchFoods = async () => {
     try {
@@ -73,6 +80,46 @@ export default function AddFoodToPlan() {
     } catch (error) {
       console.error("Error adding food to plan: ", error);
     }
+  };
+
+  const handleAddNewFoodToPlan = async (values: any) => {
+    try {
+      const userId = auth?.id;
+      if (!userId) {
+        return;
+      }
+
+      if (!auth?.token) {
+        return;
+      }
+
+      const response = await axiosInstance.post(
+        `/food/users/${userId}/plan`,
+        {
+          ...values,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setSuccess("Comida agregada al plan exitosamente.");
+      router.push({
+        pathname: "/mealplan/PlanView",
+        params: { userId: auth?.id },
+      });
+    } catch (error) {
+      setError("No se pudo agregar la comida al plan.");
+      setSuccess(null);
+      console.error("Error adding new food to plan: ", error);
+    }
+  };
+
+  const handleCancel = () => {
+    setShowAddModal(false);
+    setError(null);
+    setSuccess(null);
   };
 
   useEffect(() => {
@@ -131,10 +178,116 @@ export default function AddFoodToPlan() {
         }}
         color="#fff"
         onPress={() => {
-          // Navega a la pantalla para crear una nueva comida
-          //router.push("/mealplan/CreateFood");
+          setShowAddModal(true);
         }}
       />
+      {/* MODAL que sube desde abajo */}
+      <Modal
+        visible={showAddModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowAddModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowAddModal(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Agregar nueva comida</Text>
+                <Formik
+                  initialValues={{ name: "", description: "" }}
+                  validationSchema={createFoodValidationSchema}
+                  onSubmit={handleAddNewFoodToPlan}
+                >
+                  {({
+                    handleChange,
+                    handleBlur,
+                    handleSubmit,
+                    values,
+                    touched,
+                    errors,
+                  }) => (
+                    <View style={{ gap: 15, justifyContent: "center" }}>
+                      <View>
+                        <TextInput
+                          placeholder="Nombre de la comida"
+                          placeholderTextColor={"#888"}
+                          onChangeText={handleChange("name")}
+                          onBlur={handleBlur("name")}
+                          value={values.name}
+                          style={styles.input}
+                          mode="outlined"
+                          activeOutlineColor="#287D76"
+                          dense
+                          error={touched.name && !!errors.name}
+                          outlineColor={
+                            touched.name && errors.name ? "red" : "#287D76"
+                          }
+                        />
+
+                        {touched.name && errors.name && (
+                          <Text style={styles.error}>{errors.name}</Text>
+                        )}
+                      </View>
+
+                      <View>
+                        <TextInput
+                          placeholder="Descripción"
+                          placeholderTextColor={"#888"}
+                          onChangeText={handleChange("description")}
+                          onBlur={handleBlur("description")}
+                          value={values.description}
+                          style={styles.input}
+                          mode="outlined"
+                          activeOutlineColor="#287D76"
+                          dense
+                          error={touched.description && !!errors.description}
+                          outlineColor={
+                            touched.description && errors.description
+                              ? "red"
+                              : "#287D76"
+                          }
+                        />
+
+                        {touched.description && errors.description && (
+                          <Text style={styles.error}>{errors.description}</Text>
+                        )}
+                      </View>
+                      {error && <Text style={styles.error}>{error}</Text>}
+
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          marginTop: 16,
+                        }}
+                      >
+                        <TouchableOpacity
+                          style={[
+                            styles.modalButton,
+                            { backgroundColor: "#287D76" },
+                          ]}
+                          onPress={() => handleSubmit()}
+                        >
+                          <Text style={{ color: "#fff" }}>Agregar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[
+                            styles.modalButton,
+                            { backgroundColor: "#eee" },
+                          ]}
+                          onPress={() => handleCancel()}
+                        >
+                          <Text style={{ color: "#287D76" }}>Cancelar</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+                </Formik>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
@@ -152,5 +305,42 @@ const styles = StyleSheet.create({
     color: "#287D76",
     fontWeight: "bold",
     textAlign: "center",
+  },
+  modalButton: {
+    borderRadius: 8,
+    width: "48%",
+    alignItems: "center",
+    padding: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 30,
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    padding: 30,
+    gap: 30,
+  },
+  modalTitle: {
+    fontWeight: "bold",
+    color: "#287D76",
+    textAlign: "center",
+    fontSize: 22,
+  },
+  error: {
+    color: "red",
+    textAlign: "left",
+    fontSize: 12,
+    fontStyle: "italic",
   },
 });

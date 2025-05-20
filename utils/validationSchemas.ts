@@ -113,3 +113,9 @@ export const createPlanValidationSchema = Yup.object({
   description: Yup.string().required("Por favor, ingresa la descripción del plan."),
 });
   
+export const createFoodValidationSchema = Yup.object({
+  name: Yup.string()
+    .required("Por favor, ingresa el nombre del alimento."),
+  description: Yup.string()
+    .required("Por favor, ingresa la descripción del alimento."),
+});
