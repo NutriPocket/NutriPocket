@@ -56,16 +56,13 @@ export const homeStyles = StyleSheet.create({
     fontSize: 24,
     color: '#287D76',
     fontWeight: 'bold',
-    marginBottom: 10,
     textAlign: 'center',
   },
   sectionTitle: {
     fontSize: 20,
     color: '#287D76',
     fontWeight: 'bold',
-    marginBottom: 10,
     textAlign: 'center',
-    marginTop: 10,
   },
   info: {
     fontSize: 16,
