@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MealType } from "../../../types/mealTypes";
 import { useRouter } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
+import { FAB } from "react-native-paper";
 
 export default function AddFoodToPlan() {
   const [auth] = useAtom(authenticatedAtom);
@@ -35,6 +42,39 @@ export default function AddFoodToPlan() {
     }
   };
 
+  const handleAddFoodToPlan = async (food: MealType) => {
+    try {
+      const userId = auth?.id;
+      if (!userId) {
+        return;
+      }
+
+      if (!auth?.token) {
+        return;
+      }
+
+      const response = await axiosInstance.post(
+        `/food/users/${userId}/plan`,
+        {
+          food_id: food?.id,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setSelectedFood(food);
+      setSuccess("Comida agregada al plan exitosamente.");
+      router.push({
+        pathname: "/mealplan/PlanView",
+        params: { userId: auth?.id },
+      });
+    } catch (error) {
+      console.error("Error adding food to plan: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchFoods();
   }, []);
@@ -47,7 +87,8 @@ export default function AddFoodToPlan() {
         showsVerticalScrollIndicator={false}
       >
         {foodList.map((food) => (
-          <View
+          <TouchableOpacity
+            onPress={() => handleAddFoodToPlan(food)}
             key={food.id}
             style={{
               backgroundColor: "#E8F5E9",
@@ -58,6 +99,9 @@ export default function AddFoodToPlan() {
               shadowRadius: 6,
               borderLeftWidth: 6,
               borderLeftColor: "#287D76",
+              borderWidth: selectedFood?.id === food.id ? 2 : 0,
+              borderColor:
+                selectedFood?.id === food.id ? "#287D76" : "transparent",
             }}
           >
             <Text
@@ -69,7 +113,7 @@ export default function AddFoodToPlan() {
               {food.description}
             </Text>
             {/* Puedes agregar más info aquí, como calorías, etc */}
-          </View>
+          </TouchableOpacity>
         ))}
         {foodList.length === 0 && (
           <Text style={{ color: "#888", fontSize: 16, textAlign: "center" }}>
@@ -77,6 +121,20 @@ export default function AddFoodToPlan() {
           </Text>
         )}
       </ScrollView>
+      <FAB
+        icon="plus"
+        style={{
+          position: "absolute",
+          right: 24,
+          bottom: 32,
+          backgroundColor: "#287D76",
+        }}
+        color="#fff"
+        onPress={() => {
+          // Navega a la pantalla para crear una nueva comida
+          //router.push("/mealplan/CreateFood");
+        }}
+      />
     </View>
   );
 }
