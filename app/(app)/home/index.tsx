@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import HomeScreen from "./HomeScreen";
 import UserScreen from "../user/UserScreen";
 import MealPlanScreen from "../mealplan/MealPlanScreen";
+import GroupsScreen from "../groups/GroupsScreen";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { Redirect } from "expo-router";
@@ -54,6 +55,16 @@ export default function HomeTabs() {
           tabBarLabel: 'Plan de comidas',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="food" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Groups"
+        component={GroupsScreen}
+        options={{
+          tabBarLabel: 'Groups',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account-group" color={color} size={size} />
           ),
         }}
       />

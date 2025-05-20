@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { ScrollView } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
-import { objectivesAtom } from "../../../atoms/objectiveAtom";
-import axios from "axios";
 import { homeStyles } from "../../../styles/homeStyles";
 import UserFormSection from "./UserFormSection";
 import { FormikHelpers } from 'formik';

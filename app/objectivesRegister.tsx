@@ -3,7 +3,6 @@ import { View, StyleSheet } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { Formik } from "formik";
 import { router } from "expo-router";
-import axios from "axios";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../atoms/authAtom";
 import { objectiveValidationSchema } from "../utils/validationSchemas";
