@@ -19,7 +19,6 @@ export default function HomeLayout() {
   return (
     <>
       <View style={styles.container}>
-        {/* <View style={styles.header}></View> */}
         <Slot />
       </View>
     </>
