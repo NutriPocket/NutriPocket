@@ -6,6 +6,7 @@ import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MealPlanType } from "../../../types/mealTypes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 export default function PlanView() {
   const [meals, setMeals] = useState<MealType[] | null>(null);
@@ -74,6 +75,13 @@ export default function PlanView() {
       console.error("Error deleting food: ", error);
       setError("No se pudo eliminar la comida.");
     }
+  };
+
+  const handleAddFood = async (foodId: string) => {
+    router.push({
+      pathname: "/mealplan/AddFoodToPlan",
+      params: { foodId, userId: auth?.id },
+    });
   };
 
   useEffect(() => {
@@ -195,6 +203,7 @@ export default function PlanView() {
                           size={28}
                           color="#287D76"
                           onPress={() => {
+                            handleAddFood(moment.moment);
                             // Aquí pon tu lógica para agregar una comida
                             // Por ejemplo: openAddFoodModal(moment.moment, day)
                           }}
