@@ -209,12 +209,10 @@ export default function AddFoodToPlan() {
                     <View style={{ gap: 15, justifyContent: "center" }}>
                       <View>
                         <TextInput
-                          placeholder="Nombre de la comida"
-                          placeholderTextColor={"#888"}
+                          label="Nombre de la comida"
+                          value={values.name}
                           onChangeText={handleChange("name")}
                           onBlur={handleBlur("name")}
-                          value={values.name}
-                          style={styles.input}
                           mode="outlined"
                           activeOutlineColor="#287D76"
                           dense
@@ -231,12 +229,10 @@ export default function AddFoodToPlan() {
 
                       <View>
                         <TextInput
-                          placeholder="Descripción"
-                          placeholderTextColor={"#888"}
+                          label={"Descripción"}
                           onChangeText={handleChange("description")}
                           onBlur={handleBlur("description")}
                           value={values.description}
-                          style={styles.input}
                           mode="outlined"
                           activeOutlineColor="#287D76"
                           dense
@@ -312,11 +308,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-  },
+
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
