@@ -8,12 +8,11 @@ import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { GroupType } from "@/types/groupTypes";
 
-
 export default function GroupScreen() {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
   const [groups, setGroups] = useState<GroupType[]>([]);
-  const axiosInstance = useAxiosInstance('group');
+  const axiosInstance = useAxiosInstance("group");
 
   const fetchGroups = async () => {
     try {
@@ -28,25 +27,20 @@ export default function GroupScreen() {
       }
 
       const response = await axiosInstance.get(`/users/${userId}/groups`);
-      const fetchedGroups = response.data;
+      const fetchedGroups = response.data.data;
 
       setGroups(fetchedGroups);
       setError(null);
     } catch (error) {
       setError("Error al obtener los grupos");
     }
-  }
+  };
 
   const handleGroupCreation = async () => {
     try {
-
       const userId = auth?.id;
 
-      if (!userId) {
-        return;
-      }
-
-      if (!auth?.token) {
+      if (!userId || !auth?.token) {
         return;
       }
 
@@ -56,11 +50,10 @@ export default function GroupScreen() {
         owner_id: userId,
       };
 
-      console.log("groupData", groupData);
-
       const response = await axiosInstance.post("/groups", groupData);
-      const newGroup = response.data;
-      setGroups((prevGroups) => [...prevGroups, newGroup]);
+      const newGroup = response.data.data;
+      const newGroups = [...groups, newGroup];
+      setGroups(newGroups);
       setError(null);
     } catch (error) {
       console.error("Error creating group:", error);
@@ -80,7 +73,8 @@ export default function GroupScreen() {
 
       <Button
         mode="contained"
-        style={mealPlanListStyles.planButtonCreate} onPress={handleGroupCreation}
+        style={mealPlanListStyles.planButtonCreate}
+        onPress={handleGroupCreation}
       >
         Crea un grupo
       </Button>
@@ -96,17 +90,14 @@ export default function GroupScreen() {
             </Card.Content>
           </Card>
         )}
-
         ListEmptyComponent={
           <Text style={{ textAlign: "center", marginTop: 20 }}>
             No hay grupos disponibles
           </Text>
         }
-
       />
-
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -130,4 +121,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#555",
   },
-})
+});
