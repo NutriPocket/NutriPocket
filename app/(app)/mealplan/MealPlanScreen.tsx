@@ -23,6 +23,7 @@ export default function MealPlanScreen() {
   // Ref para guardar la posición X de la card de nuevo plan
   const [newPlanCardX, setNewPlanCardX] = useState(0);
   const newPlanCardRef = useRef(null);
+  const [formKey, setFormKey] = useState(0);
 
   const handleSelectPlan = async (planId: string) => {
     try {
@@ -80,6 +81,7 @@ export default function MealPlanScreen() {
           pathname: "/mealplan/PlanPreferences",
           params: { userId: auth?.id },
         });
+        setFormKey((k) => k + 1);
       }
     } catch (error: any) {
       if (error.response && error.response.status === 401) {
@@ -169,6 +171,7 @@ export default function MealPlanScreen() {
         >
           <Text style={mealPlanListStyles.planName}>Nuevo plan</Text>
           <Formik
+            key={formKey}
             initialValues={{ title: "", objective: "", description: "" }}
             validationSchema={createPlanValidationSchema}
             onSubmit={handleCreatePlan}
