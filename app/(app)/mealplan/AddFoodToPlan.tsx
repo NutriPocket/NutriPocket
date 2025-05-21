@@ -61,10 +61,7 @@ export default function AddFoodToPlan() {
       }
 
       const response = await axiosInstance.post(
-        `/food/users/${userId}/plan`,
-        {
-          food_id: food?.id,
-        },
+        `/food/user/${userId}/addFood/${food?.id}`,
         {
           headers: {
             "Content-Type": "application/json",
