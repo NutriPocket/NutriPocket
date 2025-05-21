@@ -22,7 +22,7 @@ export const mealPlanListStyles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: '#287D76',
     borderWidth: 2,
-    flexShrink: 0,
+
   },
   planName: {
     fontSize: 18,
@@ -51,9 +51,9 @@ export const mealPlanListStyles = StyleSheet.create({
     padding: 20,
   },
   cardsContainer:{
-    paddingVertical: 20, 
-    paddingHorizontal: 10, 
-    alignItems: 'flex-start', 
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    alignItems: 'flex-start',
     flexDirection: 'row'
   },
     title: {
@@ -66,7 +66,7 @@ export const mealPlanListStyles = StyleSheet.create({
     fontSize: 16,
     color: '#287D76',
     textAlign: 'center',
-    marginBottom: 100,
+    marginBottom: 60,
   },
   selection: {
     color: "#287D76",

@@ -7,6 +7,7 @@ import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MealPlanType } from "../../../types/mealTypes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import Header from "../../../components/common/Header";
 
 export default function PlanView() {
   const [meals, setMeals] = useState<MealType[] | null>(null);
@@ -136,87 +137,90 @@ export default function PlanView() {
   }));
 
   return (
-    <View style={styles.screenContainer}>
-      <Text style={styles.title}>Mi Plan Semanal</Text>
-      <Text style={styles.info}>Desliza para ver cada día</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.cardsContainer}
-      >
-        {MOCK_WEEK.map(({ day, meals }) => (
-          <View key={day} style={styles.planCard}>
-            <Text style={styles.dayTitle}>{day}</Text>
-            <View>
-              {meals.map((moment) => {
-                const meal = moment.meal;
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <Header />
+      <View style={styles.screenContainer}>
+        <Text style={styles.title}>Mi Plan Semanal</Text>
+        <Text style={styles.info}>Desliza para ver cada día</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.cardsContainer}
+        >
+          {MOCK_WEEK.map(({ day, meals }) => (
+            <View key={day} style={styles.planCard}>
+              <Text style={styles.dayTitle}>{day}</Text>
+              <View>
+                {meals.map((moment) => {
+                  const meal = moment.meal;
 
-                return (
-                  <View
-                    key={moment.moment}
-                    style={[styles.momentCard, !meal && styles.addFoodCard]}
-                  >
-                    <View style={{ flex: 1, justifyContent: "space-around" }}>
-                      <Text
-                        style={{
-                          fontWeight: "bold",
-                          fontSize: 15,
-                          color: "#287D76",
-                        }}
-                      >
-                        {moment.moment}
-                      </Text>
+                  return (
+                    <View
+                      key={moment.moment}
+                      style={[styles.momentCard, !meal && styles.addFoodCard]}
+                    >
+                      <View style={{ flex: 1, justifyContent: "space-around" }}>
+                        <Text
+                          style={{
+                            fontWeight: "bold",
+                            fontSize: 15,
+                            color: "#287D76",
+                          }}
+                        >
+                          {moment.moment}
+                        </Text>
+                        {meal ? (
+                          <>
+                            <Text numberOfLines={1} style={{ fontSize: 14 }}>
+                              {meal.meal_name}
+                            </Text>
+
+                            <Text
+                              numberOfLines={1}
+                              style={{ fontSize: 12, color: "#888" }}
+                            >
+                              {meal.meal_description}
+                            </Text>
+                          </>
+                        ) : (
+                          <Text>No hay comida asignada</Text>
+                        )}
+                      </View>
                       {meal ? (
-                        <>
-                          <Text numberOfLines={1} style={{ fontSize: 14 }}>
-                            {meal.meal_name}
-                          </Text>
-
-                          <Text
-                            numberOfLines={1}
-                            style={{ fontSize: 12, color: "#888" }}
-                          >
-                            {meal.meal_description}
-                          </Text>
-                        </>
+                        <View style={{ justifyContent: "center", padding: 10 }}>
+                          <MaterialCommunityIcons
+                            name="trash-can-outline"
+                            size={24}
+                            color="#287D76"
+                            onPress={() => {
+                              if (meal) {
+                                handleDeleteFood(meal.id);
+                              }
+                            }}
+                          />
+                        </View>
                       ) : (
-                        <Text>No hay comida asignada</Text>
+                        <View style={{ justifyContent: "center", padding: 10 }}>
+                          <MaterialCommunityIcons
+                            name="plus"
+                            size={28}
+                            color="#287D76"
+                            onPress={() => {
+                              handleAddFood(moment.moment);
+                              // Aquí pon tu lógica para agregar una comida
+                              // Por ejemplo: openAddFoodModal(moment.moment, day)
+                            }}
+                          />
+                        </View>
                       )}
                     </View>
-                    {meal ? (
-                      <View style={{ justifyContent: "center", padding: 10 }}>
-                        <MaterialCommunityIcons
-                          name="trash-can-outline"
-                          size={24}
-                          color="#287D76"
-                          onPress={() => {
-                            if (meal) {
-                              handleDeleteFood(meal.id);
-                            }
-                          }}
-                        />
-                      </View>
-                    ) : (
-                      <View style={{ justifyContent: "center", padding: 10 }}>
-                        <MaterialCommunityIcons
-                          name="plus"
-                          size={28}
-                          color="#287D76"
-                          onPress={() => {
-                            handleAddFood(moment.moment);
-                            // Aquí pon tu lógica para agregar una comida
-                            // Por ejemplo: openAddFoodModal(moment.moment, day)
-                          }}
-                        />
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        ))}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 }

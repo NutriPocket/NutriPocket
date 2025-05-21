@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Button } from "react-native-paper";
 import { router } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
+import Header from "../../../components/common/Header";
 
 const INTERESES = [
   "Vegetariano",
@@ -42,50 +43,53 @@ export default function PlanPreferences() {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        paddingVertical: 100,
-        paddingHorizontal: 24,
-        alignContent: "center",
-
-        gap: 20,
-      }}
-    >
-      <Text
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <Header />
+      <View
         style={{
-          fontSize: 20,
-          textAlign: "center",
-          color: "#287D76",
-          fontWeight: "bold",
+          flex: 1,
+          paddingVertical: 100,
+          paddingHorizontal: 24,
+          alignContent: "center",
+
+          gap: 20,
         }}
       >
-        Elegí tus intereses
-      </Text>
-      {INTERESES.map((interest) => (
-        <TouchableOpacity
-          key={interest}
-          onPress={() => toggleInterest(interest)}
+        <Text
           style={{
-            padding: 12,
-            backgroundColor: selected.includes(interest) ? "#287D76" : "#eee",
-            borderRadius: 8,
+            fontSize: 20,
+            textAlign: "center",
+            color: "#287D76",
+            fontWeight: "bold",
           }}
         >
-          <Text
-            style={{ color: selected.includes(interest) ? "#fff" : "#333" }}
+          Elegí tus intereses
+        </Text>
+        {INTERESES.map((interest) => (
+          <TouchableOpacity
+            key={interest}
+            onPress={() => toggleInterest(interest)}
+            style={{
+              padding: 12,
+              backgroundColor: selected.includes(interest) ? "#287D76" : "#eee",
+              borderRadius: 8,
+            }}
           >
-            {interest}
-          </Text>
-        </TouchableOpacity>
-      ))}
-      <Button
-        mode="contained"
-        onPress={() => handleCreate()}
-        style={styles.planButtonCreate}
-      >
-        Crear Plan
-      </Button>
+            <Text
+              style={{ color: selected.includes(interest) ? "#fff" : "#333" }}
+            >
+              {interest}
+            </Text>
+          </TouchableOpacity>
+        ))}
+        <Button
+          mode="contained"
+          onPress={() => handleCreate()}
+          style={styles.planButtonCreate}
+        >
+          Crear Plan
+        </Button>
+      </View>
     </View>
   );
 }

@@ -11,8 +11,8 @@ export default function Header({ title = "", showBack = true }) {
     <View
       style={{
         borderBottomColor: "#eee",
-        paddingVertical: 50,
-        paddingHorizontal: 12,
+        marginTop: 70,
+        paddingHorizontal: 15,
         flexDirection: "row",
       }}
     >
