@@ -3,11 +3,18 @@ import { homeStyles } from "@/styles/homeStyles";
 import { mealPlanListStyles } from "@/styles/mealStyles";
 import { useEffect, useState, useRef } from "react";
 import { Text, StyleSheet, View, FlatList } from "react-native";
-import { Button, Card, TextInput, FAB } from "react-native-paper";
+import {
+  Button,
+  Card,
+  TextInput,
+  FAB,
+  TouchableRipple,
+} from "react-native-paper";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { GroupType } from "@/types/groupTypes";
 import { Formik } from "formik";
+import { router } from "expo-router";
 
 export default function GroupScreen() {
   const [auth] = useAtom(authenticatedAtom);
@@ -55,6 +62,10 @@ export default function GroupScreen() {
           setGroups([...groups, response.data.data]);
           resetForm();
           setCreateError(null);
+          router.push({
+            pathname: "/groups/[id]",
+            params: { id: response.data.data.id },
+          });
         } catch {
           setCreateError("Error al crear el grupo");
         }
@@ -131,10 +142,20 @@ export default function GroupScreen() {
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <Card style={styles.groupCard}>
-              <Text style={styles.cardTitle}>{item.name}</Text>
-              <Text style={styles.cardDescription}>{item.description}</Text>
-            </Card>
+            <TouchableRipple
+              key={item.id}
+              onPress={() => {
+                router.push({
+                  pathname: "/groups/[id]",
+                  params: { id: item.id },
+                });
+              }}
+            >
+              <Card style={styles.groupCard}>
+                <Text style={styles.cardTitle}>{item.name}</Text>
+                <Text style={styles.cardDescription}>{item.description}</Text>
+              </Card>
+            </TouchableRipple>
           )}
           ListFooterComponent={renderFooter}
         />
@@ -166,7 +187,7 @@ const styles = StyleSheet.create({
   },
   cardsContainer: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 16,
     backgroundColor: "red",
     justifyContent: "center",
