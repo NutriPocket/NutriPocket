@@ -20,7 +20,7 @@ import { TextInput } from "react-native-paper";
 import Header from "../../../components/common/Header";
 
 export default function AddFoodToPlan() {
-  const { planId, weekDay, mealMoment } = useLocalSearchParams();
+  const { selectedPlanId, weekDay, mealMoment } = useLocalSearchParams();
 
   const [auth] = useAtom(authenticatedAtom);
   const [foodList, setFoodList] = useState<MealType[]>([]);
@@ -30,7 +30,7 @@ export default function AddFoodToPlan() {
   const axiosInstance = useAxiosInstance("food");
   const router = useRouter();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newFood, setNewFood] = useState<MealType | null>(null);
+  //const [newFood, setNewFood] = useState<MealType | null>(null);
 
   const fetchFoods = async () => {
     try {
@@ -63,9 +63,9 @@ export default function AddFoodToPlan() {
         return;
       }
 
-      console.log("planId: ", planId);
+      console.log("planId: ", selectedPlanId);
       const response = await axiosInstance.put(
-        `/food/plans/${planId}/updateMeal`,
+        `/food/plans/${selectedPlanId}/updateMeal`,
         {
           day: weekDay,
           moment: mealMoment,
@@ -82,40 +82,6 @@ export default function AddFoodToPlan() {
       router.back();
     } catch (error) {
       console.error("Error adding food to plan: ", error);
-    }
-  };
-
-  const handleAddNewFoodToPlan = async (values: any) => {
-    try {
-      const userId = auth?.id;
-      if (!userId) {
-        return;
-      }
-
-      if (!auth?.token) {
-        return;
-      }
-
-      const response = await axiosInstance.post(
-        `/food/users/${userId}/plan`,
-        {
-          ...values,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setSuccess("Comida agregada al plan exitosamente.");
-      router.push({
-        pathname: "/mealplan/PlanView",
-        params: { userId: auth?.id },
-      });
-    } catch (error) {
-      setError("No se pudo agregar la comida al plan.");
-      setSuccess(null);
-      console.error("Error adding new food to plan: ", error);
     }
   };
 
@@ -203,9 +169,14 @@ export default function AddFoodToPlan() {
                 <View style={styles.modalContent}>
                   <Text style={styles.modalTitle}>Agregar nueva comida</Text>
                   <Formik
-                    initialValues={{ name: "", description: "" }}
+                    initialValues={{
+                      name: "",
+                      description: "",
+                      id: "",
+                      price: 0,
+                    }}
                     validationSchema={createFoodValidationSchema}
-                    onSubmit={handleAddNewFoodToPlan}
+                    onSubmit={handleAddFoodToPlan}
                   >
                     {({
                       handleChange,
