@@ -1,19 +1,21 @@
 import React from "react";
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import HomeScreen from "./HomeScreen";
 import UserScreen from "../user/UserScreen";
 import MealPlanScreen from "../mealplan/MealPlanScreen";
 import GroupsScreen from "../groups/GroupsScreen";
-import { useAtom } from "jotai";
+import PlanView from "../mealplan/PlanView";
+import { useAtom, useAtomValue } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { Redirect } from "expo-router";
+import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 
 const Tab = createBottomTabNavigator();
 
 export default function HomeTabs() {
-
   const isAuthenticated = useAtom(authenticatedAtom);
+  const selectedPlanId = useAtomValue(selectedPlanIdAtom);
 
   if (!isAuthenticated) {
     return <Redirect href="/login" />;
@@ -23,16 +25,16 @@ export default function HomeTabs() {
       initialRouteName="Home"
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#287D76',
-        tabBarInactiveTintColor: '#aaa',
-        tabBarStyle: { backgroundColor: '#fff', borderTopColor: '#287D76' },
+        tabBarActiveTintColor: "#287D76",
+        tabBarInactiveTintColor: "#aaa",
+        tabBarStyle: { backgroundColor: "#fff", borderTopColor: "#287D76" },
       }}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: 'Inicio',
+          tabBarLabel: "Inicio",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="home" color={color} size={size} />
           ),
@@ -42,7 +44,7 @@ export default function HomeTabs() {
         name="User"
         component={UserScreen}
         options={{
-          tabBarLabel: 'Usuario',
+          tabBarLabel: "Usuario",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="account" color={color} size={size} />
           ),
@@ -50,9 +52,10 @@ export default function HomeTabs() {
       />
       <Tab.Screen
         name="MealPlan"
-        component={MealPlanScreen}
+        component={selectedPlanId ? PlanView : MealPlanScreen}
+        key={selectedPlanId ? `plan-${selectedPlanId}` : "mealplan-list"}
         options={{
-          tabBarLabel: 'Plan de comidas',
+          tabBarLabel: "Plan de comidas",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="food" color={color} size={size} />
           ),
@@ -62,9 +65,13 @@ export default function HomeTabs() {
         name="Groups"
         component={GroupsScreen}
         options={{
-          tabBarLabel: 'Groups',
+          tabBarLabel: "Groups",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-group" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="account-group"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />
