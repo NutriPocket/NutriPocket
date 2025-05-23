@@ -11,12 +11,14 @@ import { router } from "expo-router";
 import { Formik } from "formik";
 import { createPlanValidationSchema } from "../../../utils/validationSchemas";
 import { TextInput as PaperTextInput } from "react-native-paper";
+import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 
 export default function MealPlanScreen() {
   const [auth] = useAtom(authenticatedAtom);
+  const [selectedPlanId, setSelectedPlanId] = useAtom(selectedPlanIdAtom);
   const [mealPlanList, setMealPlanList] = useState<MealPlanType[]>([]);
+
   const [error, setError] = useState<string | null>(null);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const axiosInstance = useAxiosInstance("food");
   const scrollRef = useRef<ScrollView>(null);
@@ -49,11 +51,6 @@ export default function MealPlanScreen() {
           },
         }
       );
-
-      router.push({
-        pathname: "/mealplan/PlanView",
-        params: { userId: auth?.id, planId: planId },
-      });
       setSelectedPlanId(planId);
     } catch (error) {
       console.error("Error selecting plan: ", error);
@@ -68,6 +65,7 @@ export default function MealPlanScreen() {
       if (!auth?.token) {
         return;
       }
+      console.log("Creating plan with values: ", value);
       const response = await axiosInstance.post(
         `/food/plans/${value.title}/${value.objective}/${value.description}`,
         {
@@ -78,6 +76,8 @@ export default function MealPlanScreen() {
       );
 
       if (response.status === 200) {
+        setSelectedPlanId(value.plan_id);
+        console.log("plan_id: ", value.plan_id);
         router.push({
           pathname: "/mealplan/PlanPreferences",
           params: { userId: auth?.id },
@@ -128,6 +128,8 @@ export default function MealPlanScreen() {
       </View>
     );
   }
+
+  console.log("plandId: ", selectedPlanId);
 
   return (
     <View style={mealPlanListStyles.screenContainer}>

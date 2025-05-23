@@ -5,16 +5,16 @@ import { ItineraryPlan, MealType } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import Header from "../../../components/common/Header";
+import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 
 export default function PlanView() {
-  const { planId } = useLocalSearchParams();
-
   const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null);
   const [auth] = useAtom(authenticatedAtom);
   const axiosInstance = useAxiosInstance("food");
   const [error, setError] = useState<string | null>(null);
+  const [selectedPlanId] = useAtom(selectedPlanIdAtom);
 
   const fetchPlanItinerary = async () => {
     try {
@@ -27,7 +27,7 @@ export default function PlanView() {
         return;
       }
 
-      const response = await axiosInstance.get(`/food/plans/${planId}`);
+      const response = await axiosInstance.get(`/food/plans/${selectedPlanId}`);
       const data = response.data;
 
       console.log("Plan: ", data.weekly_plan);
@@ -80,18 +80,18 @@ export default function PlanView() {
   ) => {
     router.push({
       pathname: "/mealplan/AddFoodToPlan",
-      params: { planId, weekDay, mealMoment },
+      params: { selectedPlanId, weekDay, mealMoment },
     });
   };
 
   useFocusEffect(
     useCallback(() => {
       fetchPlanItinerary();
-    }, [auth?.id, planId])
+    }, [auth?.id, selectedPlanId])
   );
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <Header />
+      <Header backTo="/mealplan/MealPlanScreen" />
       <View style={styles.screenContainer}>
         <Text style={styles.title}>Mi Plan Semanal</Text>
         <Text style={styles.info}>Desliza para ver cada día</Text>

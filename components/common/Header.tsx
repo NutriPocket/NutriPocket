@@ -3,9 +3,22 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { selectedPlanIdAtom } from "../../atoms/mealPlanAtom";
+import { useAtom } from "jotai";
 
-export default function Header({ title = "", showBack = true }) {
+type HeaderProps = {
+  title?: string;
+  showBack?: boolean;
+  backTo?: any | null;
+};
+
+export default function Header({
+  title = "",
+  showBack = true,
+  backTo = null,
+}: HeaderProps) {
   const router = useRouter();
+  const [selectedPlanId, setSelectedPlanId] = useAtom(selectedPlanIdAtom);
 
   return (
     <View
@@ -18,7 +31,16 @@ export default function Header({ title = "", showBack = true }) {
     >
       {showBack && (
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={async () => {
+            if (backTo) {
+              console.log("backTo: ", backTo);
+              console.log("selectedPlanId: ", selectedPlanId);
+              setSelectedPlanId(null);
+              //await router.push(backTo);
+            } else {
+              router.back();
+            }
+          }}
           style={{ marginRight: 12 }}
         >
           <MaterialCommunityIcons name="arrow-left" size={28} color="#287D76" />
