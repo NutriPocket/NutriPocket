@@ -4,6 +4,8 @@ import { Button } from "react-native-paper";
 import { router } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import Header from "../../../components/common/Header";
+import { authenticatedAtom } from "../../../atoms/authAtom";
+import { useAtom } from "jotai";
 
 const INTERESES = [
   "Vegetariano",
@@ -16,6 +18,7 @@ const INTERESES = [
 export default function PlanPreferences() {
   const [selected, setSelected] = useState<string[]>([]);
   const axiosInstance = useAxiosInstance("food");
+  const [auth] = useAtom(authenticatedAtom);
 
   const toggleInterest = (interest: string) => {
     setSelected((prev) =>
@@ -27,13 +30,12 @@ export default function PlanPreferences() {
 
   const handleCreate = async () => {
     // POST para crear la dieta/grupo según preferencias
+    console.log("Creando plan con preferencias:", selected);
     try {
-      const response = await axiosInstance.post(
-        "/food/plans/create-by-preferences",
-        {
-          preferences: selected,
-        }
-      );
+      const response = await axiosInstance.post("/food/plans/fromPreferences", {
+        user_id: auth?.id,
+        preferences: selected,
+      });
 
       // Navega a la pantalla de visualización del plan
       router.push({ pathname: "/mealplan/PlanView" });
