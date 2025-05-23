@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import useAxiosInstance from "@/hooks/useAxios";
-import { ItineraryPlan } from "../../../types/mealTypes";
+import { ItineraryPlan, MealType } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -37,26 +37,40 @@ export default function PlanView() {
     }
   };
 
-  const handleDeleteFood = async (foodId: string) => {
-    // try {
-    //   const userId = auth?.id;
-    //   if (!userId) {
-    //     return;
-    //   }
-    //   if (!auth?.token) {
-    //     return;
-    //   }
-    //   await axiosInstance.delete(
-    //     `/food/userPlan/${userId}/removeFood/${foodId}`
-    //   );
-    //   setMeals((prevMeals) =>
-    //     prevMeals ? prevMeals.filter((food) => food.id !== foodId) : null
-    //   );
-    //   console.log("Comida eliminada con éxito");
-    // } catch (error) {
-    //   console.error("Error deleting food: ", error);
-    //   setError("No se pudo eliminar la comida.");
-    // }
+  const handleDeleteFood = async (
+    foodId: string,
+    weekDay: string,
+    mealMoment: string
+  ) => {
+    try {
+      const userId = auth?.id;
+      if (!userId) {
+        return;
+      }
+      if (!auth?.token) {
+        return;
+      }
+      await axiosInstance.delete(
+        `/food/userPlan/${userId}/removeFood/${foodId}`
+      );
+      setItinerary((prevItinerary) => {
+        if (!prevItinerary) return null;
+        return {
+          ...prevItinerary,
+          weekly_plan: {
+            ...prevItinerary.weekly_plan,
+            [weekDay]: {
+              ...prevItinerary.weekly_plan[weekDay],
+              [mealMoment]: null, // <-- acá seteás en null
+            },
+          },
+        };
+      });
+      console.log("Comida eliminada con éxito");
+    } catch (error) {
+      console.error("Error deleting food: ", error);
+      setError("No se pudo eliminar la comida.");
+    }
   };
 
   const handleAddFood = async (
@@ -131,7 +145,8 @@ export default function PlanView() {
                             size={24}
                             color="#287D76"
                             onPress={() => {
-                              if (meals) handleDeleteFood(meals.id);
+                              if (meals)
+                                handleDeleteFood(meals.id, weekDay, moment);
                             }}
                           />
                         ) : (
