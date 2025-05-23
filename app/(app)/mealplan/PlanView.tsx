@@ -1,41 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import useAxiosInstance from "@/hooks/useAxios";
-import { MealType } from "../../../types/mealTypes";
+import { ItineraryPlan } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
-import { MealPlanType } from "../../../types/mealTypes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import Header from "../../../components/common/Header";
 
 export default function PlanView() {
-  const [meals, setMeals] = useState<MealType[] | null>(null);
-  const [userPlanInfo, setUserPlanInfo] = useState<MealPlanType | null>(null);
+  const { planId } = useLocalSearchParams();
+
+  const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null);
   const [auth] = useAtom(authenticatedAtom);
   const axiosInstance = useAxiosInstance("food");
   const [error, setError] = useState<string | null>(null);
 
-  const fetchFoods = async () => {
-    const userId = auth?.id;
-    try {
-      if (!userId) {
-        return;
-      }
-      if (!auth?.token) {
-        return;
-      }
-
-      const response = await axiosInstance.get(`/food/user/${userId}/foods`);
-      const foods = response.data.foods;
-      console.log("foods", foods);
-      setMeals(foods);
-    } catch (error) {
-      console.error("Error fetching plan: ", error);
-    }
-  };
-
-  const fetchPlan = async () => {
+  const fetchPlanItinerary = async () => {
     try {
       const userId = auth?.id;
       if (!userId) {
@@ -46,95 +27,55 @@ export default function PlanView() {
         return;
       }
 
-      const response = await axiosInstance.get(`/food/userPlan/${userId}`);
+      const response = await axiosInstance.get(`/food/plans/${planId}`);
       const data = response.data;
-      setUserPlanInfo(data);
-      console.log("Plans: ", data);
+
+      console.log("Plan: ", data.weekly_plan);
+      setItinerary(data);
     } catch (err) {
       setError("No se pudieron obtener los datos del usuario.");
     }
   };
 
   const handleDeleteFood = async (foodId: string) => {
-    try {
-      const userId = auth?.id;
-      if (!userId) {
-        return;
-      }
-
-      if (!auth?.token) {
-        return;
-      }
-
-      await axiosInstance.delete(`/food/user/${userId}/foods/${foodId}`);
-
-      setMeals((prevMeals) =>
-        prevMeals ? prevMeals.filter((food) => food.id !== foodId) : null
-      );
-      console.log("Comida eliminada con éxito");
-    } catch (error) {
-      console.error("Error deleting food: ", error);
-      setError("No se pudo eliminar la comida.");
-    }
+    // try {
+    //   const userId = auth?.id;
+    //   if (!userId) {
+    //     return;
+    //   }
+    //   if (!auth?.token) {
+    //     return;
+    //   }
+    //   await axiosInstance.delete(
+    //     `/food/userPlan/${userId}/removeFood/${foodId}`
+    //   );
+    //   setMeals((prevMeals) =>
+    //     prevMeals ? prevMeals.filter((food) => food.id !== foodId) : null
+    //   );
+    //   console.log("Comida eliminada con éxito");
+    // } catch (error) {
+    //   console.error("Error deleting food: ", error);
+    //   setError("No se pudo eliminar la comida.");
+    // }
   };
 
-  const handleAddFood = async (foodId: string) => {
+  const handleAddFood = async (
+    foodId: string,
+    weekDay: string,
+    mealMoment: string
+  ) => {
     router.push({
       pathname: "/mealplan/AddFoodToPlan",
-      params: { foodId, userId: auth?.id },
+      params: { foodId, userId: auth?.id, weekDay, mealMoment },
     });
   };
 
   useEffect(() => {
     const fetchAll = async () => {
-      await fetchPlan();
-      await fetchFoods();
+      await fetchPlanItinerary();
     };
     fetchAll();
   }, [auth?.id]);
-
-  if (!meals) return <Text>Cargando...</Text>;
-
-  // Mock de comidas por día y momento
-  const WEEK_DAYS = [
-    "Lunes",
-    "Martes",
-    "Miércoles",
-    "Jueves",
-    "Viernes",
-    "Sábado",
-    "Domingo",
-  ];
-  const MEAL_MOMENTS = ["Desayuno", "Almuerzo", "Merienda", "Cena"];
-  // const MOCK_WEEK = WEEK_DAYS.map((day, idx) => ({
-  //   day,
-  //   meals: MEAL_MOMENTS.map((moment, mIdx) => ({
-  //     moment,
-  //     meal: {
-  //       id: `${idx}-${mIdx}`,
-  //       meal_name: `Comida ${moment} ${day}`,
-  //       meal_description: `Descripción de ${moment} para adad ${day}`,
-  //     },
-  //   })),
-  // }));
-
-  const MOCK_WEEK: {
-    day: string;
-    meals: {
-      moment: string;
-      meal: {
-        id: string;
-        meal_name: string;
-        meal_description: string;
-      } | null;
-    }[];
-  }[] = WEEK_DAYS.map((day, idx) => ({
-    day,
-    meals: MEAL_MOMENTS.map((moment, mIdx) => ({
-      moment,
-      meal: null,
-    })),
-  }));
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -147,17 +88,15 @@ export default function PlanView() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.cardsContainer}
         >
-          {MOCK_WEEK.map(({ day, meals }) => (
-            <View key={day} style={styles.planCard}>
-              <Text style={styles.dayTitle}>{day}</Text>
-              <View>
-                {meals.map((moment) => {
-                  const meal = moment.meal;
-
-                  return (
+          {Object.entries(itinerary?.weekly_plan || {}).map(
+            ([weekDay, moments]) => (
+              <View key={weekDay} style={styles.planCard}>
+                <Text style={styles.dayTitle}>{weekDay}</Text>
+                <View>
+                  {Object.entries(moments).map(([moment, meals]) => (
                     <View
-                      key={moment.moment}
-                      style={[styles.momentCard, !meal && styles.addFoodCard]}
+                      key={moment}
+                      style={[styles.momentCard, !meals && styles.addFoodCard]}
                     >
                       <View style={{ flex: 1, justifyContent: "space-around" }}>
                         <Text
@@ -167,58 +106,51 @@ export default function PlanView() {
                             color: "#287D76",
                           }}
                         >
-                          {moment.moment}
+                          {moment}
                         </Text>
-                        {meal ? (
-                          <>
+                        {meals ? (
+                          <View key={meals.id}>
                             <Text numberOfLines={1} style={{ fontSize: 14 }}>
-                              {meal.meal_name}
+                              {meals.name}
                             </Text>
-
                             <Text
                               numberOfLines={1}
                               style={{ fontSize: 12, color: "#888" }}
                             >
-                              {meal.meal_description}
+                              {meals.description}
                             </Text>
-                          </>
+                          </View>
                         ) : (
                           <Text>No hay comida asignada</Text>
                         )}
                       </View>
-                      {meal ? (
-                        <View style={{ justifyContent: "center", padding: 10 }}>
+                      <View style={{ justifyContent: "center", padding: 10 }}>
+                        {meals ? (
                           <MaterialCommunityIcons
                             name="trash-can-outline"
                             size={24}
                             color="#287D76"
                             onPress={() => {
-                              if (meal) {
-                                handleDeleteFood(meal.id);
-                              }
+                              if (meals) handleDeleteFood(meals.id);
                             }}
                           />
-                        </View>
-                      ) : (
-                        <View style={{ justifyContent: "center", padding: 10 }}>
+                        ) : (
                           <MaterialCommunityIcons
                             name="plus"
                             size={28}
                             color="#287D76"
                             onPress={() => {
-                              handleAddFood(moment.moment);
-                              // Aquí pon tu lógica para agregar una comida
-                              // Por ejemplo: openAddFoodModal(moment.moment, day)
+                              handleAddFood("", weekDay, moment);
                             }}
                           />
-                        </View>
-                      )}
+                        )}
+                      </View>
                     </View>
-                  );
-                })}
+                  ))}
+                </View>
               </View>
-            </View>
-          ))}
+            )
+          )}
         </ScrollView>
       </View>
     </View>
