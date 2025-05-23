@@ -10,7 +10,7 @@ import {
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MealType } from "../../../types/mealTypes";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import { FAB } from "react-native-paper";
 import { TouchableWithoutFeedback } from "react-native";
@@ -20,6 +20,8 @@ import { TextInput } from "react-native-paper";
 import Header from "../../../components/common/Header";
 
 export default function AddFoodToPlan() {
+  const { planId, weekDay, mealMoment } = useLocalSearchParams();
+
   const [auth] = useAtom(authenticatedAtom);
   const [foodList, setFoodList] = useState<MealType[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -61,8 +63,14 @@ export default function AddFoodToPlan() {
         return;
       }
 
-      const response = await axiosInstance.post(
-        `/food/user/${userId}/addFood/${food?.id}`,
+      console.log("planId: ", planId);
+      const response = await axiosInstance.put(
+        `/food/plans/${planId}/updateMeal`,
+        {
+          day: weekDay,
+          moment: mealMoment,
+          foodId: food.id,
+        },
         {
           headers: {
             "Content-Type": "application/json",
@@ -71,10 +79,7 @@ export default function AddFoodToPlan() {
       );
       setSelectedFood(food);
       setSuccess("Comida agregada al plan exitosamente.");
-      router.push({
-        pathname: "/mealplan/PlanView",
-        params: { userId: auth?.id },
-      });
+      router.back();
     } catch (error) {
       console.error("Error adding food to plan: ", error);
     }

@@ -24,6 +24,7 @@ export default function MealPlanScreen() {
   const [newPlanCardX, setNewPlanCardX] = useState(0);
   const newPlanCardRef = useRef(null);
   const [formKey, setFormKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSelectPlan = async (planId: string) => {
     try {
@@ -51,7 +52,7 @@ export default function MealPlanScreen() {
 
       router.push({
         pathname: "/mealplan/PlanView",
-        params: { userId: auth?.id },
+        params: { userId: auth?.id, planId: planId },
       });
       setSelectedPlanId(planId);
     } catch (error) {
@@ -105,17 +106,28 @@ export default function MealPlanScreen() {
           return;
         }
 
+        setIsLoading(true);
         const response = await axiosInstance.get(`/food/plans`);
         const data = response.data.plans;
         setMealPlanList(data);
       } catch (err) {
         setError("No se pudieron obtener los datos del usuario.");
+      } finally {
+        setIsLoading(false);
       }
     };
     if (auth?.id && auth?.token) {
       fetchUserData();
     }
   }, []);
+
+  if (isLoading) {
+    return (
+      <View style={mealPlanListStyles.screenContainer}>
+        <Text style={mealPlanListStyles.title}>Cargando...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={mealPlanListStyles.screenContainer}>
@@ -185,7 +197,7 @@ export default function MealPlanScreen() {
               touched,
               isSubmitting,
             }) => (
-              <View style={{ width: "100%" }}>
+              <View style={{}}>
                 <PaperTextInput
                   label="Título"
                   value={values.title}

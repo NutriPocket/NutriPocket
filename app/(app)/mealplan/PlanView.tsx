@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import useAxiosInstance from "@/hooks/useAxios";
 import { ItineraryPlan, MealType } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import Header from "../../../components/common/Header";
 
 export default function PlanView() {
@@ -80,17 +80,15 @@ export default function PlanView() {
   ) => {
     router.push({
       pathname: "/mealplan/AddFoodToPlan",
-      params: { foodId, userId: auth?.id, weekDay, mealMoment },
+      params: { planId, weekDay, mealMoment },
     });
   };
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      await fetchPlanItinerary();
-    };
-    fetchAll();
-  }, [auth?.id]);
-
+  useFocusEffect(
+    useCallback(() => {
+      fetchPlanItinerary();
+    }, [auth?.id, planId])
+  );
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Header />

@@ -20,7 +20,7 @@ export type ItineraryPlan = {
     objective: string;
     weekly_plan: {
         [weekDay: string]: {
-            [momentDay: string]: MealType;
+            [momentDay: string]: MealType | null;
         };
     };
 }
