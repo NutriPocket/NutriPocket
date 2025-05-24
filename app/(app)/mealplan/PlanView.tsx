@@ -128,28 +128,32 @@ export default function PlanView() {
                 <Text style={styles.dayTitle}>{weekDay}</Text>
                 <View>
                   {Object.entries(moments).map(([moment, meals]) => (
-                    <View
+                    <TouchableRipple
                       key={moment}
                       style={[styles.momentCard, !meals && styles.addFoodCard]}
+                      onPress={() => {
+                        if (meals) {
+                          setSelectedMeal(meals);
+                          setShowAddModal(true);
+                          handleSelectFood();
+                        }
+                      }}
+                      disabled={!meals}
                     >
-                      <View style={{ flex: 1, justifyContent: "space-around" }}>
-                        <Text
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: 15,
-                            color: "#287D76",
-                          }}
+                      <View style={{ flex: 1, flexDirection: "row" }}>
+                        <View
+                          style={{ flex: 1, justifyContent: "space-around" }}
                         >
-                          {moment}
-                        </Text>
-                        {meals ? (
-                          <TouchableRipple
-                            onPress={() => {
-                              handleSelectFood();
-                              setShowAddModal(true);
+                          <Text
+                            style={{
+                              fontWeight: "bold",
+                              fontSize: 15,
+                              color: "#287D76",
                             }}
-                            style={{ paddingVertical: 4 }}
                           >
+                            {moment}
+                          </Text>
+                          {meals ? (
                             <View>
                               <Text numberOfLines={1} style={{ fontSize: 14 }}>
                                 {meals.name}
@@ -161,34 +165,32 @@ export default function PlanView() {
                                 {meals.description}
                               </Text>
                             </View>
-                          </TouchableRipple>
-                        ) : (
-                          <Text>No hay comida asignada</Text>
-                        )}
-                      </View>
-                      <View style={{ justifyContent: "center", padding: 10 }}>
-                        {meals ? (
-                          <MaterialCommunityIcons
-                            name="trash-can-outline"
-                            size={24}
-                            color="#287D76"
-                            onPress={() => {
-                              if (meals)
+                          ) : (
+                            <Text>No hay comida asignada</Text>
+                          )}
+                        </View>
+                        <View style={{ justifyContent: "center", padding: 10 }}>
+                          {meals ? (
+                            <MaterialCommunityIcons
+                              name="trash-can-outline"
+                              size={24}
+                              color="#287D76"
+                              onPress={(e) => {
+                                e.stopPropagation(); // <-- Esto evita que se dispare el onPress del contenedor
                                 handleDeleteFood(meals.id, weekDay, moment);
-                            }}
-                          />
-                        ) : (
-                          <MaterialCommunityIcons
-                            name="plus"
-                            size={28}
-                            color="#287D76"
-                            onPress={() => {
-                              handleAddFood("", weekDay, moment);
-                            }}
-                          />
-                        )}
+                              }}
+                            />
+                          ) : (
+                            <MaterialCommunityIcons
+                              name="plus"
+                              size={28}
+                              color="#287D76"
+                              onPress={() => handleAddFood("", weekDay, moment)}
+                            />
+                          )}
+                        </View>
                       </View>
-                    </View>
+                    </TouchableRipple>
                   ))}
                 </View>
               </View>
