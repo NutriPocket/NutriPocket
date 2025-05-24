@@ -15,7 +15,7 @@ const NUTRITION_LABELS: Record<string, string> = {
 export default function SelectedFood() {
   const { selectedPlanId, selectedMeal } = useLocalSearchParams();
   const [selectedFood, setSelectedFood] = useState<MealType>({
-    id: "",
+    id: 0,
     name: "",
     description: "",
     calories_per_100g: 0,
@@ -29,7 +29,7 @@ export default function SelectedFood() {
       //const response = await axiosInstance.get(`/food/food/${selectedMeal}`);
       //const data = response.data;
       setSelectedFood({
-        id: "id",
+        id: 1,
         name: "Arroz con Pollo",
         description:
           "En este caso es donde se encuentra la información nutricional de la comida y la tengo que mostrar en la primera carta",

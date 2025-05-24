@@ -1,12 +1,12 @@
 export type MealPlanType = {
-    id_plan: string;
+    id_plan: number;
     title: string;
     objective: string;
     plan_description: string;
 }
 
 export type MealType = {
-    id: string;
+    id: number;
     name: string;
     description: string;
     calories_per_100g: number;

@@ -18,9 +18,10 @@ import { Formik } from "formik";
 import { createFoodValidationSchema } from "../../../utils/validationSchemas";
 import { TextInput } from "react-native-paper";
 import Header from "../../../components/common/Header";
+import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 
 export default function AddFoodToPlan() {
-  const { selectedPlanId, weekDay, mealMoment } = useLocalSearchParams();
+  const { weekDay, mealMoment } = useLocalSearchParams();
 
   const [auth] = useAtom(authenticatedAtom);
   const [foodList, setFoodList] = useState<MealType[]>([]);
@@ -30,6 +31,7 @@ export default function AddFoodToPlan() {
   const axiosInstance = useAxiosInstance("food");
   const router = useRouter();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedPlanId] = useAtom(selectedPlanIdAtom);
   //const [newFood, setNewFood] = useState<MealType | null>(null);
 
   const fetchFoods = async () => {
@@ -43,8 +45,9 @@ export default function AddFoodToPlan() {
         return;
       }
 
-      const response = await axiosInstance.get(`/food/user/${userId}/foods`);
-      const foods = response.data.foods;
+      const response = await axiosInstance.get(`/users/${userId}/plan/foods`);
+      const foods = response.data.data;
+      console.log("foods: ", foods);
 
       setFoodList(foods);
     } catch (error) {
@@ -54,22 +57,12 @@ export default function AddFoodToPlan() {
 
   const handleAddFoodToPlan = async (food: MealType) => {
     try {
-      const userId = auth?.id;
-      if (!userId) {
-        return;
-      }
-
-      if (!auth?.token) {
-        return;
-      }
-
-      console.log("planId: ", selectedPlanId);
       const response = await axiosInstance.put(
-        `/food/plans/${selectedPlanId}/updateMeal`,
+        `/plans/${selectedPlanId}/foods`,
         {
           day: weekDay,
           moment: mealMoment,
-          foodId: food.id,
+          food_id: food.id,
         },
         {
           headers: {
@@ -172,7 +165,7 @@ export default function AddFoodToPlan() {
                     initialValues={{
                       name: "",
                       description: "",
-                      id: "",
+                      id: 0,
                       calories_per_100g: 0,
                       protein_per_100g: 0,
                       carbohydrates_per_100g: 0,

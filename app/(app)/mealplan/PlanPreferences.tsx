@@ -1,11 +1,13 @@
 import React, { useState } from "react";
+
 import { View, Text, TouchableOpacity } from "react-native";
 import { Button } from "react-native-paper";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import Header from "../../../components/common/Header";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { useAtom } from "jotai";
+import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 
 const INTERESES = [
   "Vegetariano",
@@ -19,6 +21,8 @@ export default function PlanPreferences() {
   const [selected, setSelected] = useState<string[]>([]);
   const axiosInstance = useAxiosInstance("food");
   const [auth] = useAtom(authenticatedAtom);
+  const { title, objective, description } = useLocalSearchParams();
+  const [selectedPlanId, setSelectedPlanId] = useAtom(selectedPlanIdAtom);
 
   const toggleInterest = (interest: string) => {
     setSelected((prev) =>
@@ -29,16 +33,33 @@ export default function PlanPreferences() {
   };
 
   const handleCreate = async () => {
-    // POST para crear la dieta/grupo según preferencias
     console.log("Creando plan con preferencias:", selected);
     try {
-      const response = await axiosInstance.post("/food/plans/fromPreferences", {
-        user_id: auth?.id,
-        preferences: selected,
-      });
+      const response = await axiosInstance.post(
+        "/plans",
 
-      // Navega a la pantalla de visualización del plan
-      router.push({ pathname: "/mealplan/PlanView" });
+        {
+          //fromPreferences: true,
+          plan: {
+            title: title,
+            objetive: objective,
+            plan_description: description,
+          },
+          preferences: {
+            user_id: auth?.id,
+            preferences: selected,
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const planId = response.data.data.id_plan;
+      setSelectedPlanId(planId);
+      router.back();
+      console.log("Plan creado con ID:", planId);
     } catch (error) {
       console.error("Error al crear el plan:", error);
     }

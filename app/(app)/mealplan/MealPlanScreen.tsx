@@ -12,6 +12,7 @@ import { Formik } from "formik";
 import { createPlanValidationSchema } from "../../../utils/validationSchemas";
 import { TextInput as PaperTextInput } from "react-native-paper";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
+import PlanPreferences from "./PlanPreferences";
 
 export default function MealPlanScreen() {
   const [auth] = useAtom(authenticatedAtom);
@@ -28,7 +29,7 @@ export default function MealPlanScreen() {
   const [formKey, setFormKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSelectPlan = async (planId: string) => {
+  const handleSelectPlan = async (planId: number) => {
     try {
       const userId = auth?.id;
 
@@ -41,9 +42,9 @@ export default function MealPlanScreen() {
       }
 
       const response = axiosInstance.put(
-        `/food/users/${userId}/plan`,
+        `/users/${userId}/plan`,
         {
-          plan_id: parseInt(planId),
+          plan_id: planId,
         },
         {
           headers: {
@@ -58,40 +59,15 @@ export default function MealPlanScreen() {
   };
 
   const handleCreatePlan = async (value: any) => {
-    try {
-      if (!auth?.id) {
-        return;
-      }
-      if (!auth?.token) {
-        return;
-      }
-      console.log("Creating plan with values: ", value);
-      const response = await axiosInstance.post(
-        `/food/plans/${value.title}/${value.objective}/${value.description}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setSelectedPlanId(value.plan_id);
-        console.log("plan_id: ", value.plan_id);
-        router.push({
-          pathname: "/mealplan/PlanPreferences",
-          params: { userId: auth?.id },
-        });
-        setFormKey((k) => k + 1);
-      }
-    } catch (error: any) {
-      if (error.response && error.response.status === 401) {
-        setCreateError("Error: " + error.response.data.detail);
-      } else {
-        setCreateError("Ocurrió un error al crear el plan.");
-      }
-    }
-    setCreateError(null);
+    router.push({
+      pathname: "/mealplan/PlanPreferences",
+      params: {
+        title: value.title,
+        objective: value.objective,
+        description: value.description,
+      },
+    });
+    setFormKey((k) => k + 1);
   };
 
   useEffect(() => {
@@ -107,8 +83,8 @@ export default function MealPlanScreen() {
         }
 
         setIsLoading(true);
-        const response = await axiosInstance.get(`/food/plans`);
-        const data = response.data.plans;
+        const response = await axiosInstance.get(`/plans`);
+        const data = response.data.data;
         setMealPlanList(data);
       } catch (err) {
         setError("No se pudieron obtener los datos del usuario.");

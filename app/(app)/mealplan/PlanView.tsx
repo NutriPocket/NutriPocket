@@ -1,12 +1,5 @@
 import React, { useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Modal,
-  TouchableWithoutFeedback,
-} from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import useAxiosInstance from "@/hooks/useAxios";
 import { ItineraryPlan, MealType } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
@@ -23,7 +16,6 @@ export default function PlanView() {
   const axiosInstance = useAxiosInstance("food");
   const [error, setError] = useState<string | null>(null);
   const [selectedPlanId] = useAtom(selectedPlanIdAtom);
-  const [selectedMeal, setSelectedMeal] = useState<MealType | null>(null);
 
   const fetchPlanItinerary = async () => {
     try {
@@ -36,21 +28,16 @@ export default function PlanView() {
         return;
       }
 
-      const response = await axiosInstance.get(`/food/plans/${selectedPlanId}`);
-      const data = response.data;
+      const response = await axiosInstance.get(`/plans/${selectedPlanId}`);
+      const data = response.data.data;
 
-      console.log("Plan: ", data.weekly_plan);
       setItinerary(data);
     } catch (err) {
       setError("No se pudieron obtener los datos del usuario.");
     }
   };
 
-  const handleDeleteFood = async (
-    foodId: string,
-    weekDay: string,
-    mealMoment: string
-  ) => {
+  const handleDeleteFood = async (weekDay: string, mealMoment: string) => {
     try {
       const userId = auth?.id;
       if (!userId) {
@@ -59,9 +46,12 @@ export default function PlanView() {
       if (!auth?.token) {
         return;
       }
-      await axiosInstance.delete(
-        `/food/userPlan/${userId}/removeFood/${foodId}`
-      );
+      await axiosInstance.delete(`/user/${userId}/plans/foods`, {
+        data: {
+          day: weekDay,
+          moment: mealMoment,
+        },
+      });
       setItinerary((prevItinerary) => {
         if (!prevItinerary) return null;
         return {
@@ -82,11 +72,7 @@ export default function PlanView() {
     }
   };
 
-  const handleAddFood = async (
-    foodId: string,
-    weekDay: string,
-    mealMoment: string
-  ) => {
+  const handleModifyFood = async (weekDay: string, mealMoment: string) => {
     router.push({
       pathname: "/mealplan/AddFoodToPlan",
       params: { selectedPlanId, weekDay, mealMoment },
@@ -168,12 +154,12 @@ export default function PlanView() {
                         <View style={{ justifyContent: "center", padding: 10 }}>
                           {meals ? (
                             <MaterialCommunityIcons
-                              name="trash-can-outline"
+                              name="pencil-outline"
                               size={24}
                               color="#287D76"
                               onPress={(e) => {
                                 e.stopPropagation(); // <-- Esto evita que se dispare el onPress del contenedor
-                                handleDeleteFood(meals.id, weekDay, moment);
+                                handleModifyFood(weekDay, moment);
                               }}
                             />
                           ) : (
@@ -181,7 +167,7 @@ export default function PlanView() {
                               name="plus"
                               size={28}
                               color="#287D76"
-                              onPress={() => handleAddFood("", weekDay, moment)}
+                              onPress={() => handleModifyFood(weekDay, moment)}
                             />
                           )}
                         </View>
