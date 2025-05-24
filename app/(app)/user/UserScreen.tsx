@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ScrollView } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
-import { objectivesAtom } from "../../../atoms/objectiveAtom";
-import axios from "axios";
-import { styles } from "../../../styles/homeStyles";
+import { homeStyles } from "../../../styles/homeStyles";
 import UserFormSection from "./UserFormSection";
 import { FormikHelpers } from 'formik';
 import { anthropometricFields, objectivesFields, objectiveValidationSchema, anthropometricValidationSchema  } from "../../../utils/validationSchemas";
@@ -200,7 +198,7 @@ export default function UserScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.formContainer}>
+    <ScrollView contentContainerStyle={homeStyles.formContainer}>
       
       <UserFormSection
         title="Tus datos personales y antropométricos"

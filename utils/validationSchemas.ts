@@ -106,3 +106,16 @@ export const registerValidationSchema = Yup.object({
     .oneOf([Yup.ref('password'), ''], 'Las contraseñas no coinciden')
     .required('Por favor, confirma tu contraseña.'),
 });
+
+export const createPlanValidationSchema = Yup.object({
+  title: Yup.string().required("Por favor, ingresa el título del plan."),
+  objective: Yup.string().required("Por favor, ingresa el objetivo del plan."),
+  description: Yup.string().required("Por favor, ingresa la descripción del plan."),
+});
+  
+export const createFoodValidationSchema = Yup.object({
+  name: Yup.string()
+    .required("Por favor, ingresa el nombre del alimento."),
+  description: Yup.string()
+    .required("Por favor, ingresa la descripción del alimento."),
+});

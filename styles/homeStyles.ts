@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
+export const homeStyles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: '#fff',
@@ -15,7 +15,6 @@ export const styles = StyleSheet.create({
     padding: 40,
     marginBottom: 20,
     width: '100%',
-    
   },
   formFields: {
     width: 350,
@@ -57,16 +56,13 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     color: '#287D76',
     fontWeight: 'bold',
-    marginBottom: 10,
     textAlign: 'center',
   },
   sectionTitle: {
     fontSize: 20,
     color: '#287D76',
     fontWeight: 'bold',
-    marginBottom: 10,
     textAlign: 'center',
-    marginTop: 10,
   },
   info: {
     fontSize: 16,
