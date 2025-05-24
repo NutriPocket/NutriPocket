@@ -9,7 +9,9 @@ export type MealType = {
     id: string;
     name: string;
     description: string;
-    price : number;
+    calories_per_100g: number;
+    protein_per_100g: number;
+    carbohydrates_per_100g: number;
 }
 
 

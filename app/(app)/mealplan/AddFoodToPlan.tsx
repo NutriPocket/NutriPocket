@@ -173,7 +173,9 @@ export default function AddFoodToPlan() {
                       name: "",
                       description: "",
                       id: "",
-                      price: 0,
+                      calories_per_100g: 0,
+                      protein_per_100g: 0,
+                      carbohydrates_per_100g: 0,
                     }}
                     validationSchema={createFoodValidationSchema}
                     onSubmit={handleAddFoodToPlan}
