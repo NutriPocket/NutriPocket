@@ -23,7 +23,6 @@ export default function PlanView() {
   const axiosInstance = useAxiosInstance("food");
   const [error, setError] = useState<string | null>(null);
   const [selectedPlanId] = useAtom(selectedPlanIdAtom);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<MealType | null>(null);
 
   const fetchPlanItinerary = async () => {
@@ -94,16 +93,15 @@ export default function PlanView() {
     });
   };
 
-  const handleSelectFood = async () => {
-    try {
-      const response = await axiosInstance.get(`/food/food/${selectedPlanId}`);
-      const data = response.data;
-      setSelectedMeal(data);
-      console.log("Selected meal: ", data);
-    } catch (error) {
-      console.error("Error selecting food: ", error);
-      setError("No se pudo seleccionar la comida.");
+  const handleSelectFood = async (meal: MealType | null) => {
+    if (!meal) {
+      setError("No se pudo obtener la comida seleccionada.");
+      return;
     }
+    router.push({
+      pathname: "/mealplan/SelectedFood",
+      params: { selectedMealId: meal.id },
+    });
   };
 
   useFocusEffect(
@@ -133,9 +131,7 @@ export default function PlanView() {
                       style={[styles.momentCard, !meals && styles.addFoodCard]}
                       onPress={() => {
                         if (meals) {
-                          setSelectedMeal(meals);
-                          setShowAddModal(true);
-                          handleSelectFood();
+                          handleSelectFood(meals);
                         }
                       }}
                       disabled={!meals}
@@ -197,40 +193,6 @@ export default function PlanView() {
             )
           )}
         </ScrollView>
-        {/* MODAL que sube desde abajo */}
-        <Modal
-          visible={showAddModal}
-          animationType="fade"
-          transparent
-          onRequestClose={() => setShowAddModal(false)}
-        >
-          <TouchableWithoutFeedback onPress={() => setShowAddModal(false)}>
-            <View style={styles.modalOverlay}>
-              <TouchableWithoutFeedback onPress={() => {}}>
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>Información nutricional</Text>
-                  {selectedMeal ? (
-                    <View>
-                      <Text>Calorías: {selectedMeal.calories_per_100g}</Text>
-                      <Text>Proteínas: {selectedMeal.protein_per_100g}g</Text>
-                      <Text>
-                        Carbohidratos: {selectedMeal.carbohydrates_per_100g}g
-                      </Text>
-                    </View>
-                  ) : (
-                    //<Text>Cargando información...</Text>
-                    <View>
-                      <Text>Calorías: </Text>
-                      <Text>Proteínas: </Text>
-                      <Text>Carbohidratos:</Text>
-                      {/* Agregá más campos según tu API */}
-                    </View>
-                  )}
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
       </View>
     </View>
   );
@@ -293,34 +255,5 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
     borderColor: "#287D76",
     borderWidth: 2,
-  },
-  modalButton: {
-    borderRadius: 8,
-    width: "48%",
-    alignItems: "center",
-    padding: 10,
-  },
-
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: "rgba(0,0,0,0.2)", // Le da un fondo más oscuro
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    padding: 30,
-    justifyContent: "center",
-    gap: 30,
-  },
-  modalTitle: {
-    fontWeight: "bold",
-    color: "#287D76",
-    textAlign: "center",
-    fontSize: 22,
   },
 });
