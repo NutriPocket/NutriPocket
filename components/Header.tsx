@@ -3,7 +3,7 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { selectedPlanIdAtom } from "../../atoms/mealPlanAtom";
+import { selectedPlanIdAtom } from "../atoms/mealPlanAtom";
 import { useAtom } from "jotai";
 
 type HeaderProps = {

@@ -12,7 +12,6 @@ import { Formik } from "formik";
 import { createPlanValidationSchema } from "../../../utils/validationSchemas";
 import { TextInput as PaperTextInput } from "react-native-paper";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
-import PlanPreferences from "./PlanPreferences";
 
 export default function MealPlanScreen() {
   const [auth] = useAtom(authenticatedAtom);

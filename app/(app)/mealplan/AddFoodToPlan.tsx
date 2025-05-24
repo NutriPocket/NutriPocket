@@ -17,7 +17,8 @@ import { TouchableWithoutFeedback } from "react-native";
 import { Formik } from "formik";
 import { createFoodValidationSchema } from "../../../utils/validationSchemas";
 import { TextInput } from "react-native-paper";
-import Header from "../../../components/common/Header";
+import Header from "../../../components/Header";
+import FoodModal from "../../../components/FoodModal";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 
 export default function AddFoodToPlan() {
@@ -150,117 +151,13 @@ export default function AddFoodToPlan() {
           }}
         />
         {/* MODAL que sube desde abajo */}
-        <Modal
-          visible={showAddModal}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setShowAddModal(false)}
-        >
-          <TouchableWithoutFeedback onPress={() => setShowAddModal(false)}>
-            <View style={styles.modalOverlay}>
-              <TouchableWithoutFeedback onPress={() => {}}>
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>Agregar nueva comida</Text>
-                  <Formik
-                    initialValues={{
-                      name: "",
-                      description: "",
-                      id: 0,
-                      calories_per_100g: 0,
-                      protein_per_100g: 0,
-                      carbohydrates_per_100g: 0,
-                    }}
-                    validationSchema={createFoodValidationSchema}
-                    onSubmit={handleAddFoodToPlan}
-                  >
-                    {({
-                      handleChange,
-                      handleBlur,
-                      handleSubmit,
-                      values,
-                      touched,
-                      errors,
-                    }) => (
-                      <View style={{ gap: 15, justifyContent: "center" }}>
-                        <View>
-                          <TextInput
-                            label="Nombre de la comida"
-                            value={values.name}
-                            onChangeText={handleChange("name")}
-                            onBlur={handleBlur("name")}
-                            mode="outlined"
-                            activeOutlineColor="#287D76"
-                            dense
-                            error={touched.name && !!errors.name}
-                            outlineColor={
-                              touched.name && errors.name ? "red" : "#287D76"
-                            }
-                          />
-
-                          {touched.name && errors.name && (
-                            <Text style={styles.error}>{errors.name}</Text>
-                          )}
-                        </View>
-
-                        <View>
-                          <TextInput
-                            label={"Descripción"}
-                            onChangeText={handleChange("description")}
-                            onBlur={handleBlur("description")}
-                            value={values.description}
-                            mode="outlined"
-                            activeOutlineColor="#287D76"
-                            dense
-                            error={touched.description && !!errors.description}
-                            outlineColor={
-                              touched.description && errors.description
-                                ? "red"
-                                : "#287D76"
-                            }
-                          />
-
-                          {touched.description && errors.description && (
-                            <Text style={styles.error}>
-                              {errors.description}
-                            </Text>
-                          )}
-                        </View>
-                        {error && <Text style={styles.error}>{error}</Text>}
-
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            marginTop: 16,
-                          }}
-                        >
-                          <TouchableOpacity
-                            style={[
-                              styles.modalButton,
-                              { backgroundColor: "#287D76" },
-                            ]}
-                            onPress={() => handleSubmit()}
-                          >
-                            <Text style={{ color: "#fff" }}>Agregar</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            style={[
-                              styles.modalButton,
-                              { backgroundColor: "#eee" },
-                            ]}
-                            onPress={() => handleCancel()}
-                          >
-                            <Text style={{ color: "#287D76" }}>Cancelar</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    )}
-                  </Formik>
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
+        <FoodModal
+          showAddModal={showAddModal}
+          setShowAddModal={setShowAddModal}
+          handleAddFoodToPlan={handleAddFoodToPlan}
+          handleCancel={handleCancel}
+          error={error}
+        />
       </View>
     </View>
   );

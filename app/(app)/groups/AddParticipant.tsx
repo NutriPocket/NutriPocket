@@ -8,7 +8,7 @@ import {
 import { useAtom } from "jotai";
 import { useState, useEffect } from "react";
 import { authenticatedAtom } from "../../../atoms/authAtom";
-import Header from "../../../components/common/Header";
+import Header from "../../../components/Header";
 import useAxiosInstance from "@/hooks/useAxios";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { UserType } from "@/types/userType";

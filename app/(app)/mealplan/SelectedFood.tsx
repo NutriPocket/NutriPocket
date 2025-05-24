@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import { MealType } from "../../../types/mealTypes";
-import Header from "../../../components/common/Header";
+import Header from "../../../components/Header";
 import useAxiosInstance from "@/hooks/useAxios";
 import { Text, View, ScrollView, StyleSheet } from "react-native";
 

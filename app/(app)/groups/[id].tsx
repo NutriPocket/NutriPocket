@@ -4,7 +4,7 @@ import { authenticatedAtom } from "../../../atoms/authAtom";
 import { Text, View, ScrollView, StyleSheet } from "react-native";
 import { TextInput, FAB } from "react-native-paper";
 
-import Header from "../../../components/common/Header";
+import Header from "../../../components/Header";
 import { Formik } from "formik";
 import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";

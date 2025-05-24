@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Button } from "react-native-paper";
 import { router, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
-import Header from "../../../components/common/Header";
+import Header from "../../../components/Header";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { useAtom } from "jotai";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
