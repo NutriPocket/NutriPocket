@@ -1,15 +1,23 @@
 export type MealPlanType = {
-    id_plan: string;
+    id_plan: number;
     title: string;
     objective: string;
     plan_description: string;
 }
 
 export type MealType = {
-    id: string;
+    id: number;
     name: string;
     description: string;
-    price : number;
+    calories_per_100g: number;
+    protein_per_100g: number;
+    carbohydrates_per_100g: number;
+    fiber_per_100g: number;
+    saturated_fats_per_100g: number;
+    monounsaturated_fats_per_100g: number;
+    polyunsaturated_fats_per_100g: number;
+    trans_fats_per_100g: number;
+    cholesterol_per_100g: number;
 }
 
 
