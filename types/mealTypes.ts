@@ -12,6 +12,12 @@ export type MealType = {
     calories_per_100g: number;
     protein_per_100g: number;
     carbohydrates_per_100g: number;
+    fiber_per_100g: number;
+    saturated_fats_per_100g: number;
+    monounsaturated_fats_per_100g: number;
+    polyunsaturated_fats_per_100g: number;
+    trans_fats_per_100g: number;
+    cholesterol_per_100g: number;
 }
 
 

@@ -10,10 +10,16 @@ const NUTRITION_LABELS: Record<string, string> = {
   calories_per_100g: "Calorías (por 100g)",
   protein_per_100g: "Proteínas (por 100g)",
   carbohydrates_per_100g: "Carbohidratos (por 100g)",
+  fiber_per_100g: "Fibra (por 100g)",
+  saturated_fats_per_100g: "Grasas Saturadas (por 100g)",
+  monounsaturated_fats_per_100g: "Grasas Monoinsaturadas (por 100g)",
+  polyunsaturated_fats_per_100g: "Grasas Poliinsaturadas (por 100g)",
+  trans_fats_per_100g: "Grasas Trans (por 100g)",
+  cholesterol_per_100g: "Colesterol (por 100g)",
 };
 
 export default function SelectedFood() {
-  const { selectedPlanId, selectedMeal } = useLocalSearchParams();
+  const { selectedMealId } = useLocalSearchParams();
   const [selectedFood, setSelectedFood] = useState<MealType>({
     id: 0,
     name: "",
@@ -21,23 +27,20 @@ export default function SelectedFood() {
     calories_per_100g: 0,
     protein_per_100g: 0,
     carbohydrates_per_100g: 0,
+    fiber_per_100g: 0,
+    saturated_fats_per_100g: 0,
+    monounsaturated_fats_per_100g: 0,
+    polyunsaturated_fats_per_100g: 0,
+    trans_fats_per_100g: 0,
+    cholesterol_per_100g: 0,
   });
   const axiosInstance = useAxiosInstance("food");
 
   const fetchFoodInfo = async () => {
     try {
-      //const response = await axiosInstance.get(`/food/food/${selectedMeal}`);
-      //const data = response.data;
-      setSelectedFood({
-        id: 1,
-        name: "Arroz con Pollo",
-        description:
-          "En este caso es donde se encuentra la información nutricional de la comida y la tengo que mostrar en la primera carta",
-        calories_per_100g: 0,
-        protein_per_100g: 0,
-        carbohydrates_per_100g: 0,
-      });
-      //setSelectedFood(data);
+      const response = await axiosInstance.get(`/foods/${selectedMealId}`);
+      const data = response.data.data;
+      setSelectedFood(data);
     } catch (error) {
       console.error("Error fetching food info: ", error);
     }
@@ -45,7 +48,7 @@ export default function SelectedFood() {
 
   useEffect(() => {
     fetchFoodInfo();
-  }, [selectedMeal]);
+  }, [selectedMealId]);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
