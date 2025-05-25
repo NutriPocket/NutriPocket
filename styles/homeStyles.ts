@@ -7,8 +7,10 @@ export const homeStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    gap: 70,
   },
-  formContainer: {
+
+  formContainer: {  
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start',

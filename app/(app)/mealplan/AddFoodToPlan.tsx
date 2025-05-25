@@ -19,7 +19,6 @@ export default function AddFoodToPlan() {
   const axiosInstance = useAxiosInstance("food");
   const router = useRouter();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [planId] = useAtom(selectedPlanIdAtom);
 
   const fetchFoods = async () => {
     try {
