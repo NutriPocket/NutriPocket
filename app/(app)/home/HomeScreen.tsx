@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { homeStyles } from "../../../styles/homeStyles";
@@ -67,7 +67,7 @@ export default function HomeScreen() {
             </View>
           ))
         ) : (
-          <Text style={styles.mealDesc}>No hay comidas para hoy.</Text>
+          <Text style={styles.noMeal}>No hay comidas para hoy.</Text>
         )}
       </View>
     </View>
@@ -113,6 +113,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   mealDesc: {
+    color: "#555",
+    fontSize: 12,
+  },
+  noMeal: {
+    paddingVertical: 10,
+    paddingHorizontal: 70,
     color: "#555",
     fontSize: 12,
   },
