@@ -29,16 +29,16 @@ export default function Group() {
 
     try {
       const participantsReponse = await axiosGroupInstance.get(
-        `/groups/${id}/users`
+        `/groups/${id}/users`,
       );
       const participantIds = participantsReponse.data.data.map(
-        (user: { user_id: string }) => user.user_id
+        (user: { user_id: string }) => user.user_id,
       );
 
-      const userResponse = await axiosUserInstance.get("/users/");
+      const userResponse = await axiosUserInstance.get("/users");
       const filteredUsers = userResponse.data.filter(
         (user: UserType) =>
-          participantIds.includes(user.id) || user.id === userId
+          participantIds.includes(user.id) || user.id === userId,
       );
 
       setParticipants(filteredUsers);
@@ -51,16 +51,18 @@ export default function Group() {
   useFocusEffect(
     useCallback(() => {
       fetchGroupParticipants();
-    }, [id, auth])
+    }, [id, auth]),
   );
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Header />
       <View style={styles.screenContainer}>
-        <Text style={styles.title}>Grupo</Text>
-        <Text style={homeStyles.info}>Participantes</Text>
-        <Text style={styles.error}>{error}</Text>
+        <View>
+          <Text style={styles.title}>Grupo</Text>
+          <Text style={homeStyles.info}>Participantes</Text>
+          <Text style={styles.error}>{error}</Text>
+        </View>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
@@ -78,6 +80,7 @@ export default function Group() {
         </ScrollView>
         <FAB
           icon="plus"
+          label="Añadir Participante"
           style={{
             position: "absolute",
             right: 24,
@@ -102,10 +105,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: "#fff",
+    gap: 20,
   },
   scrollContainer: {
-    gap: 20,
-    paddingVertical: 50,
+    gap: 8,
   },
   title: {
     fontSize: 24,
