@@ -87,6 +87,7 @@ const styles = StyleSheet.create({
     padding: 5,
     borderLeftColor: "#287D76",
     gap: 10,
+    minWidth: 300,
   },
   cardTitle: {
     fontSize: 20,
