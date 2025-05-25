@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Button } from "react-native-paper";
 import { router, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
@@ -45,7 +45,7 @@ export default function PlanPreferences() {
         return;
       }
 
-      const response = await axiosInstance.get(`/users/${userId}/plan/foods`);
+      const response = await axiosInstance.get(`/foods`);
       const foods = response.data.data;
       console.log("foods: ", foods);
 
@@ -93,28 +93,25 @@ export default function PlanPreferences() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, backgroundColor: "#fff", gap: 20, padding: 10 }}>
       <Header />
-      <View
+      <Text
         style={{
-          flex: 1,
-          paddingVertical: 100,
+          fontSize: 20,
+          textAlign: "center",
+          color: "#287D76",
+          fontWeight: "bold",
+        }}
+      >
+        Elegí tus intereses
+      </Text>
+      <ScrollView
+        contentContainerStyle={{
           paddingHorizontal: 24,
           alignContent: "center",
-
           gap: 20,
         }}
       >
-        <Text
-          style={{
-            fontSize: 20,
-            textAlign: "center",
-            color: "#287D76",
-            fontWeight: "bold",
-          }}
-        >
-          Elegí tus intereses
-        </Text>
         {foodList.map((food) => (
           <TouchableOpacity
             key={food.id}
@@ -132,6 +129,14 @@ export default function PlanPreferences() {
             </Text>
           </TouchableOpacity>
         ))}
+      </ScrollView>
+      <View
+        style={{
+          flex: 1,
+          paddingHorizontal: 24,
+          backgroundColor: "#fff",
+        }}
+      >
         <Button
           mode="contained"
           onPress={() => handleCreate()}
