@@ -16,7 +16,6 @@ import FoodModal from "../../../components/FoodModal";
 export default function PlanView() {
   const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null);
   const [foodList, setFoodList] = useState<MealType[]>([]);
-  const [selectedFood, setSelectedFood] = useState<MealType | null>(null);
 
   const [auth] = useAtom(authenticatedAtom);
   const [selectedPlanId] = useAtom(selectedPlanIdAtom);
@@ -75,7 +74,8 @@ export default function PlanView() {
       if (!auth?.token) {
         return;
       }
-      await axiosInstance.delete(`/user/${userId}/plans/foods`, {
+
+      await axiosInstance.delete(`/users/${userId}/plan/foods`, {
         data: {
           day: weekDay,
           moment: mealMoment,
@@ -123,10 +123,8 @@ export default function PlanView() {
     setShowAddModal(false);
     setError(null);
   };
-
   const handleAddFoodToPlan = async (food: MealType) => {
     try {
-      setSelectedFood(food);
       setShowAddModal(false);
     } catch (error) {
       console.error("Error adding food to plan: ", error);
@@ -230,15 +228,12 @@ export default function PlanView() {
                             >
                               {meals ? (
                                 <MaterialCommunityIcons
-                                  name="pencil-outline"
+                                  name="trash-can-outline"
                                   size={24}
                                   color="#287D76"
                                   onPress={(e) => {
                                     e.stopPropagation(); // <-- Esto evita que se dispare el onPress del contenedor
-                                    handleModifyFoodFromItinerary(
-                                      weekDay,
-                                      moment
-                                    );
+                                    handleDeleteFood(weekDay, moment);
                                   }}
                                 />
                               ) : (
@@ -304,16 +299,6 @@ export default function PlanView() {
                       >
                         {food.description}
                       </Text>
-                    </View>
-                    <View style={{ justifyContent: "center", padding: 10 }}>
-                      <MaterialCommunityIcons
-                        name="trash-can-outline"
-                        size={24}
-                        color="#287D76"
-                        onPress={(e) => {
-                          e.stopPropagation(); // <-- Esto evita que se dispare el onPress del contenedor
-                        }}
-                      />
                     </View>
                   </View>
                 </TouchableRipple>

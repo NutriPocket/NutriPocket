@@ -9,7 +9,6 @@ import { FAB, TouchableRipple } from "react-native-paper";
 import Header from "../../../components/Header";
 import FoodModal from "../../../components/FoodModal";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function AddFoodToPlan() {
   const { weekDay, mealMoment } = useLocalSearchParams();
@@ -17,13 +16,10 @@ export default function AddFoodToPlan() {
   const [auth] = useAtom(authenticatedAtom);
   const [foodList, setFoodList] = useState<MealType[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [selectedFood, setSelectedFood] = useState<MealType | null>(null);
   const axiosInstance = useAxiosInstance("food");
   const router = useRouter();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedPlanId] = useAtom(selectedPlanIdAtom);
-  //const [newFood, setNewFood] = useState<MealType | null>(null);
+  const [planId] = useAtom(selectedPlanIdAtom);
 
   const fetchFoods = async () => {
     try {
@@ -38,7 +34,6 @@ export default function AddFoodToPlan() {
 
       const response = await axiosInstance.get(`/users/${userId}/plan/foods`);
       const foods = response.data.data;
-      console.log("foods: ", foods);
 
       setFoodList(foods);
     } catch (error) {
@@ -48,21 +43,20 @@ export default function AddFoodToPlan() {
 
   const handleAddFoodToPlan = async (food: MealType) => {
     try {
-      const response = await axiosInstance.put(
-        `/plans/${selectedPlanId}/foods`,
+      const response = await axiosInstance.post(
+        `/users/${auth?.id}/plan/foods`,
         {
           day: weekDay,
           moment: mealMoment,
           food_id: food.id,
         },
+
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
-      setSelectedFood(food);
-      setSuccess("Comida agregada al plan exitosamente.");
       router.back();
     } catch (error) {
       console.error("Error adding food to plan: ", error);
@@ -72,7 +66,6 @@ export default function AddFoodToPlan() {
   const handleCancel = () => {
     setShowAddModal(false);
     setError(null);
-    setSuccess(null);
   };
 
   useEffect(() => {
