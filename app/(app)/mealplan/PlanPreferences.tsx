@@ -57,12 +57,12 @@ export default function PlanPreferences() {
 
   const handleCreate = async () => {
     console.log("Creando plan con preferencias:", selected);
+    console.log("id del usuario:", auth?.id);
     try {
       const response = await axiosInstance.post(
         "/plans",
 
         {
-          fromPreferences: true,
           plan: {
             title: title,
             objetive: objective,
@@ -77,8 +77,14 @@ export default function PlanPreferences() {
           headers: {
             "Content-Type": "application/json",
           },
+          params: {
+            from_preferences: true,
+          },
         }
       );
+      console.log("Foods selected: ", selected);
+      console.log("Plan data: ", response.data);
+
       const planId = response.data.data.id_plan;
       setSelectedPlanId(planId);
       router.back();
