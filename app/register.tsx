@@ -22,9 +22,11 @@ const Register = () => {
         password: values.password,
       };
 
+      console.log(data);
       const response = await axiosInstance.post("/auth/register", data, {
         headers: { "Content-Type": "application/json" },
       });
+      console.log(response);
 
       if (response.status === 201) {
         const { data, token } = response.data;

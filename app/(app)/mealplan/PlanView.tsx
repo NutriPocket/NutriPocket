@@ -124,6 +124,7 @@ export default function PlanView() {
     setError(null);
   };
   const handleAddFoodToPlan = async (food: MealType) => {
+    console.log("Adding food to plan: ", food);
     try {
       setShowAddModal(false);
     } catch (error) {
