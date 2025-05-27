@@ -133,7 +133,6 @@ export default function GroupScreen() {
         style={{
           gap: 16,
           alignItems: "center",
-          // justifyContent: "center",
         }}
       >
         <FlatList
