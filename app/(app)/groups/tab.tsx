@@ -5,14 +5,14 @@ import { useEffect, useState, useRef } from "react";
 import { Text, StyleSheet, View, FlatList } from "react-native";
 import {
   Button,
-  Card,
   TextInput,
   FAB,
   TouchableRipple,
+  ActivityIndicator,
 } from "react-native-paper";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
-import { GroupType } from "@/types/groupTypes";
+import { GroupType } from "@/types/groupType";
 import { Formik } from "formik";
 import { router } from "expo-router";
 
@@ -22,12 +22,14 @@ export default function GroupScreen() {
   const [groups, setGroups] = useState<GroupType[]>([]);
   const [createError, setCreateError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const axiosInstance = useAxiosInstance("group");
   const scrollRef = useRef<FlatList>(null);
 
   const fetchGroups = async () => {
     try {
+      setLoading(true);
       const userId = auth?.id;
       if (!userId || !auth?.token) return;
       const response = await axiosInstance.get(`/users/${userId}/groups`);
@@ -35,6 +37,8 @@ export default function GroupScreen() {
       setError(null);
     } catch {
       setError("Error al obtener los grupos");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,59 +125,76 @@ export default function GroupScreen() {
 
   return (
     <View style={styles.screenContainer}>
-      <View>
-        <Text style={homeStyles.sectionTitle}>Grupos</Text>
-        {error && (
-          <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
-        )}
-        <Text style={homeStyles.info}>Elegí un grupo o creá uno nuevo</Text>
-      </View>
+      {loading ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator animating={true} color="#287D76" size="large" />
+        </View>
+      ) : (
+        <>
+          <View>
+            <Text style={homeStyles.sectionTitle}>Grupos</Text>
+            {error && (
+              <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
+            )}
+            <Text style={homeStyles.info}>Elegí un grupo o creá uno nuevo</Text>
+          </View>
 
-      <View
-        style={{
-          gap: 16,
-          alignItems: "center",
-        }}
-      >
-        <FlatList
-          ref={scrollRef}
-          data={groups}
-          horizontal
-          contentContainerStyle={{ gap: 16 }}
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableRipple
-              key={item.id}
-              onPress={() => {
-                router.push({
-                  pathname: "/groups/[id]",
-                  params: { id: item.id },
+          <View
+            style={{
+              gap: 16,
+              alignItems: "center",
+            }}
+          >
+            <FlatList
+              ref={scrollRef}
+              data={groups}
+              horizontal
+              contentContainerStyle={{ gap: 16 }}
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableRipple
+                  key={item.id}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/groups/[id]",
+                      params: { id: item.id },
+                    });
+                  }}
+                >
+                  <View style={styles.groupCard}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.cardTitle}>{item.name}</Text>
+                      <Text style={styles.cardDescription}>
+                        {item.description}
+                      </Text>
+                    </View>
+                    <Text style={styles.cardDate}>
+                      Creado el {new Date(item.created_at).toLocaleDateString()}
+                    </Text>
+                  </View>
+                </TouchableRipple>
+              )}
+              ListFooterComponent={renderFooter}
+            />
+          </View>
+          <FAB
+            icon="plus"
+            label="Crear grupo"
+            style={styles.fab}
+            onPress={() => {
+              if (scrollRef.current) {
+                scrollRef.current.scrollToEnd({
+                  animated: true,
                 });
-              }}
-            >
-              <Card style={styles.groupCard}>
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                <Text style={styles.cardDescription}>{item.description}</Text>
-              </Card>
-            </TouchableRipple>
-          )}
-          ListFooterComponent={renderFooter}
-        />
-      </View>
-      <FAB
-        icon="plus"
-        label="Crear grupo"
-        style={styles.fab}
-        onPress={() => {
-          if (scrollRef.current) {
-            scrollRef.current.scrollToEnd({
-              animated: true,
-            });
-          }
-        }}
-        color="#fff"
-      />
+              }
+            }}
+            color="#fff"
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -197,10 +218,9 @@ const styles = StyleSheet.create({
     width: 260,
     height: 300,
     backgroundColor: "#f8f8f8",
-    padding: 12,
+    padding: 16,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    gap: 4,
   },
   addGroupCard: {
     width: 260,
@@ -217,11 +237,21 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 2,
+    color: "#287D76",
+    textAlign: "left",
   },
   cardDescription: {
     fontSize: 14,
     color: "#555",
-    marginBottom: 10,
+    marginBottom: 6,
+    textAlign: "left",
+  },
+  cardDate: {
+    fontSize: 13,
+    color: "#888",
+    textAlign: "right",
+    marginBottom: 0,
   },
   input: {
     backgroundColor: "#fff",
