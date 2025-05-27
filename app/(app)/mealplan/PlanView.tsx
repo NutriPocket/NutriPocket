@@ -124,9 +124,12 @@ export default function PlanView() {
     setError(null);
   };
   const handleAddFoodToPlan = async (food: MealType) => {
-    console.log("Adding food to plan: ", food);
+    console.log(food);
     try {
+      await axiosInstance.post("/food", { food });
       setShowAddModal(false);
+
+      fetchFoods();
     } catch (error) {
       console.error("Error adding food to plan: ", error);
       setError("No se pudo agregar la comida al plan.");

@@ -31,7 +31,7 @@ const FoodModal: React.FC<FoodModalProps> = ({
   const initialValues = {
                   name: "",
                   description: "",
-    price: "",
+    price: 0,
                   id: 0,
                   calories_per_100g: 0,
                   protein_per_100g: 0,
@@ -43,10 +43,13 @@ const FoodModal: React.FC<FoodModalProps> = ({
     trans_fats_per_100g: 0,
     cholesterol_per_100g: 0,
     image_url: "",
+    ingredients: [] as string[],
   };
 
   const renderPage = (props: any) => {
     const { values, handleChange, handleBlur, touched, errors, setFieldValue } = props;
+    const [ingredientInput, setIngredientInput] = React.useState("");
+    const ingredients = values.ingredients || [];
     switch (page) {
       case 0:
         return (
@@ -99,6 +102,74 @@ const FoodModal: React.FC<FoodModalProps> = ({
       case 1:
         return (
           <View style={{ gap: 15 }}>
+            <Text style={{ fontWeight: "bold", fontSize: 16, color: "#287D76" }}>Ingredientes</Text>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <TextInput
+                label="Agregar ingrediente"
+                value={ingredientInput}
+                onChangeText={setIngredientInput}
+                mode="outlined"
+                dense
+                style={{ flex: 1 }}
+                activeOutlineColor="#287D76"
+              />
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#287D76",
+                  borderRadius: 8,
+                  paddingHorizontal: 12,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+                onPress={() => {
+                  if (ingredientInput.trim()) {
+                    setFieldValue("ingredients", [
+                      ...(values.ingredients || []),
+                      ingredientInput.trim(),
+                    ]);
+                    setIngredientInput("");
+                  }
+                }}
+                accessibilityLabel="Agregar ingrediente"
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}>+</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {(values.ingredients || []).map((ingredient: string, idx: number) => (
+                <View
+                  key={idx}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: "#E0F2F1",
+                    borderRadius: 16,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    marginBottom: 4,
+                    marginRight: 4,
+                  }}
+                >
+                  <Text style={{ color: "#287D76", marginRight: 6 }}>{ingredient}</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setFieldValue(
+                        "ingredients",
+                        values.ingredients.filter((_: string, i: number) => i !== idx)
+                      );
+                    }}
+                    accessibilityLabel={`Eliminar ${ingredient}`}
+                  >
+                    <Text style={{ color: "red", fontWeight: "bold" }}>×</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
+        );
+      case 2:
+        return (
+          <View style={{ gap: 15 }}>
             <TextInput label="Calorías/100g" value={String(values.calories_per_100g)} onChangeText={handleChange("calories_per_100g")} keyboardType="numeric" mode="outlined" dense />
             <TextInput label="Proteína/100g" value={String(values.protein_per_100g)} onChangeText={handleChange("protein_per_100g")} keyboardType="numeric" mode="outlined" dense />
             <TextInput label="Carbohidratos/100g" value={String(values.carbs_per_100g)} onChangeText={handleChange("carbs_per_100g")} keyboardType="numeric" mode="outlined" dense />
@@ -110,9 +181,10 @@ const FoodModal: React.FC<FoodModalProps> = ({
             <TextInput label="Colesterol/100g" value={String(values.cholesterol_per_100g)} onChangeText={handleChange("cholesterol_per_100g")} keyboardType="numeric" mode="outlined" dense />
                     </View>
         );
-      case 2:
+      case 3:
         return (
           <View style={{ gap: 15 }}>
+            <Text style={{ fontWeight: "bold", fontSize: 16, color: "#287D76" }}>Añade una imagen</Text>
             <TextInput
               label="URL de la imagen"
               value={values.image_url}
@@ -145,7 +217,20 @@ const FoodModal: React.FC<FoodModalProps> = ({
         <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback onPress={() => {}}>
             <View style={styles.modalContent}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <Text style={styles.modalTitle}>Agregar nueva comida</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setPage(0);
+                    setShowAddModal(false);
+                    handleCancel();
+                  }}
+                  style={{ padding: 4, marginLeft: 12 }}
+                  accessibilityLabel="Cerrar"
+                >
+                  <Text style={{ fontSize: 40, color: "#287D76", fontWeight: "bold" }}>×</Text>
+                </TouchableOpacity>
+              </View>
               <Formik
                 initialValues={initialValues}
                 validationSchema={createFoodValidationSchema}
@@ -164,7 +249,7 @@ const FoodModal: React.FC<FoodModalProps> = ({
                           <Text style={{ color: "#287D76" }}>Atrás</Text>
                         </TouchableOpacity>
                       )}
-                      {page < 2 ? (
+                      {page < 3 ? (
                       <TouchableOpacity
                           style={[styles.modalButton, { backgroundColor: "#287D76" }]}
                           onPress={() => setPage(page + 1)}
@@ -179,15 +264,6 @@ const FoodModal: React.FC<FoodModalProps> = ({
                         <Text style={{ color: "#fff" }}>Agregar</Text>
                       </TouchableOpacity>
                       )}
-                      <TouchableOpacity
-                        style={[styles.modalButton, { backgroundColor: "#eee" }]}
-                        onPress={() => {
-                          setPage(0);
-                          handleCancel();
-                        }}
-                      >
-                        <Text style={{ color: "#287D76" }}>Cancelar</Text>
-                      </TouchableOpacity>
                     </View>
                   </View>
                 )}
@@ -198,7 +274,7 @@ const FoodModal: React.FC<FoodModalProps> = ({
       </TouchableWithoutFeedback>
     </Modal>
   );
-};
+}
 
 const styles = StyleSheet.create({
   screenContainer: {
@@ -229,11 +305,17 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "#fff",
     borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
     padding: 30,
     gap: 30,
+    borderWidth: 2.5,
+    borderColor: "#287D76",
+    // iOS shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    // Android shadow
+    elevation: 2,
   },
   modalTitle: {
     fontWeight: "bold",

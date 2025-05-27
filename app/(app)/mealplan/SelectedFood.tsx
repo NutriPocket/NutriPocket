@@ -26,7 +26,7 @@ export default function SelectedFood() {
     description: "",
     calories_per_100g: 0,
     protein_per_100g: 0,
-    carbohydrates_per_100g: 0,
+    carbs_per_100g: 0,
     fiber_per_100g: 0,
     saturated_fats_per_100g: 0,
     monounsaturated_fats_per_100g: 0,
