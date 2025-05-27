@@ -132,6 +132,7 @@ export default function GroupScreen() {
       <View
         style={{
           gap: 16,
+          alignItems: "center",
         }}
       >
         <FlatList

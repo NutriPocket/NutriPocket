@@ -4,6 +4,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { useAtom } from "jotai";
 import { useState, useEffect } from "react";
@@ -12,44 +13,60 @@ import Header from "../../../components/Header";
 import useAxiosInstance from "@/hooks/useAxios";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { UserType } from "@/types/userType";
+import { Searchbar } from "react-native-paper";
+
+const MILISECONDS_TO_DEBOUNCE = 1000;
 
 export default function AddParticipant() {
   const [auth] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [tempSearch, setTempSearch] = useState("");
   const axiosGroupInstance = useAxiosInstance("group");
   const axiosUserInstance = useAxiosInstance("users");
 
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [users, setUsers] = useState<UserType[]>([]);
+  const [groupParticipantsIds, setGroupParticipantsIds] = useState<
+    string[] | null
+  >(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchGroupParticipants = async () => {
+    if (!id) return;
+
+    try {
+      const response = await axiosGroupInstance.get(`/groups/${id}/users`);
+      const participants = response.data.data.map(
+        (user: { user_id: string }) => user.user_id,
+      );
+      setGroupParticipantsIds(participants);
+    } catch (error) {
+      console.error("Error fetching group participants:", error);
+    }
+  };
 
   const fetchUsers = async () => {
     const userId = auth?.id;
-    if (!userId || !auth?.token) return;
+    if (!userId || !auth?.token || !id || !groupParticipantsIds) return;
+    setLoading(true);
 
     try {
-      console.log("Fetching users...");
-      const participantsReponse = await axiosGroupInstance.get(
-        `/groups/${id}/users`
-      );
-      const participantIds = participantsReponse.data.data.map(
-        (user: { user_id: string }) => user.user_id
-      );
+      const route = search ? `/users/?searchUsername=${search}` : "/users/";
 
-      const userResponse = await axiosUserInstance.get("/users/");
-      console.log("User response:", userResponse.data);
+      const userResponse = await axiosUserInstance.get(route);
+
       const filteredUsers = userResponse.data.filter(
-        (user: UserType) =>
-          !participantIds.includes(user.id) && user.id !== userId
+        (user: UserType) => !groupParticipantsIds.includes(user.id),
       );
-      console.log("Filtered users:", filteredUsers);
 
       setUsers(filteredUsers);
       setError(null);
-    } catch {
-      setError("Error al obtener los grupos");
+    } catch (error) {
+      setError("Error al obtener los usuarios");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -57,7 +74,23 @@ export default function AddParticipant() {
 
   useEffect(() => {
     fetchUsers();
-  }, [auth]);
+  }, [search, groupParticipantsIds]);
+
+  useEffect(() => {
+    fetchGroupParticipants();
+  }, [id]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (tempSearch !== search) {
+        setSearch(tempSearch);
+      }
+    }, MILISECONDS_TO_DEBOUNCE);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [tempSearch]);
 
   const handleAddParticipant = async (newParticipantId: string) => {
     try {
@@ -65,41 +98,57 @@ export default function AddParticipant() {
       if (!userId || !auth?.token) return;
 
       await axiosGroupInstance.post(
-        `/groups/${id}/users/${newParticipantId}`,
-        {}
+        `/groups/${id}/users/${newParticipantId}/`,
+        {},
       );
       router.back();
     } catch (error) {
       setError("Error al agregar participante");
     }
   };
-
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Header />
       <View style={styles.screenContainer}>
         <Text style={styles.title}>Añadir Participante</Text>
+
+        <Searchbar
+          placeholder="Buscar por nombre o email"
+          value={tempSearch}
+          onChangeText={setTempSearch}
+          onIconPress={() => setSearch(tempSearch)}
+          style={{ backgroundColor: "#F5F5F5" }}
+          inputStyle={{ fontSize: 16 }}
+        />
+
         {error && <Text style={styles.error}>{error}</Text>}
         {loading ? (
-          <Text>Cargando usuarios...</Text>
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            No hay usuarios disponibles
+          </Text>
         ) : (
-          <ScrollView
-            contentContainerStyle={{
-              paddingBottom: 20,
-              gap: 10,
-            }}
-          >
-            {users.map((user) => (
+          <FlatList
+            data={users}
+            keyExtractor={(user) => user.id}
+            renderItem={({ item: user }) => (
               <TouchableOpacity
-                key={user.id}
                 style={styles.userCard}
                 onPress={() => handleAddParticipant(user.id)}
               >
                 <Text style={styles.userName}>{user.username}</Text>
                 <Text style={styles.userEmail}>{user.email}</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+            contentContainerStyle={{
+              paddingBottom: 20,
+              gap: 10,
+            }}
+            ListEmptyComponent={
+              <Text style={{ textAlign: "center", marginTop: 20 }}>
+                No hay usuarios disponibles
+              </Text>
+            }
+          />
         )}
       </View>
     </View>
