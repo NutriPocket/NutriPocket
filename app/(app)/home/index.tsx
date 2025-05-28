@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import HomeScreen from "./HomeScreen";
 import UserScreen from "../user/UserScreen";
 import MealPlanScreen from "../mealplan/MealPlanScreen";
-import GroupsScreen from "../groups/GroupsScreen";
+import GroupsScreen from "../groups/tab";
 import PlanView from "../mealplan/PlanView";
 import { useAtom, useAtomValue } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";

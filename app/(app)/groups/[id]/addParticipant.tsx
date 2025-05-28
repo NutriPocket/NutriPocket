@@ -2,32 +2,32 @@ import {
   Text,
   View,
   StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   FlatList,
+  TouchableOpacity,
 } from "react-native";
 import { useAtom } from "jotai";
 import { useState, useEffect } from "react";
-import { authenticatedAtom } from "../../../atoms/authAtom";
-import Header from "../../../components/Header";
+import { authenticatedAtom } from "@/atoms/authAtom";
+import Header from "@/components/Header";
 import useAxiosInstance from "@/hooks/useAxios";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { UserType } from "@/types/userType";
-import { Searchbar } from "react-native-paper";
+import { Searchbar, ActivityIndicator } from "react-native-paper";
 
 const MILISECONDS_TO_DEBOUNCE = 1000;
 
 export default function AddParticipant() {
   const [auth] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [tempSearch, setTempSearch] = useState("");
   const axiosGroupInstance = useAxiosInstance("group");
   const axiosUserInstance = useAxiosInstance("users");
 
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { id: paramId } = useLocalSearchParams();
+  const id = paramId as string;
+
   const [users, setUsers] = useState<UserType[]>([]);
   const [groupParticipantsIds, setGroupParticipantsIds] = useState<
     string[] | null
@@ -98,7 +98,7 @@ export default function AddParticipant() {
       if (!userId || !auth?.token) return;
 
       await axiosGroupInstance.post(
-        `/groups/${id}/users/${newParticipantId}/`,
+        `/groups/${id}/users/${newParticipantId}`,
         {},
       );
       router.back();
@@ -123,9 +123,16 @@ export default function AddParticipant() {
 
         {error && <Text style={styles.error}>{error}</Text>}
         {loading ? (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            No hay usuarios disponibles
-          </Text>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: 20,
+            }}
+          >
+            <ActivityIndicator animating={true} color="#287D76" size="large" />
+          </View>
         ) : (
           <FlatList
             data={users}
