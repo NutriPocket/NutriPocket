@@ -19,23 +19,27 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
   const [menuVisible, setMenuVisible] = useState(false);
 
   return (
-    <View>
+    <View style={{ width: "100%" }}>
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
         anchor={
-          <Pressable onPress={() => setMenuVisible(true)}>
-            <TextInput
-              label={label}
-              value={items.find((item) => item.value === value)?.label || ""}
-              editable={false}
-              right={<TextInput.Icon icon="menu-down" />}
-              style={{
-                backgroundColor: "#fff",
-                borderRadius: 8,
-              }}
-            />
-          </Pressable>
+          <TextInput
+            label={label}
+            value={items.find((item) => item.value === value)?.label || ""}
+            editable={false}
+            right={
+              <TextInput.Icon
+                icon="menu-down"
+                onPress={() => setMenuVisible(true)}
+                forceTextInputFocus={false}
+              />
+            }
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 8,
+            }}
+          />
         }
       >
         {items.map((item) => (
