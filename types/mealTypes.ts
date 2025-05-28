@@ -5,6 +5,10 @@ export type MealPlanType = {
     plan_description: string;
 }
 
+export type IngredientType = {
+    detail: string;
+};
+
 export type MealType = {
     id: number;
     name: string;
