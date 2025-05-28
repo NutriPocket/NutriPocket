@@ -41,6 +41,7 @@ export default function SelectedFood() {
       const response = await axiosInstance.get(`/foods/${selectedMealId}`);
       const data = response.data.data;
       setSelectedFood(data);
+      console.log("Selected food data: ", data);
     } catch (error) {
       console.error("Error fetching food info: ", error);
     }
@@ -55,7 +56,12 @@ export default function SelectedFood() {
       <Header />
       <View style={styles.screenContainer}>
         <Text style={styles.title}>{selectedFood.name}</Text>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: 24,
+          }}
+        >
           {/* Card de información general */}
           <View style={styles.card}>
             <Text style={styles.subtitle}>Información General </Text>
@@ -75,6 +81,29 @@ export default function SelectedFood() {
                   <Text style={styles.nutritionValue}>{value}</Text>
                 </View>
               ))}
+          </View>
+
+          {/* Card de ingredientes y cantidades recomendadas (hardcodeado) */}
+          <View style={styles.card}>
+            <Text style={styles.subtitle}>Ingredientes y Cantidades</Text>
+            <View style={{ gap: 8 }}>
+              <View style={styles.ingredientRow}>
+                <Text style={styles.ingredientName}>Pollo</Text>
+                <Text style={styles.ingredientQty}>150g</Text>
+              </View>
+              <View style={styles.ingredientRow}>
+                <Text style={styles.ingredientName}>Arroz</Text>
+                <Text style={styles.ingredientQty}>100g</Text>
+              </View>
+              <View style={styles.ingredientRow}>
+                <Text style={styles.ingredientName}>Aceite de oliva</Text>
+                <Text style={styles.ingredientQty}>1 cda</Text>
+              </View>
+              <View style={styles.ingredientRow}>
+                <Text style={styles.ingredientName}>Sal</Text>
+                <Text style={styles.ingredientQty}>a gusto</Text>
+              </View>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -138,6 +167,22 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   nutritionValue: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "bold",
+  },
+  ingredientRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  },
+  ingredientName: {
+    fontSize: 16,
+    color: "#287D76",
+  },
+  ingredientQty: {
     fontSize: 16,
     color: "#333",
     fontWeight: "bold",
