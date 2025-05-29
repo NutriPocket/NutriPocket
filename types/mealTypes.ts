@@ -20,6 +20,7 @@ export type MealType = {
     trans_fats_per_100g: number;
     cholesterol_per_100g: number;
     ingredients: string[];
+    image_url: string;
 }
 
 

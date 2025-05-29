@@ -41,24 +41,16 @@ export default function AddFoodToPlan() {
   };
 
   const handleAddFoodToPlan = async (food: MealType) => {
+    console.log(food);
     try {
-      const response = await axiosInstance.post(
-        `/users/${auth?.id}/plan/foods`,
-        {
-          day: weekDay,
-          moment: mealMoment,
-          food_id: food.id,
-        },
+      await axiosInstance.post("/food", { food });
+      // await axiosInstance.post(`/users/${auth?.id}/plan/foods`);
+      setShowAddModal(false);
 
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      router.back();
+      fetchFoods();
     } catch (error) {
       console.error("Error adding food to plan: ", error);
+      setError("No se pudo agregar la comida al plan.");
     }
   };
 
