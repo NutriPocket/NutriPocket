@@ -127,6 +127,7 @@ export default function PlanView() {
     console.log(food);
     try {
       await axiosInstance.post("/food", { food });
+      // await axiosInstance.post(`/users/${auth?.id}/plan/foods`);
       setShowAddModal(false);
 
       fetchFoods();

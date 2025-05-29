@@ -42,8 +42,8 @@ const FoodModal: React.FC<FoodModalProps> = ({
     polyunsaturated_fats_per_100g: 0,
     trans_fats_per_100g: 0,
     cholesterol_per_100g: 0,
-    image_url: "",
     ingredients: [] as string[],
+    image_url: "",
   };
 
   const renderPage = (props: any) => {
