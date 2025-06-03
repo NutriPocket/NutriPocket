@@ -5,27 +5,37 @@ export type MealPlanType = {
     plan_description: string;
 }
 
-export type IngredientType = {
-    detail: string;
-};
-
 export type MealType = {
     id: number;
     name: string;
     description: string;
+    calories: number;
+    protein: number;
+    carbohydrates: number;
+    fiber: number;
+    saturated_fats: number;
+    monounsaturated_fats: number;
+    polyunsaturated_fats: number;
+    trans_fats: number;
+    cholesterol: number;
+    image_url: string;
     price: number;
-    calories_per_100g: number;
-    protein_per_100g: number;
-    carbs_per_100g: number;
-    fiber_per_100g: number;
-    saturated_fats_per_100g: number;
-    monounsaturated_fats_per_100g: number;
-    polyunsaturated_fats_per_100g: number;
-    trans_fats_per_100g: number;
-    cholesterol_per_100g: number;
-    ingredients: string[];
 }
 
+export type IngredientType = {
+    name : string;
+    measure_type: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fiber: number;
+    saturated_fats: number;
+    monounsaturated_fats: number;
+    polyunsaturated_fats: number;
+    trans_fats: number;
+    cholesterol: number;
+    quantity: number;
+}
 
 export type ItineraryPlan = {
     id_plan: string;

@@ -1,38 +1,54 @@
 import React, { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
-import { IngredientType, MealType } from "../../../types/mealTypes";
+import { MealType, IngredientType } from "../../../types/mealTypes";
 import Header from "../../../components/Header";
 import useAxiosInstance from "@/hooks/useAxios";
 import { Text, View, ScrollView, StyleSheet } from "react-native";
 
 const NUTRITION_LABELS: Record<string, string> = {
-  calories_per_100g: "Calorías (por 100g)",
-  protein_per_100g: "Proteínas (por 100g)",
-  carbohydrates_per_100g: "Carbohidratos (por 100g)",
-  fiber_per_100g: "Fibra (por 100g)",
-  saturated_fats_per_100g: "Grasas Saturadas (por 100g)",
-  monounsaturated_fats_per_100g: "Grasas Monoinsaturadas (por 100g)",
-  polyunsaturated_fats_per_100g: "Grasas Poliinsaturadas (por 100g)",
-  trans_fats_per_100g: "Grasas Trans (por 100g)",
-  cholesterol_per_100g: "Colesterol (por 100g)",
+  calories: "Calorías ",
+  protein: "Proteínas ",
+  carbohydrates: "Carbohidratos ",
+  fiber: "Fibra ",
+  saturated_fats: "Grasas Saturadas ",
+  monounsaturated_fats: "Grasas Monoinsaturadas ",
+  polyunsaturated_fats: "Grasas Poliinsaturadas ",
+  trans_fats: "Grasas Trans ",
+  cholesterol: "Colesterol ",
+};
+
+// Unidades para cada campo nutricional
+const NUTRITION_UNITS: Record<string, string> = {
+  calories: "kcal",
+  protein: "g",
+  carbohydrates: "g",
+  fiber: "g",
+  saturated_fats: "g",
+  monounsaturated_fats: "g",
+  polyunsaturated_fats: "g",
+  trans_fats: "g",
+  cholesterol: "mg",
 };
 
 export default function SelectedFood() {
   const { selectedMealId } = useLocalSearchParams();
+  const [ingredients, setIngredients] = useState<IngredientType[]>([]);
   const [selectedFood, setSelectedFood] = useState<MealType>({
     id: 0,
     name: "",
     description: "",
-    calories_per_100g: 0,
-    protein_per_100g: 0,
-    carbs_per_100g: 0,
-    fiber_per_100g: 0,
-    saturated_fats_per_100g: 0,
-    monounsaturated_fats_per_100g: 0,
-    polyunsaturated_fats_per_100g: 0,
-    trans_fats_per_100g: 0,
-    cholesterol_per_100g: 0,
+    image_url: "",
+    price: 0,
+    calories: 0,
+    protein: 0,
+    carbohydrates: 0,
+    fiber: 0,
+    saturated_fats: 0,
+    monounsaturated_fats: 0,
+    polyunsaturated_fats: 0,
+    trans_fats: 0,
+    cholesterol: 0,
   });
   const axiosInstance = useAxiosInstance("food");
   const [selectedFoodIngredients, setSelectedFoodIngredients] = useState<
@@ -51,43 +67,46 @@ export default function SelectedFood() {
   };
 
   const fetchFoodIngredients = async () => {
-    if (!selectedMealId) return;
-
     try {
       const response = await axiosInstance.get(
         `/foods/${selectedMealId}/ingredients`
       );
-      const ingredients = response.data.data;
-      setSelectedFoodIngredients(ingredients);
+
+      const apiIngredients = response.data.data;
+      const parsedIngredients: IngredientType[] = apiIngredients.map(
+        (item: any) => ({
+          ...item.ingredient,
+          quantity: item.quantity,
+        })
+      );
+
+      setIngredients(parsedIngredients);
+      console.log("Selected food ingredients: ", parsedIngredients);
     } catch (error) {
-      console.error("Error fetching food ingredients: ", error);
+      console.error("Error fetching food info: ", error);
+    }
+  };
+
+  const fetchFoodNutritionalInfo = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/foods/${selectedMealId}/nutrition`
+      );
+      const data = response.data.data;
+      setSelectedFood((prev) => ({
+        ...prev,
+        ...data,
+      }));
+      console.log("Selected food nutritional info: ", data);
+    } catch (error) {
+      console.error("Error fetching food nutritional info: ", error);
     }
   };
 
   useEffect(() => {
     fetchFoodInfo();
+    fetchFoodNutritionalInfo();
     fetchFoodIngredients();
-  }, [selectedMealId]);
-
-  useEffect(() => {
-    const fetchIngredients = async () => {
-      try {
-        const response = await axiosInstance.get(
-          `/foods/${selectedMealId}/ingredients`
-        );
-        if (response.data && response.data.data) {
-          setSelectedFood((prev) => ({
-            ...prev,
-            ingredients: response.data.data,
-          }));
-        }
-      } catch (error) {
-        // No mostrar error si no hay ingredientes
-      }
-    };
-    if (selectedMealId) {
-      fetchIngredients();
-    }
   }, [selectedMealId]);
 
   return (
@@ -101,49 +120,84 @@ export default function SelectedFood() {
             gap: 24,
           }}
         >
-          {/* Card de información general */}
-          <View style={styles.card}>
-            <Text style={styles.subtitle}>Información General </Text>
-            <Text style={styles.foodDesc}>{selectedFood.description}</Text>
-          </View>
+          <View>
+            {/* Card de información general */}
+            <View style={styles.card}>
+              <Text style={styles.subtitle}>Información General </Text>
+              <Text style={styles.foodDesc}>{selectedFood.description}</Text>
+            </View>
 
-          {/* Card de información nutricional */}
-          <View style={styles.card}>
-            <Text style={styles.subtitle}>Información Nutricional</Text>
-            {Object.entries(selectedFood)
-              .filter(([key]) => NUTRITION_LABELS[key])
-              .map(([key, value]) => (
-                <View key={key} style={styles.nutritionRow}>
-                  <Text style={styles.nutritionLabel}>
-                    {NUTRITION_LABELS[key]}:
-                  </Text>
-                  <Text style={styles.nutritionValue}>
-                    {Array.isArray(value) || value === null ? "" : value}
-                  </Text>
-                </View>
-              ))}
-          </View>
+            {/* Card de información nutricional */}
+            <View style={styles.card}>
+              <Text style={styles.subtitle}>Información Nutricional</Text>
+              {Object.entries(selectedFood)
+                .filter(([key]) => NUTRITION_LABELS[key])
+                .map(([key, value]) => {
+                  // Determinar la unidad para cada nutriente
+                  let unit = "";
+                  switch (key) {
+                    case "calories":
+                      unit = "(kcal)";
+                      break;
+                    case "cholesterol":
+                      unit = "(mg)";
+                      break;
+                    default:
+                      unit = "(g)";
+                  }
+                  return (
+                    <View key={key} style={styles.nutritionRow}>
+                      <Text style={styles.nutritionLabel}>
+                        {NUTRITION_LABELS[key]}:
+                      </Text>
+                      <Text style={styles.nutritionValue}>
+                        {typeof value === "number" ? value.toFixed(2) : value}{" "}
+                        {unit}
+                      </Text>
+                    </View>
+                  );
+                })}
+            </View>
 
-          {/* Card de ingredientes y cantidades recomendadas */}
-          <View style={styles.card}>
-            <Text style={styles.subtitle}>Ingredientes y Cantidades</Text>
-            {Array.isArray(selectedFood.ingredients) &&
-            selectedFood.ingredients.length > 0 ? (
-              <View style={{ gap: 8 }}>
-                {food.map((ingredient, idx) => (
-                  <View key={idx} style={styles.ingredientRow}>
+            {/* Card de ingredientes y cantidades recomendadas */}
+            <View style={styles.card}>
+              <Text style={styles.subtitle}>Ingredientes y Cantidades</Text>
+              {/* Cantidad total a consumir */}
+              <View style={styles.totalAmountContainer}>
+                <Text style={styles.totalAmountLabel}>
+                  Cantidad total a consumir:
+                </Text>
+                <Text style={styles.totalAmountValue}>
+                  {ingredients.length > 0
+                    ? `${ingredients
+                        .reduce(
+                          (acc, ing) =>
+                            acc +
+                            (typeof ing.quantity === "number"
+                              ? ing.quantity
+                              : 0),
+                          0
+                        )
+                        .toFixed(2)} g`
+                    : "-"}
+                </Text>
+              </View>
+              <View style={styles.divider} />
+
+              {ingredients.map((ingredient) => {
+                let unit = ingredient.measure_type;
+                if (unit === "gram") unit = "g";
+                else if (unit === "unit") unit = "unidad";
+                return (
+                  <View key={ingredient.name} style={styles.ingredientRow}>
                     <Text style={styles.ingredientName}>{ingredient.name}</Text>
                     <Text style={styles.ingredientQty}>
-                      {ingredient.amount}
+                      {ingredient.quantity} {unit ? `(${unit})` : ""}
                     </Text>
                   </View>
-                ))}
-              </View>
-            ) : (
-              <Text style={styles.ingredientQty}>
-                No hay ingredientes registrados.
-              </Text>
-            )}
+                );
+              })}
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -221,10 +275,36 @@ const styles = StyleSheet.create({
   ingredientName: {
     fontSize: 16,
     color: "#287D76",
+    fontWeight: "600",
   },
   ingredientQty: {
     fontSize: 16,
     color: "#333",
     fontWeight: "bold",
+  },
+  totalAmountContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+    backgroundColor: "#e6f7f5",
+    borderRadius: 8,
+    padding: 10,
+  },
+  totalAmountLabel: {
+    fontSize: 16,
+    color: "#287D76",
+    fontWeight: "600",
+  },
+  totalAmountValue: {
+    fontSize: 16,
+    color: "#287D76",
+    fontWeight: "bold",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#b2dfdb",
+    marginVertical: 10,
+    borderRadius: 1,
   },
 });
