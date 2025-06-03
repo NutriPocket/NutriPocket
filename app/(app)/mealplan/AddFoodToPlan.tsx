@@ -8,19 +8,19 @@ import useAxiosInstance from "@/hooks/useAxios";
 import { FAB, TouchableRipple } from "react-native-paper";
 import Header from "../../../components/Header";
 import FoodModal from "../../../components/FoodModal";
-import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 
 export default function AddFoodToPlan() {
   const { weekDay, mealMoment } = useLocalSearchParams();
 
   const [auth] = useAtom(authenticatedAtom);
-  const [foodList, setFoodList] = useState<MealType[]>([]);
+  const [foodPlanList, setFoodPlanList] = useState<MealType[]>([]);
+  const [allFoodList, setAllFoodList] = useState<MealType[]>([]);
   const [error, setError] = useState<string | null>(null);
   const axiosInstance = useAxiosInstance("food");
   const router = useRouter();
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const fetchFoods = async () => {
+  const fetchPlanFoods = async () => {
     try {
       const userId = auth?.id;
       if (!userId) {
@@ -34,9 +34,19 @@ export default function AddFoodToPlan() {
       const response = await axiosInstance.get(`/users/${userId}/plan/foods`);
       const foods = response.data.data;
 
-      setFoodList(foods);
+      setFoodPlanList(foods);
     } catch (error) {
       console.error("Error fetching foods: ", error);
+    }
+  };
+
+  const fetchAllFoods = async () => {
+    try {
+      const response = await axiosInstance.get("/foods");
+      const foods = response.data.data;
+      setAllFoodList(foods);
+    } catch (error) {
+      console.error("Error fetching all foods: ", error);
     }
   };
 
@@ -68,7 +78,8 @@ export default function AddFoodToPlan() {
   };
 
   useEffect(() => {
-    fetchFoods();
+    fetchPlanFoods();
+    fetchAllFoods();
   }, []);
 
   return (
@@ -84,7 +95,8 @@ export default function AddFoodToPlan() {
           }}
           showsVerticalScrollIndicator={false}
         >
-          {foodList.map((food) => (
+          <Text style={styles.subtitle}> Comidas del plan</Text>
+          {foodPlanList.map((food) => (
             <View key={food.id} style={{}}>
               <TouchableRipple
                 onPress={() => handleAddFoodToPlan(food)}
@@ -102,7 +114,34 @@ export default function AddFoodToPlan() {
               </TouchableRipple>
             </View>
           ))}
-          {foodList.length === 0 && (
+          {foodPlanList.length === 0 && (
+            <Text style={{ color: "#888", fontSize: 16, textAlign: "center" }}>
+              No tienes comidas registradas.
+            </Text>
+          )}
+          <View>
+            <Text style={styles.subtitle}> Todas las comidas</Text>
+          </View>
+
+          {allFoodList.map((food) => (
+            <View key={food.id} style={{}}>
+              <TouchableRipple
+                onPress={() => handleAddFoodToPlan(food)}
+                style={[styles.momentCard]}
+              >
+                <View>
+                  <Text style={styles.foodName}>{food.name}</Text>
+                  <Text
+                    style={{ fontSize: 15, color: "#444", marginTop: 4 }}
+                    numberOfLines={1}
+                  >
+                    {food.description}
+                  </Text>
+                </View>
+              </TouchableRipple>
+            </View>
+          ))}
+          {foodPlanList.length === 0 && (
             <Text style={{ color: "#888", fontSize: 16, textAlign: "center" }}>
               No tienes comidas registradas.
             </Text>
@@ -164,7 +203,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#287D76",
   },
   foodName: {
-    fontSize: 18,
+    fontSize: 17,
+    fontWeight: "bold",
+    color: "#287D76",
+  },
+  subtitle: {
+    textAlign: "center",
+    fontSize: 22,
     fontWeight: "bold",
     color: "#287D76",
   },
