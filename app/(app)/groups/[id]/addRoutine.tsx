@@ -6,6 +6,8 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import OptionPicker from "@/components/OptionPicker";
 import Header from "@/components/Header";
+import { useAtom } from "jotai";
+import { authenticatedAtom } from "@/atoms/authAtom";
 
 const daysOfWeek = [
   { label: "Lunes", value: "Monday" },
@@ -24,6 +26,7 @@ const hours = Array.from({ length: 24 }, (_, i) => ({
 
 export default function AddRoutine() {
   const { id: groupId } = useLocalSearchParams();
+  const [auth] = useAtom(authenticatedAtom);
   const router = useRouter();
   const axiosInstance = useAxiosInstance("group");
 
@@ -53,7 +56,7 @@ export default function AddRoutine() {
             if (isNaN(start) || isNaN(end) || start >= end) {
               Alert.alert(
                 "Error",
-                "Por favor selecciona un rango horario válido.",
+                "Por favor selecciona un rango horario válido."
               );
               setSubmitting(false);
               return;
@@ -65,10 +68,13 @@ export default function AddRoutine() {
                 day: values.day,
                 start_hour: start,
                 end_hour: end,
+                creator_id: auth?.id,
               };
+
+              console.log("Payload to send: ", payload);
               await axiosInstance.post(
-                `/groups/${groupId}/routines?forceMembers=true`,
-                payload,
+                `/groups/${groupId}/routines?force_members=false`,
+                payload
               );
               router.back();
             } catch (error) {
