@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
-import { MealType } from "../../../types/mealTypes";
+import { IngredientType, MealType } from "../../../types/mealTypes";
 import Header from "../../../components/Header";
 import useAxiosInstance from "@/hooks/useAxios";
 import { Text, View, ScrollView, StyleSheet } from "react-native";
@@ -35,19 +35,59 @@ export default function SelectedFood() {
     cholesterol_per_100g: 0,
   });
   const axiosInstance = useAxiosInstance("food");
+  const [selectedFoodIngredients, setSelectedFoodIngredients] = useState<
+    string[]
+  >([]);
 
   const fetchFoodInfo = async () => {
     try {
       const response = await axiosInstance.get(`/foods/${selectedMealId}`);
       const data = response.data.data;
       setSelectedFood(data);
+      console.log("Selected food data:   ", data);
     } catch (error) {
       console.error("Error fetching food info: ", error);
     }
   };
 
+  const fetchFoodIngredients = async () => {
+    if (!selectedMealId) return;
+
+    try {
+      const response = await axiosInstance.get(
+        `/foods/${selectedMealId}/ingredients`
+      );
+      const ingredients = response.data.data;
+      setSelectedFoodIngredients(ingredients);
+    } catch (error) {
+      console.error("Error fetching food ingredients: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchFoodInfo();
+    fetchFoodIngredients();
+  }, [selectedMealId]);
+
+  useEffect(() => {
+    const fetchIngredients = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/foods/${selectedMealId}/ingredients`
+        );
+        if (response.data && response.data.data) {
+          setSelectedFood((prev) => ({
+            ...prev,
+            ingredients: response.data.data,
+          }));
+        }
+      } catch (error) {
+        // No mostrar error si no hay ingredientes
+      }
+    };
+    if (selectedMealId) {
+      fetchIngredients();
+    }
   }, [selectedMealId]);
 
   return (
@@ -55,7 +95,12 @@ export default function SelectedFood() {
       <Header />
       <View style={styles.screenContainer}>
         <Text style={styles.title}>{selectedFood.name}</Text>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: 24,
+          }}
+        >
           {/* Card de información general */}
           <View style={styles.card}>
             <Text style={styles.subtitle}>Información General </Text>
@@ -72,9 +117,33 @@ export default function SelectedFood() {
                   <Text style={styles.nutritionLabel}>
                     {NUTRITION_LABELS[key]}:
                   </Text>
-                  <Text style={styles.nutritionValue}>{value}</Text>
+                  <Text style={styles.nutritionValue}>
+                    {Array.isArray(value) || value === null ? "" : value}
+                  </Text>
                 </View>
               ))}
+          </View>
+
+          {/* Card de ingredientes y cantidades recomendadas */}
+          <View style={styles.card}>
+            <Text style={styles.subtitle}>Ingredientes y Cantidades</Text>
+            {Array.isArray(selectedFood.ingredients) &&
+            selectedFood.ingredients.length > 0 ? (
+              <View style={{ gap: 8 }}>
+                {food.map((ingredient, idx) => (
+                  <View key={idx} style={styles.ingredientRow}>
+                    <Text style={styles.ingredientName}>{ingredient.name}</Text>
+                    <Text style={styles.ingredientQty}>
+                      {ingredient.amount}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.ingredientQty}>
+                No hay ingredientes registrados.
+              </Text>
+            )}
           </View>
         </ScrollView>
       </View>
@@ -138,6 +207,22 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   nutritionValue: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "bold",
+  },
+  ingredientRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+  },
+  ingredientName: {
+    fontSize: 16,
+    color: "#287D76",
+  },
+  ingredientQty: {
     fontSize: 16,
     color: "#333",
     fontWeight: "bold",

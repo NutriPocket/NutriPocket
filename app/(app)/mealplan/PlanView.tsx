@@ -64,7 +64,6 @@ export default function PlanView() {
       console.error("Error fetching foods: ", error);
     }
   };
-
   const handleDeleteFood = async (weekDay: string, mealMoment: string) => {
     try {
       const userId = auth?.id;
