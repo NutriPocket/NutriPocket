@@ -4,7 +4,7 @@ import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import { MealType, IngredientType } from "../../../types/mealTypes";
 import Header from "../../../components/Header";
 import useAxiosInstance from "@/hooks/useAxios";
-import { Text, View, ScrollView, StyleSheet } from "react-native";
+import { Text, View, ScrollView, StyleSheet, Image } from "react-native";
 
 const NUTRITION_LABELS: Record<string, string> = {
   calories: "Calorías ",
@@ -118,6 +118,21 @@ export default function SelectedFood() {
           }}
         >
           <View>
+            <View style={styles.imageContainer}>
+              {selectedFood.image_url &&
+              selectedFood.image_url.trim() !== "" &&
+              selectedFood.image_url !== null ? (
+                <Image
+                  source={{ uri: selectedFood.image_url }}
+                  style={styles.foodImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={[styles.foodImage, styles.noImageCircle]}>
+                  <Text style={styles.noImageText}>Sin imagen</Text>
+                </View>
+              )}
+            </View>
             {/* Card de información general */}
             <View style={styles.card}>
               <Text style={styles.subtitle}>Información General </Text>
@@ -214,7 +229,7 @@ const styles = StyleSheet.create({
     color: "#287D76",
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: 16,
   },
   subtitle: {
     fontSize: 20,
@@ -223,7 +238,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 16,
   },
-
+  imageContainer: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
   card: {
     backgroundColor: "#f5f5f5",
     borderRadius: 16,
@@ -303,5 +321,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#b2dfdb",
     marginVertical: 10,
     borderRadius: 1,
+  },
+  foodImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#eee",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noImageCircle: {
+    backgroundColor: "#ddd",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noImageText: {
+    fontSize: 14,
+    color: "#888",
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
