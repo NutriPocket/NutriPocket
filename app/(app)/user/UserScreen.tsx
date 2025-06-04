@@ -4,20 +4,21 @@ import { SegmentedButtons } from "react-native-paper";
 import UserPersonalDataSection from "./UserPersonalDataSection";
 import UserObjectivesSection from "./UserObjectivesSection";
 import UserRoutinesSection from "./UserRoutinesSection";
-
+import Header from "@/components/Header";
 
 export default function UserScreen() {
   const [tabIndex, setTabIndex] = useState(0);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <Header showBack={false} />
       <View style={{ padding: 16, gap: 16 }}>
         {/* Tabs con SegmentedButtons */}
         <SegmentedButtons
           value={tabIndex.toString()}
           onValueChange={(v) => setTabIndex(Number(v))}
           buttons={[
-            { value: "0", label: "Datos Personales" },
+            { value: "0", label: "Datos" },
             { value: "1", label: "Objetivos" },
             { value: "2", label: "Rutinas" },
           ]}

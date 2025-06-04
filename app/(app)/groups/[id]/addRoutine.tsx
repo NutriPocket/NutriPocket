@@ -73,6 +73,8 @@ export default function AddRoutine() {
                 end_hour: end,
                 creator_id: creatorId,
               };
+
+              console.log("Payload to send: ", payload);
               await axiosInstance.post(
                 `/groups/${groupId}/routines?force_members=${values.force_members}`,
                 payload
