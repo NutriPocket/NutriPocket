@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
+import { TextInput, Button, Text } from "react-native-paper";
 
 import { useAtom } from "jotai";
 import useAxiosInstance from "@/hooks/useAxios";
@@ -12,6 +13,25 @@ import Header from "../../../components/Header";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import { TouchableRipple, SegmentedButtons, FAB } from "react-native-paper";
 import FoodModal from "../../../components/FoodModal";
+import { Formik } from "formik";
+import { Dropdown } from "react-native-paper-dropdown";
+import { CustomDropdown } from "../../../components/CustomDropdown";
+
+const WEEK_DAYS = [
+  { label: "Domingo", value: "domingo" },
+  { label: "Lunes", value: "lunes" },
+  { label: "Martes", value: "martes" },
+  { label: "Miércoles", value: "miércoles" },
+  { label: "Jueves", value: "jueves" },
+  { label: "Viernes", value: "viernes" },
+  { label: "Sábado", value: "sábado" },
+];
+const MEAL_MOMENTS = [
+  { label: "Desayuno", value: "desayuno" },
+  { label: "Almuerzo", value: "almuerzo" },
+  { label: "Merienda", value: "merienda" },
+  { label: "Cena", value: "cena" },
+];
 
 export default function PlanView() {
   const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null);
@@ -24,6 +44,10 @@ export default function PlanView() {
   const [tab, setTab] = useState("plan");
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+
+  const [weekDay, setWeekDay] = useState<string | null>(null);
+  const [mealMoment, setMealMoment] = useState<string | null>(null);
+  const [selectedFood, setSelectedFood] = useState<MealType | null>(null);
 
   const fetchPlanItinerary = async () => {
     try {
@@ -139,8 +163,9 @@ export default function PlanView() {
     useCallback(() => {
       if (tab === "all") {
         fetchFoods();
-      } else {
+      } else if (tab === "plan") {
         fetchPlanItinerary();
+      } else {
       }
     }, [auth?.id, selectedPlanId, tab])
   );
@@ -152,7 +177,8 @@ export default function PlanView() {
         onValueChange={setTab}
         buttons={[
           { value: "plan", label: "Plan Semanal" },
-          { value: "all", label: "Todas las Comidas" },
+          { value: "all", label: "Comidas" },
+          { value: "upload", label: "Actualizar" },
         ]}
         style={styles.tab}
         theme={{
@@ -262,7 +288,7 @@ export default function PlanView() {
               )}
             </ScrollView>
           </View>
-        ) : (
+        ) : tab == "all" ? (
           <View style={{ flex: 1 }}>
             <Text style={styles.title}> Todas las Comidas</Text>
             <ScrollView
@@ -336,7 +362,25 @@ export default function PlanView() {
               error={error}
             />
           </View>
-        )}
+        ) : tab == "upload" ? (
+          <View style={{ flex: 1, gap: 20 }}>
+            <Text style={styles.title}>Cargar comida</Text>
+            <CustomDropdown
+              label="Día de la semana"
+              options={WEEK_DAYS}
+              selected={weekDay ? [weekDay] : []}
+              onChange={(arr) => setWeekDay(arr[0] ?? null)}
+              multiple={false}
+            />
+            <CustomDropdown
+              label="Momento del día"
+              options={MEAL_MOMENTS}
+              selected={mealMoment ? [mealMoment] : []}
+              onChange={(arr) => setMealMoment(arr[0] ?? null)}
+              multiple={false}
+            />
+          </View>
+        ) : null}
       </View>
     </View>
   );

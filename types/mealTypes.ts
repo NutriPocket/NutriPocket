@@ -23,6 +23,7 @@ export type MealType = {
 }
 
 export type IngredientType = {
+    id: number;
     name : string;
     measure_type: string;
     calories: number;

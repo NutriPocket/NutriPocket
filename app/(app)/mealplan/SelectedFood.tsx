@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { router, useLocalSearchParams } from "expo-router";
-import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
+import React, { useState, useCallback } from "react";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { MealType, IngredientType } from "../../../types/mealTypes";
 import Header from "../../../components/Header";
 import useAxiosInstance from "@/hooks/useAxios";
-import { Text, View, ScrollView, StyleSheet, Image } from "react-native";
+import {
+  Text,
+  View,
+  ScrollView,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const NUTRITION_LABELS: Record<string, string> = {
   calories: "Calorías ",
@@ -51,9 +58,6 @@ export default function SelectedFood() {
     cholesterol: 0,
   });
   const axiosInstance = useAxiosInstance("food");
-  const [selectedFoodIngredients, setSelectedFoodIngredients] = useState<
-    string[]
-  >([]);
 
   const fetchFoodInfo = async () => {
     try {
@@ -103,11 +107,13 @@ export default function SelectedFood() {
     }
   };
 
-  useEffect(() => {
-    fetchFoodInfo();
-    fetchFoodNutritionalInfo();
-    fetchFoodIngredients();
-  }, [selectedMealId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchFoodInfo();
+      fetchFoodNutritionalInfo();
+      fetchFoodIngredients();
+    }, [])
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -197,8 +203,8 @@ export default function SelectedFood() {
                     : "-"}
                 </Text>
               </View>
-              <View style={styles.divider} />
 
+              <View style={styles.divider} />
               {ingredients.map((ingredient) => {
                 let unit = ingredient.measure_type;
                 if (unit === "gram") unit = "g";
@@ -212,6 +218,22 @@ export default function SelectedFood() {
                   </View>
                 );
               })}
+              {/* Botón para agregar nuevo ingrediente */}
+              <TouchableOpacity
+                style={styles.addIngredientButton}
+                onPress={() =>
+                  router.push({
+                    pathname: "/mealplan/AddIngredientToPlan",
+                    params: { selectedMealId },
+                  })
+                }
+                accessibilityLabel="Agregar nuevo ingrediente"
+              >
+                <MaterialIcons name="add" size={22} color="#fff" />
+                <Text style={styles.addIngredientButtonText}>
+                  Agregar nuevo ingrediente
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -343,5 +365,21 @@ const styles = StyleSheet.create({
     color: "#888",
     fontWeight: "bold",
     textAlign: "center",
+  },
+  addIngredientButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#287D76",
+    borderRadius: 8,
+    paddingVertical: 10,
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  addIngredientButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginLeft: 8,
   },
 });
