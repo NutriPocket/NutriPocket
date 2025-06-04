@@ -178,7 +178,6 @@ export default function PlanView() {
         buttons={[
           { value: "plan", label: "Plan Semanal" },
           { value: "all", label: "Comidas" },
-          { value: "upload", label: "Actualizar" },
         ]}
         style={styles.tab}
         theme={{
@@ -360,24 +359,6 @@ export default function PlanView() {
               handleAddFoodToPlan={handleAddFoodToPlan}
               handleCancel={handleCancel}
               error={error}
-            />
-          </View>
-        ) : tab == "upload" ? (
-          <View style={{ flex: 1, gap: 20 }}>
-            <Text style={styles.title}>Cargar comida</Text>
-            <CustomDropdown
-              label="Día de la semana"
-              options={WEEK_DAYS}
-              selected={weekDay ? [weekDay] : []}
-              onChange={(arr) => setWeekDay(arr[0] ?? null)}
-              multiple={false}
-            />
-            <CustomDropdown
-              label="Momento del día"
-              options={MEAL_MOMENTS}
-              selected={mealMoment ? [mealMoment] : []}
-              onChange={(arr) => setMealMoment(arr[0] ?? null)}
-              multiple={false}
             />
           </View>
         ) : null}

@@ -123,24 +123,29 @@ export default function AddFoodToPlan() {
             <Text style={styles.subtitle}> Todas las comidas</Text>
           </View>
 
-          {allFoodList.map((food) => (
-            <View key={food.id} style={{}}>
-              <TouchableRipple
-                onPress={() => handleAddFoodToPlan(food)}
-                style={[styles.momentCard]}
-              >
-                <View>
-                  <Text style={styles.foodName}>{food.name}</Text>
-                  <Text
-                    style={{ fontSize: 15, color: "#444", marginTop: 4 }}
-                    numberOfLines={1}
-                  >
-                    {food.description}
-                  </Text>
-                </View>
-              </TouchableRipple>
-            </View>
-          ))}
+          {allFoodList
+            .filter(
+              (food) =>
+                !foodPlanList.some((planFood) => planFood.id === food.id)
+            )
+            .map((food) => (
+              <View key={food.id} style={{}}>
+                <TouchableRipple
+                  onPress={() => handleAddFoodToPlan(food)}
+                  style={[styles.momentCard]}
+                >
+                  <View>
+                    <Text style={styles.foodName}>{food.name}</Text>
+                    <Text
+                      style={{ fontSize: 15, color: "#444", marginTop: 4 }}
+                      numberOfLines={1}
+                    >
+                      {food.description}
+                    </Text>
+                  </View>
+                </TouchableRipple>
+              </View>
+            ))}
           {foodPlanList.length === 0 && (
             <Text style={{ color: "#888", fontSize: 16, textAlign: "center" }}>
               No tienes comidas registradas.
