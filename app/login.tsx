@@ -1,35 +1,42 @@
 import React, { useRef } from "react";
 import { useAtom } from "jotai";
-import { View, StyleSheet, Dimensions, Keyboard, TextInput as RNTextInput } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  Keyboard,
+  TextInput as RNTextInput,
+} from "react-native";
 import { authenticatedAtom } from "../atoms/authAtom";
-import { TextInput , Button, Text } from "react-native-paper";
+import { TextInput, Button, Text } from "react-native-paper";
 import { router } from "expo-router";
 import axios from "axios";
 import { Formik } from "formik";
 import { Image } from "react-native";
 import { loginValidationSchema } from "../utils/validationSchemas";
-import useAxiosInstance from "@/hooks/useAxios"
-
+import useAxiosInstance from "@/hooks/useAxios";
 
 const Login = () => {
   const [, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = React.useState<string | null>(null);
-  const axiosInstance = useAxiosInstance('users');
+  const axiosInstance = useAxiosInstance("users");
 
   const handleLogin = async (values: any) => {
     try {
-      const response = await axiosInstance.post("/auth/login", {
-        ...values,
-      },
-      {
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+      const response = await axiosInstance.post(
+        "/auth/login",
+        {
+          ...values,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       if (response.status === 200) {
         const { data, token } = response.data;
         const { id, email, username } = data;
         setIsAuthenticated({ id, email, username, token });
-        router.replace("/home"); // Redirige a la pantalla de tabs Home
+        router.replace("/(app)"); // Redirige a la pantalla de tabs Home
       }
     } catch (err: any) {
       if (err.response && err.response.status === 401) {
@@ -50,9 +57,16 @@ const Login = () => {
       validationSchema={loginValidationSchema}
       onSubmit={handleLogin}
     >
-      {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+      {({
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        values,
+        errors,
+        touched,
+      }) => (
         <View style={styles.container}>
-            <Image
+          <Image
             source={require("../assets/images/logo_primary.png")}
             style={styles.logo}
             resizeMode="contain"
@@ -68,11 +82,18 @@ const Login = () => {
             theme={{
               colors: {
                 background: "white",
-                onSurfaceVariant: touched.emailOrUsername && errors.emailOrUsername ? "red" : "black",
+                onSurfaceVariant:
+                  touched.emailOrUsername && errors.emailOrUsername
+                    ? "red"
+                    : "black",
               },
             }}
-            outlineColor={touched.emailOrUsername && errors.emailOrUsername ? "red" : "gray"}
-            activeOutlineColor={touched.emailOrUsername && errors.emailOrUsername ? "red" : "blue"}
+            outlineColor={
+              touched.emailOrUsername && errors.emailOrUsername ? "red" : "gray"
+            }
+            activeOutlineColor={
+              touched.emailOrUsername && errors.emailOrUsername ? "red" : "blue"
+            }
           />
           {touched.emailOrUsername && errors.emailOrUsername && (
             <Text style={styles.error}>{errors.emailOrUsername}</Text>
@@ -87,17 +108,24 @@ const Login = () => {
             theme={{
               colors: {
                 background: "white",
-                onSurfaceVariant: touched.password && errors.password ? "red" : "black",
+                onSurfaceVariant:
+                  touched.password && errors.password ? "red" : "black",
               },
             }}
             outlineColor={touched.password && errors.password ? "red" : "gray"}
-            activeOutlineColor={touched.password && errors.password ? "red" : "blue"}
+            activeOutlineColor={
+              touched.password && errors.password ? "red" : "blue"
+            }
           />
           {touched.password && errors.password && (
             <Text style={styles.error}>{errors.password}</Text>
           )}
           {error && <Text style={styles.error}>{error}</Text>}
-          <Button mode="contained" onPress={handleSubmit as any} style={styles.Loginbutton}>
+          <Button
+            mode="contained"
+            onPress={handleSubmit as any}
+            style={styles.Loginbutton}
+          >
             <Text style={styles.LoginbuttonText}>Login</Text>
           </Button>
           <Button
@@ -112,7 +140,6 @@ const Login = () => {
     </Formik>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -152,10 +179,10 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   NewAccountButtonText: {
-        color: "#FFFFFF",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   error: {
     color: "red",
     textAlign: "center",
@@ -166,7 +193,7 @@ const styles = StyleSheet.create({
     height: 300,
     marginBottom: 20,
     alignSelf: "center",
-},
+  },
 });
 
 export default Login;

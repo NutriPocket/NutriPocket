@@ -1,15 +1,15 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import HomeScreen from "./HomeScreen";
-import UserScreen from "../user/UserScreen";
-import MealPlanScreen from "../mealplan/MealPlanScreen";
-import GroupsScreen from "../groups/tab";
-import PlanView from "../mealplan/PlanView";
+import HomeScreen from "./home/HomeScreen";
+import UserScreen from "./user/UserScreen";
+import MealPlanScreen from "./mealplan/MealPlanScreen";
+import GroupsScreen from "./groups/tab";
+import PlanView from "./mealplan/PlanView";
 import { useAtom, useAtomValue } from "jotai";
-import { authenticatedAtom } from "../../../atoms/authAtom";
+import { authenticatedAtom } from "../../atoms/authAtom";
 import { Redirect } from "expo-router";
-import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
+import { selectedPlanIdAtom } from "../../atoms/mealPlanAtom";
 
 const Tab = createBottomTabNavigator();
 
