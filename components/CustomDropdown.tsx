@@ -45,7 +45,7 @@ export const CustomDropdown = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View>
       <Menu
         visible={visible}
         onDismiss={() => setVisible(false)}
@@ -55,7 +55,6 @@ export const CustomDropdown = ({
               label={label}
               value={getDisplayValue()}
               editable={false}
-              mode="outlined"
               right={
                 <TextInput.Icon
                   icon={visible ? "menu-up" : "menu-down"}
@@ -64,30 +63,19 @@ export const CustomDropdown = ({
               }
               style={{
                 backgroundColor: "#E0F2F1",
-                borderRadius: 16,
-                color: "#287D76",
-                fontSize: 16,
-                borderWidth: 0,
-                shadowColor: "#000",
-                shadowOpacity: 0.07,
-                shadowRadius: 8,
-                elevation: 2,
+                borderRadius: 8,
               }}
-              theme={{ colors: { background: "#E0F2F1", primary: "#287D76" } }}
+              mode="flat"
+              underlineColor="transparent"
               onPressIn={() => setVisible(true)}
             />
           </View>
         }
-        style={{
+        contentStyle={{
           backgroundColor: "#fff",
           borderRadius: 16,
-          marginTop: 2,
-          shadowColor: "#000",
-          shadowOpacity: 0.1,
-          shadowRadius: 12,
-          elevation: 6,
         }}
-        contentStyle={{ backgroundColor: "#fff", borderRadius: 16 }}
+        anchorPosition="bottom"
       >
         {options.map((option) => (
           <Menu.Item
@@ -95,9 +83,6 @@ export const CustomDropdown = ({
             onPress={() => toggleItem(option.value)}
             titleStyle={{
               flexDirection: "row",
-              alignItems: "center",
-              color: "#287D76",
-              fontWeight: selected.includes(option.value) ? "bold" : "normal",
               fontSize: 16,
             }}
             style={{
@@ -113,9 +98,7 @@ export const CustomDropdown = ({
                 title={option.label}
                 titleStyle={{
                   color: "#287D76",
-                  fontWeight: selected.includes(option.value)
-                    ? "bold"
-                    : "normal",
+                  fontWeight: "normal",
                   fontSize: 16,
                 }}
                 left={() =>
@@ -138,9 +121,3 @@ export const CustomDropdown = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginVertical: 8,
-  },
-});
