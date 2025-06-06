@@ -10,12 +10,14 @@ type HeaderProps = {
   title?: string;
   showBack?: boolean;
   backTo?: any | null;
+  onBack?: () => void;
 };
 
 export default function Header({
   title = "",
   showBack = true,
   backTo = null,
+  onBack,
 }: HeaderProps) {
   const router = useRouter();
   const [selectedPlanId, setSelectedPlanId] = useAtom(selectedPlanIdAtom);
@@ -32,11 +34,10 @@ export default function Header({
       {showBack && (
         <TouchableOpacity
           onPress={async () => {
-            if (backTo) {
-              console.log("backTo: ", backTo);
-              console.log("selectedPlanId: ", selectedPlanId);
+            if (onBack) {
+              onBack();
+            } else if (backTo) {
               setSelectedPlanId(null);
-              //await router.push(backTo);
             } else {
               router.back();
             }

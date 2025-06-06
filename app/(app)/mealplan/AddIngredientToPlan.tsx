@@ -149,7 +149,7 @@ export default function AddIngredientToPlan() {
         style={{ backgroundColor: "#287D76", borderRadius: 8, marginTop: 24 }}
         onPress={handleAdd}
       >
-        Agregar al plan
+        Guardar
       </Button>
       <Button
         mode="outlined"
