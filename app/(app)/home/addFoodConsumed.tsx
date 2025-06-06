@@ -13,24 +13,24 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import Header from "@/components/Header";
 import { TextInput, ActivityIndicator } from "react-native-paper";
 import { IngredientType } from "../../../types/mealTypes";
-import { removedIngredientsAtom } from "../../../atoms/removedIngredientsAtom";
+import { consumedIngredientsAtom } from "../../../atoms/consumedIngredientsAtom";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 
 export default function AddFoodConsumed() {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const { mealId, moment, day } = params;
 
   const axiosInstance = useAxiosInstance("food");
-  const [auth] = useAtom(authenticatedAtom);
-  const [removedIngredients, setRemovedIngredients] = useAtom(
-    removedIngredientsAtom
+
+  const [ingredientsToLoad, setIngredientsToLoad] = useAtom(
+    consumedIngredientsAtom
   );
 
   const [error, setError] = useState<string | null>(null);
-  const { mealId } = params;
   const [ingredients, setIngredients] = useState<IngredientType[]>([]);
   const [loading, setLoading] = useState(true);
-  // Usar un estado separado para los valores editados
+
   const [editedQuantities, setEditedQuantities] = useState<{
     [name: string]: string;
   }>({});
@@ -48,7 +48,12 @@ export default function AddFoodConsumed() {
       );
 
       setIngredients(parsedIngredients);
-      console.log("Selected food ingredients: ", parsedIngredients);
+
+      if (ingredientsToLoad.length === 0) {
+        setIngredientsToLoad(parsedIngredients);
+      }
+
+      console.log("Selected food ingredients: ", ingredientsToLoad);
     } catch (error) {
       console.error("Error fetching food info: ", error);
     } finally {
@@ -61,7 +66,10 @@ export default function AddFoodConsumed() {
   }, []);
 
   const handleRemove = (ingredientName: string) => {
-    setRemovedIngredients((prev) => [...prev, ingredientName]);
+    setIngredientsToLoad((prev) =>
+      prev.filter((ing) => ing.name !== ingredientName)
+    );
+
     setEditedQuantities((prev) => {
       const updated = { ...prev };
       delete updated[ingredientName];
@@ -77,11 +85,17 @@ export default function AddFoodConsumed() {
 
   const handleIngredientChange = (name: string, value: string) => {
     setEditedQuantities((prev) => ({ ...prev, [name]: value }));
+    setIngredientsToLoad((prev) =>
+      prev.map((ing) =>
+        ing.name === name ? { ...ing, quantity: Number(value) } : ing
+      )
+    );
   };
 
   const handleBackToHome = () => {
-    setRemovedIngredients([]);
+    setIngredientsToLoad([]);
     setEditedQuantities({});
+    router.back();
   };
 
   const handleSaveAll = async () => {
@@ -108,6 +122,8 @@ export default function AddFoodConsumed() {
     }
   };
 
+  console.log("Ingredients to load: ", ingredientsToLoad.length);
+
   return (
     <View style={styles.screenContainer}>
       <Header onBack={handleBackToHome} />
@@ -121,66 +137,64 @@ export default function AddFoodConsumed() {
               <Text style={styles.cardTitle}>Ingredientes</Text>
             </View>
             <View>
-              {ingredients
-                .filter((ing) => !removedIngredients.includes(ing.name))
-                .map((ing) => {
-                  let unit = ing.measure_type;
-                  if (unit === "gram") unit = "g";
-                  else if (unit === "unit") unit = "u";
-                  return (
-                    <View key={ing.name} style={styles.ingredientRow}>
-                      <Text style={styles.ingredientName}>{ing.name}</Text>
+              {ingredientsToLoad.map((ing) => {
+                let unit = ing.measure_type;
+                if (unit === "gram") unit = "g";
+                else if (unit === "unit") unit = "u";
+                return (
+                  <View key={ing.name} style={styles.ingredientRow}>
+                    <Text style={styles.ingredientName}>{ing.name}</Text>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
                       <View
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
-                          gap: 8,
+                          gap: 2,
                         }}
                       >
-                        <View
+                        <TextInput
+                          value={
+                            editedQuantities[ing.name] !== undefined
+                              ? editedQuantities[ing.name]
+                              : ing.quantity.toString()
+                          }
+                          onChangeText={(text) =>
+                            handleIngredientChange(ing.name, text)
+                          }
+                          style={styles.editInput}
+                          keyboardType="numeric"
+                          mode="outlined"
+                          dense
+                        />
+                        <Text
                           style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 2,
+                            color: "#287D76",
+                            fontWeight: "600",
                           }}
                         >
-                          <TextInput
-                            value={
-                              editedQuantities[ing.name] !== undefined
-                                ? editedQuantities[ing.name]
-                                : ing.quantity.toString()
-                            }
-                            onChangeText={(text) =>
-                              handleIngredientChange(ing.name, text)
-                            }
-                            style={styles.editInput}
-                            keyboardType="numeric"
-                            mode="outlined"
-                            dense
-                          />
-                          <Text
-                            style={{
-                              color: "#287D76",
-                              fontWeight: "600",
-                            }}
-                          >
-                            {unit}
-                          </Text>
-                        </View>
-                        <TouchableOpacity
-                          onPress={() => handleRemove(ing.name)}
-                          style={{}}
-                        >
-                          <MaterialCommunityIcons
-                            name="trash-can-outline"
-                            size={22}
-                            color="#d32f2f"
-                          />
-                        </TouchableOpacity>
+                          {unit}
+                        </Text>
                       </View>
+                      <TouchableOpacity
+                        onPress={() => handleRemove(ing.name)}
+                        style={{}}
+                      >
+                        <MaterialCommunityIcons
+                          name="trash-can-outline"
+                          size={22}
+                          color="#d32f2f"
+                        />
+                      </TouchableOpacity>
                     </View>
-                  );
-                })}
+                  </View>
+                );
+              })}
             </View>
 
             <TouchableOpacity
