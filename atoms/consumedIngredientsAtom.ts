@@ -1,3 +1,3 @@
 import { atom } from "jotai";
-import { IngredientType } from "@/types/mealTypes";
-export const consumedIngredientsAtom = atom<IngredientType[]>([]);
+import { IngredientPrincipalInfo } from "@/types/mealTypes";
+export const consumedIngredientsAtom = atom<IngredientPrincipalInfo[]>([]);

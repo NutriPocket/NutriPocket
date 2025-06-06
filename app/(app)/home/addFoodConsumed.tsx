@@ -5,16 +5,16 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  Image,
 } from "react-native";
-import { useAtom } from "jotai";
 import useAxiosInstance from "@/hooks/useAxios";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Header from "@/components/Header";
 import { TextInput, ActivityIndicator } from "react-native-paper";
-import { IngredientType } from "../../../types/mealTypes";
+import { IngredientType, MealType } from "../../../types/mealTypes";
+import { useAtom } from "jotai";
 import { consumedIngredientsAtom } from "../../../atoms/consumedIngredientsAtom";
-import { authenticatedAtom } from "../../../atoms/authAtom";
 
 export default function AddFoodConsumed() {
   const params = useLocalSearchParams();
@@ -29,6 +29,23 @@ export default function AddFoodConsumed() {
 
   const [error, setError] = useState<string | null>(null);
   const [ingredients, setIngredients] = useState<IngredientType[]>([]);
+  const [selectedFood, setSelectedFood] = useState<MealType>({
+    id: 0,
+    name: "",
+    description: "",
+    image_url: "",
+    price: 0,
+    calories: 0,
+    protein: 0,
+    carbohydrates: 0,
+    fiber: 0,
+    saturated_fats: 0,
+    monounsaturated_fats: 0,
+    polyunsaturated_fats: 0,
+    trans_fats: 0,
+    cholesterol: 0,
+  });
+
   const [loading, setLoading] = useState(true);
 
   const [editedQuantities, setEditedQuantities] = useState<{
@@ -40,6 +57,7 @@ export default function AddFoodConsumed() {
       const response = await axiosInstance.get(`/foods/${mealId}/ingredients`);
 
       const apiIngredients = response.data.data;
+      console.log("ingredient info:", apiIngredients[0]);
       const parsedIngredients: IngredientType[] = apiIngredients.map(
         (item: any) => ({
           ...item.ingredient,
@@ -61,8 +79,19 @@ export default function AddFoodConsumed() {
     }
   };
 
+  const fetchFoodInfo = async () => {
+    try {
+      const response = await axiosInstance.get(`/foods/${mealId}`);
+      const data = response.data.data;
+      setSelectedFood(data);
+    } catch (error) {
+      console.error("Error fetching food info: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchIngredients();
+    fetchFoodInfo();
   }, []);
 
   const handleRemove = (ingredientName: string) => {
@@ -78,7 +107,7 @@ export default function AddFoodConsumed() {
   };
   const handleAddIngredient = () => {
     router.push({
-      pathname: "/mealplan/AddIngredientToPlan",
+      pathname: "/mealplan/AddIngredientToFoodConsume",
       params: { selectedMealId: mealId },
     });
   };
@@ -127,13 +156,41 @@ export default function AddFoodConsumed() {
   return (
     <View style={styles.screenContainer}>
       <Header onBack={handleBackToHome} />
-      <Text style={styles.title}>Cargar alimentos consumidos</Text>
+
+      <View>
+        <Text style={styles.title}>
+          {day} - {moment}
+        </Text>
+        <Text style={styles.subtitleGeneral}>{selectedFood.name}</Text>
+      </View>
+
       {loading ? (
         <ActivityIndicator />
       ) : ingredients.length > 0 ? (
         <ScrollView contentContainerStyle={{ padding: 24 }}>
+          <View style={styles.imageContainer}>
+            {selectedFood.image_url &&
+            selectedFood.image_url.trim() !== "" &&
+            selectedFood.image_url !== null ? (
+              <Image
+                source={{ uri: selectedFood.image_url }}
+                style={styles.foodImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={[styles.foodImage, styles.noImageCircle]}>
+                <Text style={styles.noImageText}>Sin imagen</Text>
+              </View>
+            )}
+          </View>
+          {/* Card de información general */}
+          <View style={styles.card}>
+            <Text style={styles.subtitle}>Información General </Text>
+            <Text style={styles.foodDesc}>{selectedFood.description}</Text>
+          </View>
           <View style={styles.card}>
             <View>
+              <Text style={styles.cardTitle}></Text>
               <Text style={styles.cardTitle}>Ingredientes</Text>
             </View>
             <View>
@@ -299,5 +356,45 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     fontSize: 16,
     height: 36,
+  },
+  foodImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#eee",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noImageCircle: {
+    backgroundColor: "#ddd",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noImageText: {
+    fontSize: 14,
+    color: "#888",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  imageContainer: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#287D76",
+    textAlign: "center",
+  },
+  subtitleGeneral: {
+    fontSize: 20,
+    marginTop: 5,
+    color: "#287D76",
+    textAlign: "center",
+  },
+  foodDesc: {
+    fontSize: 16,
+    color: "#555",
+    marginBottom: 20,
   },
 });

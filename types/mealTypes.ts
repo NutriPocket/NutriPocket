@@ -38,6 +38,14 @@ export type IngredientType = {
     quantity: number;
 }
 
+export type IngredientPrincipalInfo = {
+    id: number;
+    name : string;
+    measure_type: string;
+    quantity: number;
+}
+
+
 export type ItineraryPlan = {
     id_plan: string;
     title: string;
