@@ -5,7 +5,7 @@ import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MealType } from "../../../types/mealTypes";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
-import { FAB, TouchableRipple } from "react-native-paper";
+import { FAB, TouchableRipple, Searchbar } from "react-native-paper";
 import Header from "../../../components/Header";
 import FoodModal from "../../../components/FoodModal";
 
@@ -13,18 +13,41 @@ export default function AllMeals() {
   const { moment, day } = useLocalSearchParams();
 
   const [allFoodList, setAllFoodList] = useState<MealType[]>([]);
+  const [search, setSearch] = useState("");
+  const [tempSearch, setTempSearch] = useState("");
+  const [loading, setLoading] = useState(false);
   const axiosInstance = useAxiosInstance("food");
   const router = useRouter();
 
+  // Debounce para la searchbar
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (tempSearch !== search) {
+        setSearch(tempSearch);
+      }
+    }, 600);
+    return () => clearTimeout(handler);
+  }, [tempSearch]);
+
   const fetchAllFoods = async () => {
+    setLoading(true);
     try {
-      const response = await axiosInstance.get("/foods");
+      const route = search
+        ? `/foods?search_name=${encodeURIComponent(search)}`
+        : "/foods";
+      const response = await axiosInstance.get(route);
       const foods = response.data.data;
       setAllFoodList(foods);
     } catch (error) {
       console.error("Error fetching all foods: ", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAllFoods();
+  }, [search]);
 
   const handleSelectedFood = (food: MealType) => {
     router.push({
@@ -37,46 +60,57 @@ export default function AllMeals() {
     });
   };
 
-  useEffect(() => {
-    fetchAllFoods();
-  }, []);
-
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Header />
       <View style={styles.screenContainer}>
+        <View style={{ gap: 20 }}>
+          <Text style={styles.subtitle}> Todas las comidas</Text>
+
+          <Searchbar
+            placeholder="Buscar comida por nombre"
+            value={tempSearch}
+            onChangeText={setTempSearch}
+            onIconPress={() => setSearch(tempSearch)}
+            style={{ backgroundColor: "#F5F5F5", marginBottom: 16 }}
+            inputStyle={{ fontSize: 16 }}
+          />
+        </View>
+
         <ScrollView
           contentContainerStyle={{
             gap: 20,
-            paddingVertical: 50,
+
             paddingHorizontal: 20,
           }}
           showsVerticalScrollIndicator={false}
         >
-          <View>
-            <Text style={styles.subtitle}> Todas las comidas</Text>
-          </View>
-
-          {allFoodList.map((food) => (
-            <View key={food.id} style={{}}>
-              <TouchableRipple
-                onPress={() => {
-                  handleSelectedFood(food);
-                }}
-                style={[styles.momentCard]}
-              >
-                <View>
-                  <Text style={styles.foodName}>{food.name}</Text>
-                  <Text
-                    style={{ fontSize: 15, color: "#444", marginTop: 4 }}
-                    numberOfLines={1}
-                  >
-                    {food.description}
-                  </Text>
-                </View>
-              </TouchableRipple>
-            </View>
-          ))}
+          {loading ? (
+            <Text style={{ textAlign: "center", marginTop: 20 }}>
+              Cargando...
+            </Text>
+          ) : (
+            allFoodList.map((food) => (
+              <View key={food.id} style={{}}>
+                <TouchableRipple
+                  onPress={() => {
+                    handleSelectedFood(food);
+                  }}
+                  style={[styles.momentCard]}
+                >
+                  <View>
+                    <Text style={styles.foodName}>{food.name}</Text>
+                    <Text
+                      style={{ fontSize: 15, color: "#444", marginTop: 4 }}
+                      numberOfLines={1}
+                    >
+                      {food.description}
+                    </Text>
+                  </View>
+                </TouchableRipple>
+              </View>
+            ))
+          )}
         </ScrollView>
       </View>
     </View>
@@ -88,7 +122,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 20,
-    alignItems: "center",
   },
   title: {
     fontSize: 24,
