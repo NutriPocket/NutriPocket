@@ -3,3 +3,8 @@ export type UserType = {
     username: string;
     email: string;
 }
+
+export type UserExtraInfoType = {
+    birthday: string;
+    height: number;
+}
