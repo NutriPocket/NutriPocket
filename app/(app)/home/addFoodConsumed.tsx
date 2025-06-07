@@ -11,7 +11,7 @@ import useAxiosInstance from "@/hooks/useAxios";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Header from "@/components/Header";
-import { TextInput, ActivityIndicator } from "react-native-paper";
+import { TextInput, ActivityIndicator, IconButton } from "react-native-paper";
 import { IngredientType, MealType } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
 import { consumedIngredientsAtom } from "../../../atoms/consumedIngredientsAtom";
@@ -165,52 +165,55 @@ export default function AddFoodConsumed() {
 
   return (
     <View style={styles.screenContainer}>
-      {/* <Header onBack={handleBackToHome} /> */}
+      <Header showBack={false} />
       <View style={{ alignItems: "center" }}>
-        <View style={{ alignItems: "center" }}>
-          <Text style={styles.title}>
-            {day} - {moment}
-          </Text>
-          <Text style={styles.subtitleGeneral}>{selectedFood.name}</Text>
-        </View>
+        <Text style={styles.title}>
+          {day} - {moment}
+        </Text>
       </View>
 
       {loading ? (
         <ActivityIndicator />
       ) : (
-        <ScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 24,
-          }}
-        >
-          <View style={styles.generalInfoContainer}>
-            <TouchableOpacity
-              style={styles.editCircleButton}
-              onPress={() => {
-                router.push({
-                  pathname: "/mealplan/AllMeals",
-                  params: { day, moment },
-                });
-              }}
-            >
-              <MaterialCommunityIcons
-                name="pencil"
-                size={24}
-                style={styles.editIcon}
-              />
-            </TouchableOpacity>
-            {/* Card de información general */}
-            <View style={styles.card}>
-              <Text style={styles.subtitle}>Información General </Text>
-              <Text style={styles.foodDesc}>{selectedFood.description}</Text>
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.card}>
+            <View style={styles.mealHeader}>
+              <View style={{ gap: 8, flex: 1 }}>
+                <Text style={styles.mealName}>{selectedFood.name}</Text>
+                <Text style={styles.foodDesc}>{selectedFood.description}</Text>
+              </View>
+              <View
+                style={{
+                  justifyContent: "center",
+                }}
+              >
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push({
+                      pathname: "/home/AllMeals",
+                      params: { day, moment },
+                    });
+                  }}
+                  style={{}}
+                >
+                  <MaterialCommunityIcons
+                    name="pencil"
+                    size={24}
+                    color="#287D76"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
-          <View style={styles.card}>
-            <View>
-              <Text style={styles.cardTitle}></Text>
-              <Text style={styles.cardTitle}>Ingredientes</Text>
+          {/* <View style={styles.generalInfoContainer}>
+            <View style={styles.card}>
+              <Text style={styles.subtitle}>Información General </Text>
             </View>
+          </View> */}
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Ingredientes</Text>
             <View>
               {ingredientsToLoad.map((ing) => {
                 let unit = ing.measure_type;
@@ -218,19 +221,29 @@ export default function AddFoodConsumed() {
                 else if (unit === "unit") unit = "u";
                 return (
                   <View key={ing.name} style={styles.ingredientRow}>
+                    <TouchableOpacity
+                      onPress={() => handleRemove(ing.name)}
+                      style={{}}
+                    >
+                      <MaterialCommunityIcons
+                        name="trash-can-outline"
+                        size={22}
+                        color="#d32f2f"
+                      />
+                    </TouchableOpacity>
                     <Text style={styles.ingredientName}>{ing.name}</Text>
                     <View
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 8,
+                        gap: 10,
                       }}
                     >
                       <View
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
-                          gap: 2,
+                          gap: 4,
                         }}
                       >
                         <TextInput
@@ -256,16 +269,6 @@ export default function AddFoodConsumed() {
                           {unit}
                         </Text>
                       </View>
-                      <TouchableOpacity
-                        onPress={() => handleRemove(ing.name)}
-                        style={{}}
-                      >
-                        <MaterialCommunityIcons
-                          name="trash-can-outline"
-                          size={22}
-                          color="#d32f2f"
-                        />
-                      </TouchableOpacity>
                     </View>
                   </View>
                 );
@@ -285,23 +288,18 @@ export default function AddFoodConsumed() {
           </View>
           <View style={{ gap: 12, marginTop: 8 }}>
             <TouchableOpacity
-              style={[styles.addIngredientButton, { flex: 1 }]}
+              style={[styles.actionButton, styles.saveButton]}
               onPress={handleSaveAll}
               accessibilityLabel="Guardar"
             >
-              <Text style={styles.addIngredientButtonText}>Guardar</Text>
+              <Text style={styles.actionButtonText}>Guardar</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[
-                styles.addIngredientButton,
-                { backgroundColor: "#B00020", flex: 1 },
-              ]}
+              style={[styles.actionButton, styles.cancelButton]}
               onPress={handleBackToHome}
               accessibilityLabel="Cancelar"
             >
-              <Text style={[styles.addIngredientButtonText, { color: "#fff" }]}>
-                Cancelar
-              </Text>
+              <Text style={styles.actionButtonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -314,10 +312,13 @@ const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: "#fff",
-    gap: 10,
-    paddingTop: 100,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    gap: 20,
+  },
+  scrollViewContent: {
+    gap: 20,
+    paddingBottom: 40,
+    paddingTop: 10,
   },
   title: {
     fontSize: 24,
@@ -325,14 +326,17 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
+  mealHeader: {
+    flexDirection: "row",
+    gap: 20,
+  },
   card: {
     backgroundColor: "#f5f5f5",
     borderRadius: 16,
-    padding: 24, // Unificado para ambas cards
+    padding: 20,
     shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    marginBottom: 24,
     elevation: 2,
     gap: 16,
   },
@@ -348,6 +352,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 10,
+    gap: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
@@ -361,7 +366,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
     fontWeight: "bold",
-    marginLeft: 8,
   },
   addIngredientButton: {
     flexDirection: "row",
@@ -388,7 +392,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 1,
     borderColor: "#b2dfdb",
-    paddingHorizontal: 6,
+    textAlign: "right",
     fontSize: 16,
     height: 36,
   },
@@ -402,28 +406,37 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     textAlign: "center",
   },
-  subtitleGeneral: {
-    fontSize: 20,
-    marginTop: 5,
+  mealName: {
+    fontSize: 18,
     color: "#287D76",
-    textAlign: "center",
+    flex: 1,
+    fontWeight: "bold",
   },
   foodDesc: {
     fontSize: 16,
     color: "#555",
-    textAlign: "center",
   },
-  editCircleButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#287D76",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 16,
-    alignSelf: "center",
-  },
+
   editIcon: {
     color: "#fff",
+  },
+  actionButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  saveButton: {
+    backgroundColor: "#287D76",
+  },
+  cancelButton: {
+    backgroundColor: "#B00020",
+  },
+  actionButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });

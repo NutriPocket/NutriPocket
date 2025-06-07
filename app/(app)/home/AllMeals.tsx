@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
-import { useAtom } from "jotai";
-import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MealType } from "../../../types/mealTypes";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
-import { FAB, TouchableRipple, Searchbar } from "react-native-paper";
+import { TouchableRipple, Searchbar } from "react-native-paper";
 import Header from "../../../components/Header";
-import FoodModal from "../../../components/FoodModal";
 
 export default function AllMeals() {
   const { moment, day } = useLocalSearchParams();
@@ -79,9 +76,7 @@ export default function AllMeals() {
 
         <ScrollView
           contentContainerStyle={{
-            gap: 20,
-
-            paddingHorizontal: 20,
+            gap: 10,
           }}
           showsVerticalScrollIndicator={false}
         >

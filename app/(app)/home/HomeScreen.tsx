@@ -26,8 +26,28 @@ export default function HomeScreen() {
     "Sábado",
   ];
   const today = days[new Date().getDay()];
-  const todaysFood = itinerary?.weekly_plan?.[today] || null;
+  const todaysFoods = itinerary?.weekly_plan?.[today] || null;
   const router = useRouter();
+  // const todayFoodsEaten = [todaysFoods?.breakfast, todaysFoods?.lunch];
+
+  // Momentos del día disponibles
+  const dayMoments = ["Desayuno", "Almuerzo", "Merienda", "Cena"];
+
+  // Mock data - comidas que realmente comí hoy
+  const consumedFoodsToday = {
+    Desayuno: {
+      name: "Avena con fresas y almendras",
+      description: "Tazón de avena con fresas frescas, almendras y miel",
+      isOffPlan: false, // Esta comida estaba en el plan
+    },
+
+    Cena: {
+      name: "Salmón a la parrilla con verduras asadas",
+      description:
+        "Filete de salmón a la parrilla con espárragos y zanahorias asadas",
+      isOffPlan: true, // Esta comida NO estaba en el plan
+    },
+  };
 
   const handleAddFoodConsumed = (meal: MealType | null, moment: string) => {
     if (meal?.id) {
@@ -41,7 +61,7 @@ export default function HomeScreen() {
       });
     } else {
       router.push({
-        pathname: "/mealplan/AllMeals",
+        pathname: "/home/AllMeals",
         params: {
           moment: moment,
           day: today,
@@ -91,66 +111,118 @@ export default function HomeScreen() {
         </Text>
         <Text style={homeStyles.info}>Aquí verás tu resumen y novedades.</Text>
       </View>
-      <View style={styles.mealContainer}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Comidas de hoy</Text>
-          {error === "No tienes un plan de comidas asignado." ? (
-            <Text
-              style={{
-                color: "#287D76",
-                textAlign: "center",
-                marginVertical: 10,
-              }}
-            >
-              {error}
-            </Text>
-          ) : error ? (
-            <Text style={{ color: "red" }}>{error}</Text>
-          ) : todaysFood ? (
-            Object.entries(todaysFood).map(([moment, meal]) => (
-              <View key={moment} style={styles.momentRow}>
-                <View
-                  style={{
-                    flex: 1,
-                    flexDirection: "row",
-                  }}
-                >
-                  <View style={{ flex: 1, paddingRight: 40 }}>
-                    <Text style={styles.momentLabel}>{moment}</Text>
-                    {meal ? (
-                      <View style={{ padding: 5 }}>
-                        <Text style={styles.mealName}>{meal.name}</Text>
-                        <Text style={styles.mealDesc} numberOfLines={1}>
-                          {meal.description}
-                        </Text>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Comidas de hoy</Text>
+        {error === "No tienes un plan de comidas asignado." ? (
+          <Text
+            style={{
+              color: "#287D76",
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </Text>
+        ) : error ? (
+          <Text style={{ color: "red" }}>{error}</Text>
+        ) : (
+          <View style={{ gap: 15 }}>
+            {dayMoments.map((moment) => {
+              const plannedMeal = todaysFoods?.[moment] || null;
+              const consumedMeal =
+                consumedFoodsToday[moment as keyof typeof consumedFoodsToday] ||
+                null;
+
+              return (
+                <View key={moment} style={styles.momentRow}>
+                  <View>
+                    {consumedMeal ? (
+                      // Mostrar lo que realmente comió (prioridad máxima)
+                      <View style={styles.consumedMealCard}>
+                        <View style={styles.consumedMealInfo}>
+                          <View style={styles.momentLabelContainer}>
+                            <Text style={styles.momentLabel}>{moment}</Text>
+                            {consumedMeal.isOffPlan && (
+                              <View style={styles.offPlanBadge}>
+                                <Text style={styles.offPlanBadgeText}>
+                                  Fuera del plan
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                          <View>
+                            <Text
+                              numberOfLines={1}
+                              style={styles.consumedMealName}
+                            >
+                              {consumedMeal.name}
+                            </Text>
+                            <Text
+                              numberOfLines={1}
+                              style={styles.consumedMealDesc}
+                            >
+                              {consumedMeal.description}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={styles.iconContainer}>
+                          <MaterialCommunityIcons
+                            name={
+                              consumedMeal.isOffPlan
+                                ? "alert-circle"
+                                : "check-circle"
+                            }
+                            size={24}
+                            color={
+                              consumedMeal.isOffPlan ? "#287D76" : "#287D76"
+                            }
+                          />
+                        </View>
                       </View>
                     ) : (
-                      <Text style={styles.mealDesc}>
-                        No hay comida asignada
-                      </Text>
+                      // Mostrar el plan original
+                      <View
+                        style={{
+                          padding: 10,
+                          gap: 10,
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <View style={styles.consumedMealInfo}>
+                          <Text style={styles.momentLabel}>{moment}</Text>
+                          {plannedMeal ? (
+                            <View>
+                              <Text style={styles.mealName}>
+                                {plannedMeal.name}
+                              </Text>
+                              <Text style={styles.mealDesc} numberOfLines={1}>
+                                {plannedMeal.description}
+                              </Text>
+                            </View>
+                          ) : (
+                            <Text style={styles.noMeal}>
+                              No hay comida asignada
+                            </Text>
+                          )}
+                        </View>
+                        <View style={styles.iconContainer}>
+                          <MaterialCommunityIcons
+                            name="silverware-fork-knife"
+                            size={24}
+                            color={"#287D76"}
+                            onPress={() => {
+                              handleAddFoodConsumed(plannedMeal, moment);
+                            }}
+                          />
+                        </View>
+                      </View>
                     )}
                   </View>
-                  <View style={styles.iconContainer}>
-                    <MaterialCommunityIcons
-                      name={
-                        meal && (meal as any).modified
-                          ? "pencil"
-                          : "silverware-fork"
-                      }
-                      size={24}
-                      color="#287D76"
-                      onPress={() => {
-                        handleAddFoodConsumed(meal, moment);
-                      }}
-                    />
-                  </View>
                 </View>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.noMeal}>No hay comidas para hoy.</Text>
-          )}
-        </View>
+              );
+            })}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -166,9 +238,10 @@ const styles = StyleSheet.create({
     borderLeftWidth: 6,
     alignContent: "center",
     justifyContent: "center",
-    padding: 5,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
     borderLeftColor: "#287D76",
-    gap: 10,
+    gap: 20,
     minWidth: 350,
   },
   cardTitle: {
@@ -176,18 +249,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#287D76",
     textAlign: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
   momentRow: {
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    justifyContent: "space-between",
-    position: "relative",
+    paddingHorizontal: 5,
   },
   momentLabel: {
     fontWeight: "bold",
@@ -203,8 +267,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   noMeal: {
-    paddingVertical: 10,
-    paddingHorizontal: 70,
     color: "#555",
     fontSize: 12,
   },
@@ -228,16 +290,51 @@ const styles = StyleSheet.create({
   },
   mealContainer: {
     gap: 20,
-    padding: 40,
+    padding: 30,
   },
   iconContainer: {
-    position: "absolute",
-    right: 10,
-    top: 0,
-    bottom: 0,
+    padding: 5,
     justifyContent: "center",
+  },
+  consumedMealCard: {
+    flexDirection: "row",
+    padding: 10,
+    gap: 10,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  consumedMealInfo: {
+    flex: 1,
+    gap: 5,
+  },
+  consumedMealName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#555",
+  },
+  consumedMealDesc: {
+    fontSize: 12,
+    color: "#555",
+  },
+  momentLabelContainer: {
+    flexDirection: "row",
     alignItems: "center",
-    width: 40,
-    height: "100%",
+    justifyContent: "space-between",
+  },
+  offPlanBadge: {
+    backgroundColor: "#287D76",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  offPlanBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
   },
 });
