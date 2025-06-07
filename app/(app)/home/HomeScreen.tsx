@@ -53,16 +53,35 @@ export default function HomeScreen() {
   useFocusEffect(
     React.useCallback(() => {
       const fetchPlan = async () => {
-        if (!selectedPlanId) return;
         try {
-          const response = await axiosInstance.get(`/plans/${selectedPlanId}`);
+          const planResponse = await axiosInstance.get(
+            `/users/${auth?.id}/plan`
+          );
+          if (!planResponse.data.data) {
+            setError(null);
+            setItinerary(null);
+            return;
+          }
+          const response = await axiosInstance.get(
+            `/plans/${planResponse.data.data.id_plan}`
+          );
           setItinerary(response.data.data);
-        } catch (err) {
-          setError("No se pudo cargar el plan de comidas.");
+          setError(null);
+        } catch (err: any) {
+          if (err?.response?.status === 404) {
+            // No mostrar error en consola, es esperado
+            setError("No tienes un plan de comidas asignado.");
+            setItinerary(null);
+          } else {
+            // Solo mostrar en consola si es un error real
+            console.error(err);
+            setError("No se pudo cargar el plan de comidas.");
+            setItinerary(null);
+          }
         }
       };
       fetchPlan();
-    }, [])
+    }, [auth?.id])
   );
   return (
     <View style={homeStyles.screenContainer}>
@@ -75,7 +94,17 @@ export default function HomeScreen() {
       <View style={styles.mealContainer}>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Comidas de hoy</Text>
-          {error ? (
+          {error === "No tienes un plan de comidas asignado." ? (
+            <Text
+              style={{
+                color: "#287D76",
+                textAlign: "center",
+                marginVertical: 10,
+              }}
+            >
+              {error}
+            </Text>
+          ) : error ? (
             <Text style={{ color: "red" }}>{error}</Text>
           ) : todaysFood ? (
             Object.entries(todaysFood).map(([moment, meal]) => (

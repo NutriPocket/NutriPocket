@@ -11,7 +11,10 @@ import { router } from "expo-router";
 import { Formik } from "formik";
 import { createPlanValidationSchema } from "../../../utils/validationSchemas";
 import { TextInput as PaperTextInput } from "react-native-paper";
-import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
+import {
+  didFetchUserPlanAtom,
+  selectedPlanIdAtom,
+} from "../../../atoms/mealPlanAtom";
 
 export default function MealPlanScreen() {
   const [auth] = useAtom(authenticatedAtom);
@@ -27,21 +30,12 @@ export default function MealPlanScreen() {
   const newPlanCardRef = useRef(null);
   const [formKey, setFormKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [didFetchUserPlan, setDidFetchUserPlan] = useAtom(didFetchUserPlanAtom);
 
   const handleSelectPlan = async (planId: number) => {
     try {
-      const userId = auth?.id;
-
-      if (!userId) {
-        return;
-      }
-
-      if (!auth?.token) {
-        return;
-      }
-
-      const response = axiosInstance.put(
-        `/users/${userId}/plan`,
+      const response = await axiosInstance.put(
+        `/users/${auth?.id}/plan`,
         {
           plan_id: planId,
         },
@@ -69,32 +63,43 @@ export default function MealPlanScreen() {
     setFormKey((k) => k + 1);
   };
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userId = auth?.id;
-        if (!userId) {
-          return;
-        }
-
-        if (!auth?.token) {
-          return;
-        }
-
-        setIsLoading(true);
-        const response = await axiosInstance.get(`/plans`);
-        const data = response.data.data;
-        setMealPlanList(data);
-      } catch (err) {
-        setError("No se pudieron obtener los datos del usuario.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    if (auth?.id && auth?.token) {
-      fetchUserData();
+  const fetchPlans = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.get(`/plans`);
+      const data = response.data.data;
+      setMealPlanList(data);
+    } catch (err) {
+      setError("No se pudieron obtener los datos del usuario.");
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  };
+
+  const fetchUserPlan = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.get(`/users/${auth?.id}/plan`);
+      const data = response.data.data;
+      setSelectedPlanId(data.id_plan);
+    } catch (err: any) {
+      // Si es 404, no mostrar error (es un caso esperado)
+      if (err?.response?.status === 404) {
+        setSelectedPlanId(null);
+      } else {
+        setError("No se pudieron obtener los planes de comidas.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!didFetchUserPlan) {
+      fetchUserPlan().then(() => setDidFetchUserPlan(true));
+    }
+    fetchPlans();
+  }, [didFetchUserPlan]);
 
   if (isLoading) {
     return (
@@ -103,8 +108,6 @@ export default function MealPlanScreen() {
       </View>
     );
   }
-
-  console.log("plandId: ", selectedPlanId);
 
   return (
     <View style={mealPlanListStyles.screenContainer}>

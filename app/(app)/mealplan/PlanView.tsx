@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from "react";
 
 import { View, ScrollView, StyleSheet } from "react-native";
-import { TextInput, Button, Text } from "react-native-paper";
+import { Button, Text } from "react-native-paper";
 
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import useAxiosInstance from "@/hooks/useAxios";
 import { ItineraryPlan, MealType } from "../../../types/mealTypes";
 import { authenticatedAtom } from "../../../atoms/authAtom";
@@ -13,9 +13,6 @@ import Header from "../../../components/Header";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import { TouchableRipple, SegmentedButtons, FAB } from "react-native-paper";
 import FoodModal from "../../../components/FoodModal";
-import { Formik } from "formik";
-import { Dropdown } from "react-native-paper-dropdown";
-import { CustomDropdown } from "../../../components/CustomDropdown";
 
 const WEEK_DAYS = [
   { label: "Domingo", value: "domingo" },
@@ -39,15 +36,12 @@ export default function PlanView() {
 
   const [auth] = useAtom(authenticatedAtom);
   const [selectedPlanId] = useAtom(selectedPlanIdAtom);
+  const setSelectedPlanId = useSetAtom(selectedPlanIdAtom);
   const axiosInstance = useAxiosInstance("food");
 
   const [tab, setTab] = useState("plan");
   const [error, setError] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-
-  const [weekDay, setWeekDay] = useState<string | null>(null);
-  const [mealMoment, setMealMoment] = useState<string | null>(null);
-  const [selectedFood, setSelectedFood] = useState<MealType | null>(null);
 
   const fetchPlanItinerary = async () => {
     try {
@@ -171,7 +165,7 @@ export default function PlanView() {
   );
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <Header backTo="/mealplan/MealPlanScreen" />
+      <Header showBack={false} />
       <SegmentedButtons
         value={tab}
         onValueChange={setTab}
@@ -187,11 +181,28 @@ export default function PlanView() {
           },
         }}
       />
+
       <View style={styles.screenContainer}>
         {tab == "plan" ? (
-          <View>
-            <Text style={styles.title}>Mi Plan Semanal</Text>
-            <Text style={styles.info}>Desliza para ver cada día</Text>
+          <View style={{ gap: 10 }}>
+            <View>
+              <Text style={styles.title}>Mi Plan Semanal</Text>
+              <Text style={styles.info}>Desliza para ver cada día</Text>
+            </View>
+
+            <Button
+              mode="outlined"
+              icon="swap-horizontal"
+              style={{
+                alignSelf: "center",
+                backgroundColor: "#287D76",
+              }}
+              labelStyle={{ color: "#fff" }}
+              onPress={() => setSelectedPlanId(null)}
+            >
+              Cambiar de plan
+            </Button>
+
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -384,7 +395,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#287D76",
     textAlign: "center",
-    marginBottom: 40,
+    marginBottom: 10,
   },
   planCard: {
     padding: 16,
