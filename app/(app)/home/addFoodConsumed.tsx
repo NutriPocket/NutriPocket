@@ -54,6 +54,9 @@ export default function AddFoodConsumed() {
 
   const fetchIngredients = async () => {
     try {
+      if (!mealId) {
+        return;
+      }
       const response = await axiosInstance.get(`/foods/${mealId}/ingredients`);
 
       const apiIngredients = response.data.data;
@@ -81,6 +84,9 @@ export default function AddFoodConsumed() {
 
   const fetchFoodInfo = async () => {
     try {
+      if (!mealId) {
+        return;
+      }
       const response = await axiosInstance.get(`/foods/${mealId}`);
       const data = response.data.data;
       setSelectedFood(data);
@@ -128,6 +134,7 @@ export default function AddFoodConsumed() {
   };
 
   const handleSaveAll = async () => {
+    //HACER
     try {
       const updates = Object.entries(editedQuantities).filter(([name, val]) => {
         const ing = ingredients.find((i) => i.name === name);
@@ -151,42 +158,45 @@ export default function AddFoodConsumed() {
     }
   };
 
-  console.log("Ingredients to load: ", ingredientsToLoad.length);
-
   return (
     <View style={styles.screenContainer}>
       <Header onBack={handleBackToHome} />
-
-      <View>
-        <Text style={styles.title}>
-          {day} - {moment}
-        </Text>
-        <Text style={styles.subtitleGeneral}>{selectedFood.name}</Text>
+      <View style={{ alignItems: "center", gap: 40 }}>
+        <View style={{ alignItems: "center" }}>
+          <Text style={styles.title}>
+            {day} - {moment}
+          </Text>
+          <Text style={styles.subtitleGeneral}>{selectedFood.name}</Text>
+          <TouchableOpacity
+            style={styles.editCircleButton}
+            onPress={() => {
+              router.push({
+                pathname: "/mealplan/AllMeals",
+                params: { day, moment },
+              });
+            }}
+          >
+            <MaterialCommunityIcons
+              name="pencil"
+              size={24}
+              style={styles.editIcon}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {loading ? (
         <ActivityIndicator />
-      ) : ingredients.length > 0 ? (
-        <ScrollView contentContainerStyle={{ padding: 24 }}>
-          <View style={styles.imageContainer}>
-            {selectedFood.image_url &&
-            selectedFood.image_url.trim() !== "" &&
-            selectedFood.image_url !== null ? (
-              <Image
-                source={{ uri: selectedFood.image_url }}
-                style={styles.foodImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={[styles.foodImage, styles.noImageCircle]}>
-                <Text style={styles.noImageText}>Sin imagen</Text>
-              </View>
-            )}
-          </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 5 }}
+        >
           {/* Card de información general */}
           <View style={styles.card}>
             <Text style={styles.subtitle}>Información General </Text>
+
             <Text style={styles.foodDesc}>{selectedFood.description}</Text>
+            <View>{/* Botón para modificar la comida */}</View>
           </View>
           <View style={styles.card}>
             <View>
@@ -270,13 +280,10 @@ export default function AddFoodConsumed() {
             onPress={handleAddIngredient}
             accessibilityLabel="Cargar Comida"
           >
-            <Text style={styles.addIngredientButtonText}>Cargar Comida</Text>
+            <Text style={styles.addIngredientButtonText}>Guardar</Text>
           </TouchableOpacity>
         </ScrollView>
-      ) : (
-        <Text>No se encontró la comida.</Text>
       )}
-      {error && <Text style={{ color: "red" }}>{error}</Text>}
     </View>
   );
 }
@@ -296,7 +303,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#f5f5f5",
     borderRadius: 16,
-    padding: 24,
+    padding: 17,
     shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -333,19 +340,22 @@ const styles = StyleSheet.create({
   },
   addIngredientButton: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#287D76",
     borderRadius: 8,
     paddingVertical: 12,
-
-    marginBottom: 4,
   },
   addIngredientButtonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
     marginLeft: 8,
+  },
+  modifyFoodButton: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+    paddingHorizontal: 8,
   },
   editInput: {
     width: 60,
@@ -384,6 +394,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#287D76",
+    alignSelf: "center",
     textAlign: "center",
   },
   subtitleGeneral: {
@@ -395,6 +406,18 @@ const styles = StyleSheet.create({
   foodDesc: {
     fontSize: 16,
     color: "#555",
-    marginBottom: 20,
+    textAlign: "center",
+  },
+  editCircleButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#287D76",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  editIcon: {
+    color: "#fff",
   },
 });

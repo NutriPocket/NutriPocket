@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { homeStyles } from "../../../styles/homeStyles";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import useAxiosInstance from "@/hooks/useAxios";
-import { ItineraryPlan } from "../../../types/mealTypes";
+import { ItineraryPlan, MealType } from "../../../types/mealTypes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
@@ -29,6 +29,33 @@ export default function HomeScreen() {
   const todaysFood = itinerary?.weekly_plan?.[today] || null;
   const router = useRouter();
 
+  const handleAddFoodConsumed = (meal: MealType | null, moment: string) => {
+    if (meal?.id) {
+      router.push({
+        pathname: "/home/addFoodConsumed",
+        params: {
+          moment: moment,
+          day: today,
+          mealId: meal.id,
+        },
+      });
+    } else {
+      router.push({
+        pathname: "/mealplan/AllMeals",
+        params: {
+          moment: moment,
+          day: today,
+        },
+      });
+    }
+  };
+
+  const handleAddOutOfPlanFoodConsumed = () => {
+    router.push({
+      pathname: "/mealplan/AllMeals",
+    });
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       const fetchPlan = async () => {
@@ -51,53 +78,44 @@ export default function HomeScreen() {
         </Text>
         <Text style={homeStyles.info}>Aquí verás tu resumen y novedades.</Text>
       </View>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Comidas de hoy</Text>
-        {error ? (
-          <Text style={{ color: "red" }}>{error}</Text>
-        ) : todaysFood ? (
-          Object.entries(todaysFood).map(([moment, meal]) => (
-            <View key={moment} style={styles.momentRow}>
-              <View>
-                <Text style={styles.momentLabel}>{moment}</Text>
-                {meal ? (
-                  <View style={{ padding: 0 }}>
-                    <Text style={styles.mealName}>{meal.name}</Text>
-                    <Text style={styles.mealDesc} numberOfLines={1}>
-                      {meal.description}
-                    </Text>
-                  </View>
-                ) : (
-                  <Text style={styles.mealDesc}>No hay comida asignada</Text>
-                )}
+      <View style={styles.mealContainer}>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Comidas de hoy</Text>
+          {error ? (
+            <Text style={{ color: "red" }}>{error}</Text>
+          ) : todaysFood ? (
+            Object.entries(todaysFood).map(([moment, meal]) => (
+              <View key={moment} style={styles.momentRow}>
+                <View>
+                  <Text style={styles.momentLabel}>{moment}</Text>
+                  {meal ? (
+                    <View style={{ padding: 0 }}>
+                      <Text style={styles.mealName}>{meal.name}</Text>
+                      <Text style={styles.mealDesc} numberOfLines={1}>
+                        {meal.description}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.mealDesc}>No hay comida asignada</Text>
+                  )}
+                </View>
+                <View>
+                  <MaterialCommunityIcons
+                    name="silverware-fork"
+                    size={24}
+                    color="#287D76"
+                    style={{ marginLeft: 8 }}
+                    onPress={() => {
+                      handleAddFoodConsumed(meal, moment);
+                    }}
+                  />
+                </View>
               </View>
-              <View>
-                <MaterialCommunityIcons
-                  name="silverware-fork"
-                  size={24}
-                  color="#287D76"
-                  style={{ marginLeft: 8 }}
-                  onPress={() => {
-                    // Asegurarse de que meal?.id existe antes de navegar
-                    if (meal && meal.id) {
-                      router.push({
-                        pathname: "/home/addFoodConsumed",
-                        params: { moment: moment, day: today, mealId: meal.id },
-                      });
-                    } else {
-                      // Opcional: mostrar error o feedback si no hay id
-                      setError(
-                        "No se pudo obtener el id de la comida seleccionada."
-                      );
-                    }
-                  }}
-                />
-              </View>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.noMeal}>No hay comidas para hoy.</Text>
-        )}
+            ))
+          ) : (
+            <Text style={styles.noMeal}>No hay comidas para hoy.</Text>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -157,5 +175,23 @@ const styles = StyleSheet.create({
   info: {
     fontSize: 12,
     color: "#287D76",
+  },
+  addIngredientButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#287D76",
+    borderRadius: 8,
+    paddingVertical: 12,
+  },
+  addIngredientButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  mealContainer: {
+    gap: 20,
+    padding: 40,
   },
 });
