@@ -130,7 +130,9 @@ export default function AddFoodConsumed() {
   const handleBackToHome = () => {
     setIngredientsToLoad([]);
     setEditedQuantities({});
-    router.back();
+    router.push({
+      pathname: "/(app)",
+    });
   };
 
   const handleSaveAll = async () => {
@@ -160,8 +162,8 @@ export default function AddFoodConsumed() {
 
   return (
     <View style={styles.screenContainer}>
-      <Header onBack={handleBackToHome} />
-      <View style={{ alignItems: "center", gap: 40 }}>
+      {/* <Header onBack={handleBackToHome} /> */}
+      <View style={{ alignItems: "center" }}>
         <View style={{ alignItems: "center" }}>
           <Text style={styles.title}>
             {day} - {moment}
@@ -278,13 +280,27 @@ export default function AddFoodConsumed() {
               </Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.addIngredientButton}
-            onPress={handleAddIngredient}
-            accessibilityLabel="Cargar Comida"
-          >
-            <Text style={styles.addIngredientButtonText}>Guardar</Text>
-          </TouchableOpacity>
+          <View style={{ gap: 12, marginTop: 8 }}>
+            <TouchableOpacity
+              style={[styles.addIngredientButton, { flex: 1 }]}
+              onPress={handleAddIngredient}
+              accessibilityLabel="Guardar"
+            >
+              <Text style={styles.addIngredientButtonText}>Guardar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.addIngredientButton,
+                { backgroundColor: "#B00020", flex: 1 },
+              ]}
+              onPress={handleBackToHome}
+              accessibilityLabel="Cancelar"
+            >
+              <Text style={[styles.addIngredientButtonText, { color: "#fff" }]}>
+                Cancelar
+              </Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       )}
     </View>
@@ -295,7 +311,10 @@ const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: "#fff",
-    gap: 40,
+    gap: 10,
+    paddingTop: 100,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
   },
   title: {
     fontSize: 24,
