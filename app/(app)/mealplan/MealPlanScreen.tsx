@@ -104,8 +104,6 @@ export default function MealPlanScreen() {
     );
   }
 
-  console.log("plandId: ", selectedPlanId);
-
   return (
     <View style={mealPlanListStyles.screenContainer}>
       <Text style={mealPlanListStyles.title}>Plan de Comidas</Text>
