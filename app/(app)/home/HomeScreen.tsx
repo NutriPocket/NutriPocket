@@ -50,12 +50,6 @@ export default function HomeScreen() {
     }
   };
 
-  const handleAddOutOfPlanFoodConsumed = () => {
-    router.push({
-      pathname: "/mealplan/AllMeals",
-    });
-  };
-
   useFocusEffect(
     React.useCallback(() => {
       const fetchPlan = async () => {
@@ -68,7 +62,7 @@ export default function HomeScreen() {
         }
       };
       fetchPlan();
-    }, [selectedPlanId])
+    }, [])
   );
   return (
     <View style={homeStyles.screenContainer}>
@@ -86,29 +80,41 @@ export default function HomeScreen() {
           ) : todaysFood ? (
             Object.entries(todaysFood).map(([moment, meal]) => (
               <View key={moment} style={styles.momentRow}>
-                <View>
-                  <Text style={styles.momentLabel}>{moment}</Text>
-                  {meal ? (
-                    <View style={{ padding: 0 }}>
-                      <Text style={styles.mealName}>{meal.name}</Text>
-                      <Text style={styles.mealDesc} numberOfLines={1}>
-                        {meal.description}
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                  }}
+                >
+                  <View style={{ flex: 1, paddingRight: 40 }}>
+                    <Text style={styles.momentLabel}>{moment}</Text>
+                    {meal ? (
+                      <View style={{ padding: 5 }}>
+                        <Text style={styles.mealName}>{meal.name}</Text>
+                        <Text style={styles.mealDesc} numberOfLines={1}>
+                          {meal.description}
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text style={styles.mealDesc}>
+                        No hay comida asignada
                       </Text>
-                    </View>
-                  ) : (
-                    <Text style={styles.mealDesc}>No hay comida asignada</Text>
-                  )}
-                </View>
-                <View>
-                  <MaterialCommunityIcons
-                    name="silverware-fork"
-                    size={24}
-                    color="#287D76"
-                    style={{ marginLeft: 8 }}
-                    onPress={() => {
-                      handleAddFoodConsumed(meal, moment);
-                    }}
-                  />
+                    )}
+                  </View>
+                  <View style={styles.iconContainer}>
+                    <MaterialCommunityIcons
+                      name={
+                        meal && (meal as any).modified
+                          ? "pencil"
+                          : "silverware-fork"
+                      }
+                      size={24}
+                      color="#287D76"
+                      onPress={() => {
+                        handleAddFoodConsumed(meal, moment);
+                      }}
+                    />
+                  </View>
                 </View>
               </View>
             ))
@@ -134,7 +140,7 @@ const styles = StyleSheet.create({
     padding: 5,
     borderLeftColor: "#287D76",
     gap: 10,
-    minWidth: 300,
+    minWidth: 350,
   },
   cardTitle: {
     fontSize: 20,
@@ -152,6 +158,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
     justifyContent: "space-between",
+    position: "relative",
   },
   momentLabel: {
     fontWeight: "bold",
@@ -193,5 +200,15 @@ const styles = StyleSheet.create({
   mealContainer: {
     gap: 20,
     padding: 40,
+  },
+  iconContainer: {
+    position: "absolute",
+    right: 10,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 40,
+    height: "100%",
   },
 });

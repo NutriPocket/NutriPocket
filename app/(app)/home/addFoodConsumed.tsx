@@ -138,23 +138,26 @@ export default function AddFoodConsumed() {
   const handleSaveAll = async () => {
     //HACER
     try {
-      const updates = Object.entries(editedQuantities).filter(([name, val]) => {
-        const ing = ingredients.find((i) => i.name === name);
-        return ing && val !== ing.quantity.toString();
+      // const updates = Object.entries(editedQuantities).filter(([name, val]) => {
+      //   const ing = ingredients.find((i) => i.name === name);
+      //   return ing && val !== ing.quantity.toString();
+      // });
+      // for (const [name, value] of updates) {
+      //   await axiosInstance.put(`/foods/${mealId}/ingredients/${name}`, {
+      //     quantity: Number(value),
+      //   });
+      // }
+      // setIngredients((prev) =>
+      //   prev.map((ing) =>
+      //     editedQuantities[ing.name] !== undefined
+      //       ? { ...ing, quantity: Number(editedQuantities[ing.name]) }
+      //       : ing
+      //   )
+      // );
+      // setEditedQuantities({});
+      router.push({
+        pathname: "/(app)",
       });
-      for (const [name, value] of updates) {
-        await axiosInstance.put(`/foods/${mealId}/ingredients/${name}`, {
-          quantity: Number(value),
-        });
-      }
-      setIngredients((prev) =>
-        prev.map((ing) =>
-          editedQuantities[ing.name] !== undefined
-            ? { ...ing, quantity: Number(editedQuantities[ing.name]) }
-            : ing
-        )
-      );
-      setEditedQuantities({});
     } catch (error) {
       setError("No se pudo guardar los cambios.");
     }
@@ -283,7 +286,7 @@ export default function AddFoodConsumed() {
           <View style={{ gap: 12, marginTop: 8 }}>
             <TouchableOpacity
               style={[styles.addIngredientButton, { flex: 1 }]}
-              onPress={handleAddIngredient}
+              onPress={handleSaveAll}
               accessibilityLabel="Guardar"
             >
               <Text style={styles.addIngredientButtonText}>Guardar</Text>
