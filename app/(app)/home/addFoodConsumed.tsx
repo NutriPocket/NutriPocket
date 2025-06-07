@@ -167,21 +167,6 @@ export default function AddFoodConsumed() {
             {day} - {moment}
           </Text>
           <Text style={styles.subtitleGeneral}>{selectedFood.name}</Text>
-          <TouchableOpacity
-            style={styles.editCircleButton}
-            onPress={() => {
-              router.push({
-                pathname: "/mealplan/AllMeals",
-                params: { day, moment },
-              });
-            }}
-          >
-            <MaterialCommunityIcons
-              name="pencil"
-              size={24}
-              style={styles.editIcon}
-            />
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -189,15 +174,33 @@ export default function AddFoodConsumed() {
         <ActivityIndicator />
       ) : (
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 5 }}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+          }}
         >
-          {/* Card de información general */}
-          <View style={styles.card}>
-            <Text style={styles.subtitle}>Información General </Text>
-
-            <Text style={styles.foodDesc}>{selectedFood.description}</Text>
-            <View>{/* Botón para modificar la comida */}</View>
+          <View style={styles.generalInfoContainer}>
+            <TouchableOpacity
+              style={styles.editCircleButton}
+              onPress={() => {
+                router.push({
+                  pathname: "/mealplan/AllMeals",
+                  params: { day, moment },
+                });
+              }}
+            >
+              <MaterialCommunityIcons
+                name="pencil"
+                size={24}
+                style={styles.editIcon}
+              />
+            </TouchableOpacity>
+            {/* Card de información general */}
+            <View style={styles.card}>
+              <Text style={styles.subtitle}>Información General </Text>
+              <Text style={styles.foodDesc}>{selectedFood.description}</Text>
+            </View>
           </View>
+
           <View style={styles.card}>
             <View>
               <Text style={styles.cardTitle}></Text>
@@ -303,7 +306,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#f5f5f5",
     borderRadius: 16,
-    padding: 17,
+    padding: 24, // Unificado para ambas cards
     shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -367,28 +370,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     height: 36,
   },
-  foodImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "#eee",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  noImageCircle: {
-    backgroundColor: "#ddd",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  noImageText: {
-    fontSize: 14,
-    color: "#888",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  imageContainer: {
-    alignItems: "center",
-    marginBottom: 24,
+  generalInfoContainer: {
+    gap: 16,
   },
   subtitle: {
     fontSize: 20,
@@ -416,6 +399,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 16,
+    alignSelf: "center",
   },
   editIcon: {
     color: "#fff",
