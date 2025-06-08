@@ -39,6 +39,7 @@ export default function Header({
             } else if (backTo) {
               setSelectedPlanId(null);
             } else {
+              console.log("entre a back");
               router.back();
             }
           }}

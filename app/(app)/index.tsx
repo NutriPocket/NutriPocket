@@ -23,6 +23,7 @@ export default function HomeTabs() {
   return (
     <Tab.Navigator
       initialRouteName="Home"
+      backBehavior="history"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#287D76",
