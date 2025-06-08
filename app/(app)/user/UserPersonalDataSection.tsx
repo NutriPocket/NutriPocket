@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View, StyleSheet } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import UserFormSection from "./UserFormSection";
@@ -13,17 +13,16 @@ import {
 import { AnthropometricType } from "../../../types/anthropometricTypes";
 import { UserExtraInfoType } from "../../../types/userType";
 import useAxiosInstance from "@/hooks/useAxios";
+import { castDateToString } from "@/utils/date";
 
 export default function UserPersonalDataSection() {
-  const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
+  const [auth] = useAtom(authenticatedAtom);
 
   const [editAnthropometricMode, setEditAnthropometricMode] = useState(false);
   const [errorData, setAnthropometricError] = useState<string | null>(null);
-  const [successData, setSuccessAnthropometric] = useState<string | null>(null);
 
   const [editPersonalMode, setEditPersonalMode] = useState(false);
   const [errorPersonal, setErrorPersonal] = useState<string | null>(null);
-  const [successPersonal, setSuccessPersonal] = useState<string | null>(null);
 
   const [userPersonalData, setUserPersonalData] =
     useState<UserExtraInfoType | null>(null);
@@ -32,14 +31,28 @@ export default function UserPersonalDataSection() {
 
   const axiosProgress = useAxiosInstance("progress");
 
-  const fetchAnthropometricData = async () => {
+  const fetchUserPersonalData = async () => {
+    try {
+      const response = await axiosProgress.get(
+        `/users/${auth?.id}/fixedData/`,
+        {
+          params: { base: true },
+        }
+      );
+      const data = response.data.data;
+      data.birthday = castDateToString(data.birthday);
+      setUserPersonalData(data);
+    } catch (err) {
+      setAnthropometricError("No se pudieron obtener los datos del usuario.");
+    }
+  };
+
+  const fetchUserAnthropometricData = async () => {
     try {
       const response = await axiosProgress.get(
         `/users/${auth?.id}/anthropometrics/`
       );
-
       const data = response.data.data[0];
-
       setAnthropometricData({
         weight: data.weight ? data.weight.toString() : "",
         muscleMass: data.muscle_mass ? data.muscle_mass.toString() : "",
@@ -51,121 +64,93 @@ export default function UserPersonalDataSection() {
     }
   };
 
-  const fetchPersonalData = async () => {
-    try {
-      const response = await axiosProgress.get(
-        `/users/${auth?.id}/fixedData/`,
-        {
-          params: { base: true },
-        }
-      );
-      const data = response.data.data;
-      setUserPersonalData(data);
-    } catch (err) {
-      setAnthropometricError("No se pudieron obtener los datos del usuario.");
-    }
-  };
-
   useEffect(() => {
-    fetchAnthropometricData();
-    fetchPersonalData();
-  }, []);
+    fetchUserPersonalData();
+    fetchUserAnthropometricData();
+  }, [auth?.id]);
 
-  // Construir initialValues solo con los campos definidos en fields y userData
-  const initialAnthropometricValues = anthropometricFields.reduce(
-    (acc, item) => {
-      acc[item.key] = anthropometricData?.[item.key]?.toString() || "";
-      return acc;
-    },
-    {} as Record<string, string>
-  );
+  // Unir los campos y valores iniciales de ambos formularios
+  const allFields = [...userPersonalFields, ...anthropometricFields];
+  const initialAllValues = allFields.reduce((acc, item) => {
+    // Forzamos el acceso dinámico solo si la clave existe en el objeto
+    const personalValue =
+      userPersonalData &&
+      Object.prototype.hasOwnProperty.call(userPersonalData, item.key)
+        ? String((userPersonalData as Record<string, any>)[item.key] ?? "")
+        : "";
+    const anthropometricValue =
+      anthropometricData &&
+      Object.prototype.hasOwnProperty.call(anthropometricData, item.key)
+        ? String((anthropometricData as Record<string, any>)[item.key] ?? "")
+        : "";
 
-  // Construir initialValues para datos personales
-  const initialPersonalValues = userPersonalFields.reduce((acc, item) => {
-    acc[item.key] = userPersonalData?.[item.key]?.toString() || "";
+    acc[item.key] = personalValue || anthropometricValue || "";
     return acc;
   }, {} as Record<string, string>);
 
-  const handleSubmitAnthropometricForm = async (
-    values: Record<string, string>,
-    { setSubmitting }: FormikHelpers<Record<string, string>>
-  ) => {
-    setAnthropometricError(null);
-    setSuccessAnthropometric(null);
-    try {
-      const userId = auth?.id;
-      await axiosProgress.put(
-        `/users/${userId}/anthropometrics/`,
-        {
-          weight: parseFloat(values.weight),
-          muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
-          fat_mass: values.fatMass ? parseFloat(values.fatMass) : null,
-          bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+  // Unir los esquemas de validación si es necesario, aquí usamos el de datos personales
+  // pero podrías combinar ambos si lo necesitas
+  const combinedValidationSchema = extraInfoValidationSchema.concat(
+    anthropometricValidationSchema
+  );
 
-      setIsAuthenticated((prev) =>
-        prev
-          ? {
-              ...prev,
-              weight: parseFloat(values.weight),
-              muscleMass: values.muscleMass
-                ? parseFloat(values.muscleMass)
-                : undefined,
-              bodyFatPercentage: values.fatMass
-                ? parseFloat(values.fatMass)
-                : undefined,
-              boneMass: values.boneMass
-                ? parseFloat(values.boneMass)
-                : undefined,
-            }
-          : prev
-      );
-
-      setAnthropometricData({
-        weight: values.weight,
-        muscleMass: values.muscleMass ? values.muscleMass : "",
-        bodyMass: values.bodyMass ? values.bodyMass : "",
-        boneMass: values.boneMass ? values.boneMass : "",
-      });
-
-      setSuccessAnthropometric("Datos actualizados correctamente.");
-      setEditAnthropometricMode(false);
-    } catch (err: any) {
-      setAnthropometricError("Ocurrió un error al guardar los cambios.");
-    }
-    setSubmitting(false);
+  // PUT datos personales
+  const updateUserPersonalData = async (values: Record<string, string>) => {
+    await axiosProgress.put(
+      `/users/${auth?.id}/fixedData/`,
+      {
+        birthday: values.birthday,
+        height: Number(values.height),
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    setUserPersonalData({
+      birthday: values.birthday,
+      height: Number(values.height),
+    });
   };
 
-  const handleSubmitPersonalForm = async (
+  // PUT datos antropométricos
+  const updateUserAnthropometricData = async (
+    values: Record<string, string>
+  ) => {
+    await axiosProgress.put(
+      `/users/${auth?.id}/anthropometrics/`,
+      {
+        weight: parseFloat(values.weight),
+        muscle_mass: values.muscleMass ? parseFloat(values.muscleMass) : null,
+        fat_mass: values.fatMass ? parseFloat(values.fatMass) : null,
+        bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    setAnthropometricData({
+      weight: values.weight,
+      muscleMass: values.muscleMass ? values.muscleMass : "",
+      bodyMass: values.bodyMass ? values.bodyMass : "",
+      boneMass: values.boneMass ? values.boneMass : "",
+    });
+  };
+
+  const handleSubmitAll = async (
     values: Record<string, string>,
     { setSubmitting }: FormikHelpers<Record<string, string>>
   ) => {
     setErrorPersonal(null);
-    setSuccessPersonal(null);
+    setAnthropometricError(null);
     try {
-      const userId = auth?.id;
-      await axiosProgress.put(
-        `/users/${userId}/fixedData/`,
-        {
-          ...values,
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      setUserPersonalData({
-        birthday: values.birthday,
-        height: Number(values.height),
-      });
+      await updateUserPersonalData(values);
+      await updateUserAnthropometricData(values);
 
-      setSuccessPersonal("Datos personales actualizados correctamente.");
       setEditPersonalMode(false);
+      setEditAnthropometricMode(false);
     } catch (err: any) {
       setErrorPersonal("Ocurrió un error al guardar los cambios.");
+      setAnthropometricError("Ocurrió un error al guardar los cambios.");
     }
     setSubmitting(false);
   };
@@ -175,30 +160,21 @@ export default function UserPersonalDataSection() {
       contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8 }}
     >
       <UserFormSection
-        title="Tus datos personales"
-        fields={userPersonalFields.slice()}
-        initialValues={initialPersonalValues}
-        validationSchema={extraInfoValidationSchema}
-        onSubmit={handleSubmitPersonalForm}
-        editMode={editPersonalMode}
-        setEditMode={setEditPersonalMode}
-        error={errorPersonal}
-        success={successPersonal}
-        setError={setErrorPersonal}
-        setSuccess={setSuccessPersonal}
-      />
-      <UserFormSection
         title="Tus datos personales y antropométricos"
-        fields={anthropometricFields.slice()}
-        initialValues={initialAnthropometricValues}
-        validationSchema={anthropometricValidationSchema}
-        onSubmit={handleSubmitAnthropometricForm}
-        editMode={editAnthropometricMode}
-        setEditMode={setEditAnthropometricMode}
-        error={errorData}
-        success={successData}
-        setError={setAnthropometricError}
-        setSuccess={setSuccessAnthropometric}
+        fields={allFields}
+        initialValues={initialAllValues}
+        validationSchema={combinedValidationSchema}
+        onSubmit={handleSubmitAll}
+        editMode={editPersonalMode || editAnthropometricMode}
+        setEditMode={(v: boolean) => {
+          setEditPersonalMode(v);
+          setEditAnthropometricMode(v);
+        }}
+        error={errorPersonal || errorData}
+        setError={(e: string | null) => {
+          setErrorPersonal(e);
+          setAnthropometricError(e);
+        }}
       />
     </ScrollView>
   );
