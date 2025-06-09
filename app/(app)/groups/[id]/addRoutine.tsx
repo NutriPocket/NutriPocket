@@ -6,6 +6,8 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import OptionPicker from "@/components/OptionPicker";
 import Header from "@/components/Header";
+import { useAtom } from "jotai";
+import { authenticatedAtom } from "@/atoms/authAtom";
 
 const daysOfWeek = [
   { label: "Lunes", value: "Monday" },
@@ -25,6 +27,7 @@ const hours = Array.from({ length: 24 }, (_, i) => ({
 export default function AddRoutine() {
   const { id: groupId } = useLocalSearchParams();
   const router = useRouter();
+  const [auth] = useAtom(authenticatedAtom);
   const axiosInstance = useAxiosInstance("group");
 
   return (
@@ -39,6 +42,7 @@ export default function AddRoutine() {
             day: "",
             start_hour: "",
             end_hour: "",
+            creator_id: "",
           }}
           onSubmit={async (values, { setSubmitting }) => {
             if (!values.day) {
@@ -60,14 +64,17 @@ export default function AddRoutine() {
             }
 
             try {
+              const currentUserId = auth?.id;
+
               const payload = {
                 ...values,
                 day: values.day,
                 start_hour: start,
                 end_hour: end,
+                creator_id: currentUserId, // Replace with actual user ID
               };
               await axiosInstance.post(
-                `/groups/${groupId}/routines?forceMembers=true`,
+                `/groups/${groupId}/routines?force_members=false`,
                 payload,
               );
               router.back();

@@ -47,20 +47,16 @@ export default function Group() {
     setLoading(true);
     try {
       const participantsReponse = await axiosGroupInstance.get(
-        `/groups/${id}/users`
+        `/groups/${id}/users`,
       );
       const participantIds = participantsReponse.data.data.map(
-        (user: { user_id: string }) => user.user_id
+        (user: { user_id: string }) => user.user_id,
       );
 
-      console.log("Participant IDs:", participantIds);
-      console.log("User ID:", userId);
-      console.log("Auth Token:", auth.token);
-
-      const userResponse = await axiosUserInstance.get("/users/");
+      const userResponse = await axiosUserInstance.get("/users");
       const filteredUsers = userResponse.data.filter(
         (user: UserType) =>
-          participantIds.includes(user.id) || user.id === userId
+          participantIds.includes(user.id) || user.id === userId,
       );
 
       let orderedUsers = filteredUsers;
@@ -84,7 +80,7 @@ export default function Group() {
     useCallback(() => {
       fetchGroup();
       fetchGroupParticipants();
-    }, [id, auth])
+    }, [id, auth]),
   );
 
   const dayMap: Record<string, string> = {
@@ -129,6 +125,7 @@ export default function Group() {
               { value: "0", label: "Participantes" },
               { value: "1", label: "Rutinas" },
             ]}
+            style={{ marginBottom: 16 }}
             theme={{
               colors: {
                 secondaryContainer: "#287D76",
@@ -208,23 +205,11 @@ export default function Group() {
                       if (!acc.has(routine.day)) acc.set(routine.day, []);
                       acc.get(routine.day)!.push(routine);
                       return acc;
-                    }, new Map<string, typeof group.routines>())
+                    }, new Map<string, typeof group.routines>()),
                   )
-                    // Ordenar por día de la semana
-                    .sort(([a], [b]) => {
-                      const weekOrder = [
-                        "Monday",
-                        "Tuesday",
-                        "Wednesday",
-                        "Thursday",
-                        "Friday",
-                        "Saturday",
-                        "Sunday",
-                      ];
-                      return weekOrder.indexOf(a) - weekOrder.indexOf(b);
-                    })
+                    .sort(([a], [b]) => a.localeCompare(b))
                     .map(([day, routines]) => (
-                      <View key={day} style={{ marginBottom: 16, gap: 8 }}>
+                      <View key={day} style={{ marginBottom: 16 }}>
                         <Text
                           style={{
                             fontWeight: "bold",
@@ -276,16 +261,16 @@ const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     padding: 16,
-    gap: 16,
     backgroundColor: "#fff",
   },
   scrollContainer: {
-    gap: 16,
+    gap: 8,
   },
   userCard: {
     padding: 16,
     backgroundColor: "#E8F5E9",
     borderRadius: 10,
+    marginBottom: 4,
   },
   userName: {
     fontSize: 18,
@@ -304,7 +289,7 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 0,
-    bottom: 16,
+    bottom: 0,
     backgroundColor: "#287D76",
   },
   groupInfoContainer: {

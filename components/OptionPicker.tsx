@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Pressable } from "react-native";
-import { Menu, IconButton } from "react-native-paper";
+import { Menu } from "react-native-paper";
 import { TextInput } from "react-native-paper";
 
 interface OptionPickerProps {
@@ -19,27 +19,31 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
   const [menuVisible, setMenuVisible] = useState(false);
 
   return (
-    <View style={{ width: "100%" }}>
+    <View>
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
+        contentStyle={{
+          backgroundColor: "#fff",
+        }}
         anchor={
-          <TextInput
-            label={label}
-            value={items.find((item) => item.value === value)?.label || ""}
-            editable={false}
-            right={
-              <TextInput.Icon
-                icon="menu-down"
-                onPress={() => setMenuVisible(true)}
-                forceTextInputFocus={false}
-              />
-            }
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 8,
-            }}
-          />
+          <Pressable onPress={() => setMenuVisible(true)}>
+            <TextInput
+              label={label}
+              value={items.find((item) => item.value === value)?.label || ""}
+              editable={false}
+              right={
+                <TextInput.Icon
+                  icon="menu-down"
+                  onPress={() => setMenuVisible(true)}
+                />
+              }
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: 8,
+              }}
+            />
+          </Pressable>
         }
       >
         {items.map((item) => (
@@ -50,7 +54,6 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
               setMenuVisible(false);
             }}
             title={item.label}
-            style={{ backgroundColor: "#f9f9f9" }}
             titleStyle={{ color: "#287D76" }}
           />
         ))}
