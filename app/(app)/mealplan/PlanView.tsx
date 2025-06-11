@@ -12,7 +12,7 @@ import { router, useFocusEffect } from "expo-router";
 import Header from "../../../components/Header";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import { TouchableRipple, SegmentedButtons, FAB } from "react-native-paper";
-import FoodModal from "../../../components/FoodModal";
+import FoodModal from "./CreateNewFood";
 import { Formik } from "formik";
 import { Dropdown } from "react-native-paper-dropdown";
 import { CustomDropdown } from "../../../components/CustomDropdown";
@@ -43,7 +43,6 @@ export default function PlanView() {
 
   const [tab, setTab] = useState("plan");
   const [error, setError] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
 
   const [weekDay, setWeekDay] = useState<string | null>(null);
   const [mealMoment, setMealMoment] = useState<string | null>(null);
@@ -133,6 +132,7 @@ export default function PlanView() {
     });
   };
   const handleSelectFoodFromItinerary = async (meal: MealType | null) => {
+    console.log("Navigating to SelectedFood with ID:", meal.id);
     if (!meal) {
       setError("No se pudo obtener la comida seleccionada.");
       return;
@@ -142,21 +142,12 @@ export default function PlanView() {
       params: { selectedMealId: meal.id },
     });
   };
-  const handleCancel = () => {
-    setShowAddModal(false);
-    setError(null);
-  };
-  const handleAddFoodToPlan = async (food: MealType) => {
-    console.log(food);
-    try {
-      await axiosInstance.post("/food", { food });
-      setShowAddModal(false);
 
-      fetchFoods();
-    } catch (error) {
-      console.error("Error adding food to plan: ", error);
-      setError("No se pudo agregar la comida al plan.");
-    }
+  const handleAddFoodToPlan = async () => {
+    router.push({
+      pathname: "/mealplan/CreateNewFood",
+      params: { selectedPlanId },
+    });
   };
 
   useFocusEffect(
@@ -260,7 +251,7 @@ export default function PlanView() {
                                   size={24}
                                   color="#287D76"
                                   onPress={(e) => {
-                                    e.stopPropagation(); // <-- Esto evita que se dispare el onPress del contenedor
+                                    e.stopPropagation();
                                     handleDeleteFood(weekDay, moment);
                                   }}
                                 />
@@ -349,17 +340,10 @@ export default function PlanView() {
               }}
               color="#fff"
               onPress={() => {
-                setShowAddModal(true);
+                handleAddFoodToPlan();
               }}
             />
-            {/* MODAL que sube desde abajo */}
-            <FoodModal
-              showAddModal={showAddModal}
-              setShowAddModal={setShowAddModal}
-              handleAddFoodToPlan={handleAddFoodToPlan}
-              handleCancel={handleCancel}
-              error={error}
-            />
+
           </View>
         ) : null}
       </View>
