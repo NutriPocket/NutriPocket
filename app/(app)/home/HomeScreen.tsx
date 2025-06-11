@@ -26,9 +26,10 @@ export default function HomeScreen() {
     "Sábado",
   ];
   const today = days[new Date().getDay()];
+  //const todayDate = new Date();
   const todaysFoods = itinerary?.weekly_plan?.[today] || null;
   const router = useRouter();
-  // const todayFoodsEaten = [todaysFoods?.breakfast, todaysFoods?.lunch];
+  //const [todayFoodsEaten, setTodayFoodsEaten] = useState<MealType[]>([]);
 
   // Momentos del día disponibles
   const dayMoments = ["Desayuno", "Almuerzo", "Merienda", "Cena"];
@@ -70,6 +71,25 @@ export default function HomeScreen() {
     }
   };
 
+  // const fetchFoodConsumed = async () => {
+  //   try {
+  //     console.log("Fetching consumed foods for today: ", todayDate);
+  //     console.log("User ID: ", auth?.id);
+  //     const response = await axiosInstance.get(
+  //       `/extrafoods/${
+  //         auth?.id
+  //       }/?start_date=${todayDate.toISOString()}&end_date=${todayDate.toISOString()}`
+  //     );
+  //     const data = response.data.data;
+  //     console.log("Comidas consumidas hoy: ", data);
+  //     setTodayFoodsEaten(data);
+  //   } catch (error) {
+  //     console.error("Error fetching consumed foods: ", error);
+  //     setError("No se pudieron obtener las comidas consumidas.");
+  //     setTodayFoodsEaten([]);
+  //   }
+  // };
+
   useFocusEffect(
     React.useCallback(() => {
       const fetchPlan = async () => {
@@ -101,6 +121,7 @@ export default function HomeScreen() {
         }
       };
       fetchPlan();
+      //fetchFoodConsumed();
     }, [auth?.id])
   );
   return (

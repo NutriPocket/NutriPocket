@@ -14,11 +14,13 @@ import Header from "@/components/Header";
 import { TextInput, ActivityIndicator, IconButton } from "react-native-paper";
 import { IngredientType, MealType } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
+import { authenticatedAtom } from "../../../atoms/authAtom";
 import { consumedIngredientsAtom } from "../../../atoms/consumedIngredientsAtom";
 
 export default function AddFoodConsumed() {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const [authId] = useAtom(authenticatedAtom);
   const { mealId, moment, day } = params;
 
   const axiosInstance = useAxiosInstance("food");
@@ -60,7 +62,6 @@ export default function AddFoodConsumed() {
       const response = await axiosInstance.get(`/foods/${mealId}/ingredients`);
 
       const apiIngredients = response.data.data;
-      console.log("ingredient info:", apiIngredients[0]);
       const parsedIngredients: IngredientType[] = apiIngredients.map(
         (item: any) => ({
           ...item.ingredient,
@@ -113,7 +114,7 @@ export default function AddFoodConsumed() {
   };
   const handleAddIngredient = () => {
     router.push({
-      pathname: "/mealplan/AddIngredientToFoodConsume",
+      pathname: "/mealplan/AddIngredientToFood",
       params: { selectedMealId: mealId },
     });
   };
@@ -136,7 +137,6 @@ export default function AddFoodConsumed() {
   };
 
   const handleSaveAll = async () => {
-    //HACER
     try {
       // const updates = Object.entries(editedQuantities).filter(([name, val]) => {
       //   const ing = ingredients.find((i) => i.name === name);
@@ -155,6 +155,10 @@ export default function AddFoodConsumed() {
       //   )
       // );
       // setEditedQuantities({});
+
+      // const response = await axiosInstance.post(`/users/${authId}/extrafood`, {
+      //   ingredients: ingredientsToLoad,
+      // });
       router.push({
         pathname: "/(app)",
       });
@@ -250,7 +254,10 @@ export default function AddFoodConsumed() {
                           value={
                             editedQuantities[ing.name] !== undefined
                               ? editedQuantities[ing.name]
-                              : ing.quantity.toString()
+                              : ing.quantity !== undefined &&
+                                ing.quantity !== null
+                              ? ing.quantity.toString()
+                              : ""
                           }
                           onChangeText={(text) =>
                             handleIngredientChange(ing.name, text)
