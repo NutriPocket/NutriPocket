@@ -10,7 +10,7 @@ const INGREDIENT_UNITS = [
   { label: "unidad", value: "unit" },
 ];
 
-const MILISECONDS_TO_DEBOUNCE = 1000;
+const MILISECONDS_TO_DEBOUNCE = 200;
 
 export default function AddIngredientToPlan() {
   const router = useRouter();
@@ -80,7 +80,7 @@ export default function AddIngredientToPlan() {
 
       setIngredientOptions(options);
     } catch (error) {
-      console.error("Error fetching food info: ", error);
+      console.log("Error fetching food info: ", error);
     }
   };
 
