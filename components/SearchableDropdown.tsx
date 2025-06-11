@@ -33,19 +33,20 @@ export const SearchableDropdown: React.FC<Props> = ({
 
   const onChangeSearch = (query: string) => {
     setSearchQuery(query);
-    //if (onChangeText) onChangeText(query); // El padre hace el fetch y pasa los datos por props
-    //setShowDropdown(true); // Siempre muestra el dropdown cuando hay texto
+    if (onChangeText) onChangeText(query); // El padre hace el fetch y pasa los datos por props
+    setShowDropdown(true); // Siempre muestra el dropdown cuando hay texto
+    //setFilteredData(data);
 
-    //Filtrado en el caso de que este mockeado
-    if (query.length > 0) {
-      const filtered = data.filter((item) =>
-        item.value.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredData(filtered);
-      setShowDropdown(true);
-    } else {
-      setShowDropdown(false);
-    }
+    // //Filtrado en el caso de que este mockeado
+    // if (query.length > 0) {
+    //   const filtered = data.filter((item) =>
+    //     item.value.toLowerCase().includes(query.toLowerCase())
+    //   );
+    //   setFilteredData(filtered);
+    //   setShowDropdown(true);
+    // } else {
+    //   setShowDropdown(false);
+    // }
   };
 
   const handleSelect = (item: Item) => {
@@ -65,8 +66,7 @@ export const SearchableDropdown: React.FC<Props> = ({
       {showDropdown && (
         <View style={styles.dropdown}>
           <FlatList
-            // {data={data}} esto lo hago en el caso uso directamente los datos del padre
-            data={filteredData}
+            data={data} // esto lo hago en el caso uso directamente los datos del padre
             keyExtractor={(item) => item.label}
             renderItem={({ item }) => (
               <TouchableOpacity

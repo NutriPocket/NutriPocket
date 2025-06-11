@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { CustomDropdown } from "../../../components/CustomDropdown";
 import { SearchableDropdown } from "../../../components/SearchableDropdown";
 import useAxiosInstance from "@/hooks/useAxios";
 import { IngredientType } from "../../../types/mealTypes";
@@ -10,14 +9,6 @@ import { IngredientType } from "../../../types/mealTypes";
 const INGREDIENT_UNITS = [
   { label: "g", value: "gram" },
   { label: "unidad", value: "unit" },
-];
-
-const frutas = [
-  { label: "1", value: "Manzana" },
-  { label: "2", value: "Banana" },
-  { label: "3", value: "Naranja" },
-  { label: "4", value: "Pera" },
-  { label: "5", value: "Uva" },
 ];
 
 const MILISECONDS_TO_DEBOUNCE = 1000;
@@ -36,6 +27,7 @@ export default function AddIngredientToPlan() {
 
   // Busqueda y selección de ingredientes
   const [selectedIngredient, setSelectedIngredient] = useState<string>("");
+
   const [tempIngredientSearch, setTempIngredientSearch] = useState("");
   const [ingredientSearch, setIngredientSearch] = useState("");
 
@@ -63,31 +55,56 @@ export default function AddIngredientToPlan() {
 
   const fetchIngredients = async () => {
     try {
-      const response = await axiosInstance.get(`/foods/ingredients/all`);
-      const data = response.data.data;
+      console.log("Fetching ingredients with search: ", ingredientSearch);
+      var route: string;
+      var response: any;
+      var data: any;
+      if (ingredientSearch) {
+        route = `/foods/ingredients/${encodeURIComponent(ingredientSearch)}`;
+        response = await axiosInstance.get(route);
+        data = response.data;
+      } else {
+        route = `/foods/ingredients/all`;
+        response = await axiosInstance.get(route);
+        data = response.data.data;
+      }
 
-      const options = data.map((item: any) => ({
-        label: item.name,
-        value: item.id,
-      }));
+      console.log("Fetched ingredients: ", data);
+      const options = data
+        ? data.map((item: any) => ({
+            label: String(item.id),
+            value: item.name,
+          }))
+        : [];
 
       setIngredientOptions(options);
-
-      console.log("Selected food data:   ", data);
     } catch (error) {
       console.error("Error fetching food info: ", error);
     }
   };
 
-  useEffect(() => {
-    fetchIngredients();
-  }, []);
+  // // Nuevo: fetch del ingrediente completo al seleccionar
+  // const handleSelectIngredient = async (item: {
+  //   label: string;
+  //   value: string;
+  // }) => {
+  //   setSelectedIngredient(item.value); // value es el id
+  //   try {
+  //     const response = await axiosInstance.get(
+  //       `/foods/ingredients/id/${item.value}`
+  //     );
+  //     setSelectedIngredientObj(response.data.data);
+  //   } catch (error) {
+  //     setSelectedIngredientObj(null);
+  //   }
+  // };
 
   // Debounce effect
   useEffect(() => {
     const handler = setTimeout(() => {
       if (tempIngredientSearch !== ingredientSearch) {
         setIngredientSearch(tempIngredientSearch);
+        // console.log("Debounced ingredient search: ", tempIngredientSearch);
       }
     }, MILISECONDS_TO_DEBOUNCE);
 
@@ -96,22 +113,6 @@ export default function AddIngredientToPlan() {
 
   // Fetch ingredients when search changes
   useEffect(() => {
-    const fetchIngredients = async () => {
-      try {
-        const route = ingredientSearch
-          ? `/foods/ingredients/all?search=${ingredientSearch}`
-          : `/foods/ingredients/all`;
-        const response = await axiosInstance.get(route);
-        const data = response.data.data;
-        const options = data.map((item: any) => ({
-          label: item.name,
-          value: item.id,
-        }));
-        setIngredientOptions(options);
-      } catch (error) {
-        // Manejo de error
-      }
-    };
     fetchIngredients();
   }, [ingredientSearch]);
 
@@ -120,11 +121,12 @@ export default function AddIngredientToPlan() {
       <Text style={styles.title}>Agregar Ingrediente</Text>
 
       <SearchableDropdown
-        data={frutas}
+        data={ingredientOptions}
         onSelect={(item) => setSelectedIngredient(item.label)}
         onChangeText={setTempIngredientSearch}
         placeholder="Ingrediente"
       />
+
       <TextInput
         label="Cantidad"
         value={quantity}
@@ -136,13 +138,12 @@ export default function AddIngredientToPlan() {
         placeholderTextColor="#9E9E9E"
         theme={{ colors: { primary: "#287D76", text: "#287D76" } }}
       />
-      <CustomDropdown
-        label="Unidad"
-        options={INGREDIENT_UNITS}
-        selected={[unit]}
-        onChange={(arr) => setUnit(arr[0] ?? "gram")}
-        multiple={false}
-      />
+      {selectedIngredientObj && (
+        <Text style={{ color: "#287D76", marginBottom: 8 }}>
+          Unidad sugerida: {selectedIngredientObj.measure_type || "N/A"}
+        </Text>
+      )}
+
       {error && <Text style={{ color: "#B00020", marginTop: 8 }}>{error}</Text>}
       <Button
         mode="contained"

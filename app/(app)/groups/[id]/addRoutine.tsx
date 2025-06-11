@@ -6,6 +6,8 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import OptionPicker from "@/components/OptionPicker";
 import Header from "@/components/Header";
+import { useAtom } from "jotai";
+import { authenticatedAtom } from "@/atoms/authAtom";
 
 const daysOfWeek = [
   { label: "Lunes", value: "Monday" },
@@ -27,6 +29,9 @@ export default function AddRoutine() {
   const router = useRouter();
   const axiosInstance = useAxiosInstance("group");
 
+  const [auth] = useAtom(authenticatedAtom);
+  const creatorId = auth?.id;
+
   return (
     <View style={{ flex: 1 }}>
       <Header />
@@ -39,6 +44,7 @@ export default function AddRoutine() {
             day: "",
             start_hour: "",
             end_hour: "",
+            force_members: "false",
           }}
           onSubmit={async (values, { setSubmitting }) => {
             if (!values.day) {
@@ -53,7 +59,7 @@ export default function AddRoutine() {
             if (isNaN(start) || isNaN(end) || start >= end) {
               Alert.alert(
                 "Error",
-                "Por favor selecciona un rango horario válido.",
+                "Por favor selecciona un rango horario válido."
               );
               setSubmitting(false);
               return;
@@ -65,10 +71,11 @@ export default function AddRoutine() {
                 day: values.day,
                 start_hour: start,
                 end_hour: end,
+                creator_id: creatorId,
               };
               await axiosInstance.post(
-                `/groups/${groupId}/routines?forceMembers=true`,
-                payload,
+                `/groups/${groupId}/routines?force_members=${values.force_members}`,
+                payload
               );
               router.back();
             } catch (error) {
@@ -125,6 +132,15 @@ export default function AddRoutine() {
                   />
                 </View>
               </View>
+              <OptionPicker
+                label="Forzar horarios de los miembros"
+                value={values.force_members ? "true" : "false"}
+                items={[
+                  { label: "Sí", value: "true" },
+                  { label: "No", value: "false" },
+                ]}
+                setValue={(value) => handleChange("force_members")(value)}
+              />
               <Button
                 mode="contained"
                 onPress={() => handleSubmit()}
