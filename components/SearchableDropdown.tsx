@@ -33,20 +33,8 @@ export const SearchableDropdown: React.FC<Props> = ({
 
   const onChangeSearch = (query: string) => {
     setSearchQuery(query);
-    if (onChangeText) onChangeText(query); // El padre hace el fetch y pasa los datos por props
-    setShowDropdown(true); // Siempre muestra el dropdown cuando hay texto
-    //setFilteredData(data);
-
-    // //Filtrado en el caso de que este mockeado
-    // if (query.length > 0) {
-    //   const filtered = data.filter((item) =>
-    //     item.value.toLowerCase().includes(query.toLowerCase())
-    //   );
-    //   setFilteredData(filtered);
-    //   setShowDropdown(true);
-    // } else {
-    //   setShowDropdown(false);
-    // }
+    if (onChangeText) onChangeText(query);
+    setShowDropdown(true);
   };
 
   const handleSelect = (item: Item) => {
@@ -62,6 +50,11 @@ export const SearchableDropdown: React.FC<Props> = ({
         onChangeText={onChangeSearch}
         value={searchQuery}
         style={styles.searchbar}
+        onClearIconPress={() => {
+          setSearchQuery("");
+          if (onChangeText) onChangeText("");
+          setShowDropdown(false);
+        }}
       />
       {showDropdown && (
         <View style={styles.dropdown}>

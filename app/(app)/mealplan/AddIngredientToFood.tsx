@@ -4,7 +4,6 @@ import { Button, TextInput } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SearchableDropdown } from "../../../components/SearchableDropdown";
 import useAxiosInstance from "@/hooks/useAxios";
-import { IngredientType } from "../../../types/mealTypes";
 
 const INGREDIENT_UNITS = [
   { label: "g", value: "gram" },
@@ -23,7 +22,7 @@ export default function AddIngredientToPlan() {
   >([]);
 
   const [quantity, setQuantity] = useState<string>("");
-  const [unit, setUnit] = useState<string>("g");
+  const [unit, setUnit] = useState<string>("");
 
   // Busqueda y selección de ingredientes
   const [selectedIngredient, setSelectedIngredient] = useState<string>("");
@@ -32,6 +31,10 @@ export default function AddIngredientToPlan() {
   const [ingredientSearch, setIngredientSearch] = useState("");
 
   const handleAdd = async () => {
+    if (!quantity || !selectedIngredient) {
+      setError("Debes ingresar una cantidad y un ingrediente válido.");
+      return;
+    }
     try {
       const response = await axiosInstance.post(
         `/foods/${selectedMealId}/ingredients/add/${selectedIngredient}`,
@@ -63,10 +66,8 @@ export default function AddIngredientToPlan() {
         route = `/foods/ingredients/${encodeURIComponent(ingredientSearch)}`;
         response = await axiosInstance.get(route);
         data = response.data;
-      } else {
-        route = `/foods/ingredients/all`;
-        response = await axiosInstance.get(route);
-        data = response.data.data;
+        setUnit(data[0].measure_type ? data[0].measure_type : ""); // Set unit from the response if available
+        console.log("measure_type: ", data[0].measure_type);
       }
 
       console.log("Fetched ingredients: ", data);
@@ -123,7 +124,10 @@ export default function AddIngredientToPlan() {
       <SearchableDropdown
         data={ingredientOptions}
         onSelect={(item) => setSelectedIngredient(item.label)}
-        onChangeText={setTempIngredientSearch}
+        onChangeText={(text) => {
+          setTempIngredientSearch(text);
+          if (text === "") setSelectedIngredient("");
+        }}
         placeholder="Ingrediente"
       />
 
@@ -138,9 +142,9 @@ export default function AddIngredientToPlan() {
         placeholderTextColor="#9E9E9E"
         theme={{ colors: { primary: "#287D76", text: "#287D76" } }}
       />
-      {selectedIngredientObj && (
+      {unit && (
         <Text style={{ color: "#287D76", marginBottom: 8 }}>
-          Unidad sugerida: {selectedIngredientObj.measure_type || "N/A"}
+          Unidad sugerida: {unit || "N/A"}
         </Text>
       )}
 
