@@ -3,11 +3,12 @@ import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { MealType } from "../../../types/mealTypes";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import {useRouter, useLocalSearchParams, router, useFocusEffect} from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import { FAB, TouchableRipple } from "react-native-paper";
 import Header from "../../../components/Header";
-import FoodModal from "../../../components/FoodModal";
+import CreateFoodScreen from "./CreateNewFood";
+import {selectedPlanIdAtom} from "@/atoms/mealPlanAtom";
 
 export default function AddFoodToPlan() {
   const { weekDay, mealMoment } = useLocalSearchParams();
@@ -18,7 +19,7 @@ export default function AddFoodToPlan() {
   const [error, setError] = useState<string | null>(null);
   const axiosInstance = useAxiosInstance("food");
   const router = useRouter();
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedPlanId] = useAtom(selectedPlanIdAtom);
 
   const fetchPlanFoods = async () => {
     try {
@@ -39,6 +40,14 @@ export default function AddFoodToPlan() {
       console.error("Error fetching foods: ", error);
     }
   };
+
+  const handleCreateNewFood = () => {
+    router.push({
+      pathname: "/mealplan/CreateNewFood",
+      params: { selectedPlanId },
+    });
+  }
+
 
   const fetchAllFoods = async () => {
     try {
@@ -72,15 +81,10 @@ export default function AddFoodToPlan() {
     }
   };
 
-  const handleCancel = () => {
-    setShowAddModal(false);
-    setError(null);
-  };
-
-  useEffect(() => {
+  useFocusEffect(() => {
     fetchPlanFoods();
     fetchAllFoods();
-  }, []);
+  });
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -157,16 +161,8 @@ export default function AddFoodToPlan() {
           style={styles.fab}
           color="#fff"
           onPress={() => {
-            setShowAddModal(true);
+            handleCreateNewFood();
           }}
-        />
-
-        <FoodModal
-          showAddModal={showAddModal}
-          setShowAddModal={setShowAddModal}
-          handleAddFoodToPlan={handleAddFoodToPlan}
-          handleCancel={handleCancel}
-          error={error}
         />
       </View>
     </View>

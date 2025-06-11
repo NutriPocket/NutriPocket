@@ -9,15 +9,7 @@ export type MealType = {
     id: number;
     name: string;
     description: string;
-    calories: number;
-    protein: number;
-    carbohydrates: number;
-    fiber: number;
-    saturated_fats: number;
-    monounsaturated_fats: number;
-    polyunsaturated_fats: number;
-    trans_fats: number;
-    cholesterol: number;
+    ingredients: IngredientType[];
     image_url: string;
     price: number;
 }
