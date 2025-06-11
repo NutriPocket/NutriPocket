@@ -5,11 +5,6 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SearchableDropdown } from "../../../components/SearchableDropdown";
 import useAxiosInstance from "@/hooks/useAxios";
 
-const INGREDIENT_UNITS = [
-  { label: "g", value: "gram" },
-  { label: "unidad", value: "unit" },
-];
-
 const MILISECONDS_TO_DEBOUNCE = 200;
 
 export default function AddIngredientToPlan() {
@@ -66,7 +61,7 @@ export default function AddIngredientToPlan() {
         route = `/foods/ingredients/${encodeURIComponent(ingredientSearch)}`;
         response = await axiosInstance.get(route);
         data = response.data;
-        setUnit(data[0].measure_type ? data[0].measure_type : ""); // Set unit from the response if available
+        setUnit(data[0].measure_type ? data[0].measure_type : "");
         console.log("measure_type: ", data[0].measure_type);
       }
 
@@ -84,28 +79,11 @@ export default function AddIngredientToPlan() {
     }
   };
 
-  // // Nuevo: fetch del ingrediente completo al seleccionar
-  // const handleSelectIngredient = async (item: {
-  //   label: string;
-  //   value: string;
-  // }) => {
-  //   setSelectedIngredient(item.value); // value es el id
-  //   try {
-  //     const response = await axiosInstance.get(
-  //       `/foods/ingredients/id/${item.value}`
-  //     );
-  //     setSelectedIngredientObj(response.data.data);
-  //   } catch (error) {
-  //     setSelectedIngredientObj(null);
-  //   }
-  // };
-
   // Debounce effect
   useEffect(() => {
     const handler = setTimeout(() => {
       if (tempIngredientSearch !== ingredientSearch) {
         setIngredientSearch(tempIngredientSearch);
-        // console.log("Debounced ingredient search: ", tempIngredientSearch);
       }
     }, MILISECONDS_TO_DEBOUNCE);
 
