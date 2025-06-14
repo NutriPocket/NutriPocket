@@ -25,10 +25,12 @@ export default function Header({
   return (
     <View
       style={{
+        // flex: 1,
         borderBottomColor: "#eee",
         marginTop: 70,
         paddingHorizontal: 15,
         flexDirection: "row",
+        alignItems: showBack ? "flex-start" : "center",
       }}
     >
       {showBack && (
@@ -48,7 +50,13 @@ export default function Header({
           <MaterialCommunityIcons name="arrow-left" size={28} color="#287D76" />
         </TouchableOpacity>
       )}
-      <Text style={{ fontSize: 20, fontWeight: "bold", color: "#287D76" }}>
+      <Text
+        style={{
+          fontSize: 20,
+          fontWeight: "bold",
+          color: "#287D76",
+        }}
+      >
         {title}
       </Text>
     </View>
