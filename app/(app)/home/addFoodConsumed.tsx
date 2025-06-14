@@ -20,7 +20,6 @@ import { consumedIngredientsAtom } from "../../../atoms/consumedIngredientsAtom"
 export default function AddFoodConsumed() {
   const params = useLocalSearchParams();
   const router = useRouter();
-  const [authId] = useAtom(authenticatedAtom);
   const { mealId, moment, day } = params;
 
   const axiosInstance = useAxiosInstance("food");
@@ -30,7 +29,6 @@ export default function AddFoodConsumed() {
   );
 
   const [error, setError] = useState<string | null>(null);
-  const [ingredients, setIngredients] = useState<IngredientType[]>([]);
   const [selectedFood, setSelectedFood] = useState<MealType>({
     id: 0,
     name: "",
@@ -49,7 +47,6 @@ export default function AddFoodConsumed() {
   });
 
   const [loading, setLoading] = useState(true);
-
   const [editedQuantities, setEditedQuantities] = useState<{
     [name: string]: string;
   }>({});
@@ -69,13 +66,7 @@ export default function AddFoodConsumed() {
         })
       );
 
-      setIngredients(parsedIngredients);
-
-      if (ingredientsToLoad.length === 0) {
-        setIngredientsToLoad(parsedIngredients);
-      }
-
-      console.log("Selected food ingredients: ", ingredientsToLoad);
+      setIngredientsToLoad(parsedIngredients);
     } catch (error) {
       console.error("Error fetching food info: ", error);
     } finally {
@@ -97,6 +88,7 @@ export default function AddFoodConsumed() {
   };
 
   useEffect(() => {
+    console.log("Se montó el componente");
     fetchIngredients();
     fetchFoodInfo();
   }, []);
@@ -114,18 +106,19 @@ export default function AddFoodConsumed() {
   };
   const handleAddIngredient = () => {
     router.push({
-      pathname: "/mealplan/AddIngredientToFood",
+      pathname: "/mealplan/AddIngredientToFoodConsume",
       params: { selectedMealId: mealId },
     });
   };
 
   const handleIngredientChange = (name: string, value: string) => {
     setEditedQuantities((prev) => ({ ...prev, [name]: value }));
-    setIngredientsToLoad((prev) =>
-      prev.map((ing) =>
+    setIngredientsToLoad((prev) => ({
+      ...prev,
+      ingredients: prev.map((ing) =>
         ing.name === name ? { ...ing, quantity: Number(value) } : ing
-      )
-    );
+      ),
+    }));
   };
 
   const handleBackToHome = () => {

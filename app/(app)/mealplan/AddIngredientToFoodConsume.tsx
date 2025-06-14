@@ -9,19 +9,6 @@ import { IngredientType } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
 import { consumedIngredientsAtom } from "../../../atoms/consumedIngredientsAtom";
 
-const INGREDIENT_UNITS = [
-  { label: "g", value: "gram" },
-  { label: "unidad", value: "unit" },
-];
-
-const frutas = [
-  { label: "1", value: "Manzana" },
-  { label: "2", value: "Banana" },
-  { label: "3", value: "Naranja" },
-  { label: "4", value: "Pera" },
-  { label: "5", value: "Uva" },
-];
-
 const MILISECONDS_TO_DEBOUNCE = 1000;
 
 export default function AddIngredientToFoodConsume() {
@@ -45,20 +32,10 @@ export default function AddIngredientToFoodConsume() {
   );
 
   const handleAdd = () => {
-    // Busca el nombre del ingrediente seleccionado
-    // const selectedOption = ingredientOptions.find(
-    //   (opt) => opt.label === selectedIngredient
-    // );
-    const selectedOption = frutas.find(
+    const selectedOption = ingredientOptions.find(
       (opt) => opt.label === selectedIngredient
     );
 
-    console.log("options", ingredientOptions);
-
-    console.log("Selected Ingredient Id", selectedIngredient);
-    console.log("Selected Ingredient Name", selectedOption);
-    console.log("Selected quantity", quantity);
-    // No agregues si falta algún dato
     if (!selectedIngredient || !selectedOption || !quantity) {
       setError("Completa todos los campos.");
       return;
@@ -76,21 +53,32 @@ export default function AddIngredientToFoodConsume() {
 
     router.back();
   };
+
   const fetchIngredients = async () => {
     try {
-      const response = await axiosInstance.get(`/foods/ingredients/all`);
-      const data = response.data.data;
+      console.log("Fetching ingredients with search: ", ingredientSearch);
+      var route: string;
+      var response: any;
+      var data: any;
+      if (ingredientSearch) {
+        route = `/foods/ingredients/${encodeURIComponent(ingredientSearch)}`;
+        response = await axiosInstance.get(route);
+        data = response.data;
+        setUnit(data[0].measure_type ? data[0].measure_type : "");
+        console.log("measure_type: ", data[0].measure_type);
+      }
 
-      const options = data.map((item: any) => ({
-        label: item.name,
-        value: item.id,
-      }));
+      console.log("Fetched ingredients: ", data);
+      const options = data
+        ? data.map((item: any) => ({
+            label: String(item.id),
+            value: item.name,
+          }))
+        : [];
 
-      //setIngredientOptions(options);
-
-      console.log("Selected food data:   ", data);
+      setIngredientOptions(options);
     } catch (error) {
-      console.error("Error fetching food info: ", error);
+      console.log("Error fetching food info: ", error);
     }
   };
 
@@ -111,22 +99,6 @@ export default function AddIngredientToFoodConsume() {
 
   // Fetch ingredients when search changes
   useEffect(() => {
-    const fetchIngredients = async () => {
-      try {
-        const route = ingredientSearch
-          ? `/foods/ingredients/all?search=${ingredientSearch}`
-          : `/foods/ingredients/all`;
-        const response = await axiosInstance.get(route);
-        const data = response.data.data;
-        const options = data.map((item: any) => ({
-          label: item.name,
-          value: item.id,
-        }));
-        //setIngredientOptions(options);
-      } catch (error) {
-        // Manejo de error
-      }
-    };
     fetchIngredients();
   }, [ingredientSearch]);
 
@@ -135,11 +107,15 @@ export default function AddIngredientToFoodConsume() {
       <Text style={styles.title}>Agregar Ingrediente</Text>
 
       <SearchableDropdown
-        data={frutas}
+        data={ingredientOptions}
         onSelect={(item) => setSelectedIngredient(item.label)}
-        onChangeText={setTempIngredientSearch}
+        onChangeText={(text) => {
+          setTempIngredientSearch(text);
+          if (text === "") setSelectedIngredient("");
+        }}
         placeholder="Ingrediente"
       />
+
       <TextInput
         label="Cantidad"
         value={quantity}
@@ -151,13 +127,12 @@ export default function AddIngredientToFoodConsume() {
         placeholderTextColor="#9E9E9E"
         theme={{ colors: { primary: "#287D76", text: "#287D76" } }}
       />
-      <CustomDropdown
-        label="Unidad"
-        options={INGREDIENT_UNITS}
-        selected={[unit]}
-        onChange={(arr) => setUnit(arr[0] ?? "gram")}
-        multiple={false}
-      />
+      {unit && (
+        <Text style={{ color: "#287D76", marginBottom: 8 }}>
+          Unidad sugerida: {unit || "N/A"}
+        </Text>
+      )}
+
       {error && <Text style={{ color: "#B00020", marginTop: 8 }}>{error}</Text>}
       <Button
         mode="contained"
