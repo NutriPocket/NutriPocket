@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { homeStyles } from "../../../styles/homeStyles";
@@ -9,6 +15,8 @@ import { ItineraryPlan, MealType } from "../../../types/mealTypes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import { IndicatorList } from "@/components/IndicatorList";
+import Header from "../../../components/Header";
 
 export default function HomeScreen() {
   const [auth] = useAtom(authenticatedAtom);
@@ -125,126 +133,150 @@ export default function HomeScreen() {
     }, [auth?.id])
   );
   return (
-    <View style={homeStyles.screenContainer}>
-      <View>
-        <Text style={homeStyles.welcome}>
-          ¡Bienvenido/a, {auth?.username || "usuario"}!
-        </Text>
-        <Text style={homeStyles.info}>Aquí verás tu resumen y novedades.</Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Comidas de hoy</Text>
-        {error === "No tienes un plan de comidas asignado." ? (
-          <Text
-            style={{
-              color: "#287D76",
-              textAlign: "center",
-            }}
-          >
-            {error}
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <Header showBack={false} />
+      <ScrollView contentContainerStyle={homeStyles.screenContainer}>
+        <View>
+          <Text style={homeStyles.welcome}>
+            ¡Bienvenido/a, {auth?.username || "usuario"}!
           </Text>
-        ) : error ? (
-          <Text style={{ color: "red" }}>{error}</Text>
-        ) : (
-          <View style={{ gap: 15 }}>
-            {dayMoments.map((moment) => {
-              const plannedMeal = todaysFoods?.[moment] || null;
-              const consumedMeal =
-                consumedFoodsToday[moment as keyof typeof consumedFoodsToday] ||
-                null;
+          <Text style={homeStyles.info}>
+            Aquí verás tu resumen y novedades.
+          </Text>
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Comidas de hoy</Text>
+          {error === "No tienes un plan de comidas asignado." ? (
+            <Text
+              style={{
+                color: "#287D76",
+                textAlign: "center",
+              }}
+            >
+              {error}
+            </Text>
+          ) : error ? (
+            <Text style={{ color: "red" }}>{error}</Text>
+          ) : (
+            <View style={{ gap: 15 }}>
+              {dayMoments.map((moment) => {
+                const plannedMeal = todaysFoods?.[moment] || null;
+                const consumedMeal =
+                  consumedFoodsToday[
+                    moment as keyof typeof consumedFoodsToday
+                  ] || null;
 
-              return (
-                <View key={moment} style={styles.momentRow}>
-                  <View>
-                    {consumedMeal ? (
-                      // Mostrar lo que realmente comió (prioridad máxima)
-                      <View style={styles.consumedMealCard}>
-                        <View style={styles.consumedMealInfo}>
-                          <View style={styles.momentLabelContainer}>
-                            <Text style={styles.momentLabel}>{moment}</Text>
-                            {consumedMeal.isOffPlan && (
-                              <View style={styles.offPlanBadge}>
-                                <Text style={styles.offPlanBadgeText}>
-                                  Fuera del plan
-                                </Text>
-                              </View>
-                            )}
-                          </View>
-                          <View>
-                            <Text
-                              numberOfLines={1}
-                              style={styles.consumedMealName}
-                            >
-                              {consumedMeal.name}
-                            </Text>
-                            <Text
-                              numberOfLines={1}
-                              style={styles.consumedMealDesc}
-                            >
-                              {consumedMeal.description}
-                            </Text>
-                          </View>
-                        </View>
-                        <View style={styles.iconContainer}>
-                          <MaterialCommunityIcons
-                            name={
-                              consumedMeal.isOffPlan
-                                ? "alert-circle"
-                                : "check-circle"
-                            }
-                            size={24}
-                            color={
-                              consumedMeal.isOffPlan ? "#287D76" : "#287D76"
-                            }
-                          />
-                        </View>
-                      </View>
-                    ) : (
-                      // Mostrar el plan original
-                      <View
-                        style={{
-                          padding: 10,
-                          gap: 10,
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <View style={styles.consumedMealInfo}>
-                          <Text style={styles.momentLabel}>{moment}</Text>
-                          {plannedMeal ? (
+                return (
+                  <View key={moment} style={styles.momentRow}>
+                    <View>
+                      {consumedMeal ? (
+                        // Mostrar lo que realmente comió (prioridad máxima)
+                        <View style={styles.consumedMealCard}>
+                          <View style={styles.consumedMealInfo}>
+                            <View style={styles.momentLabelContainer}>
+                              <Text style={styles.momentLabel}>{moment}</Text>
+                              {consumedMeal.isOffPlan && (
+                                <View style={styles.offPlanBadge}>
+                                  <Text style={styles.offPlanBadgeText}>
+                                    Fuera del plan
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
                             <View>
-                              <Text style={styles.mealName}>
-                                {plannedMeal.name}
+                              <Text
+                                numberOfLines={1}
+                                style={styles.consumedMealName}
+                              >
+                                {consumedMeal.name}
                               </Text>
-                              <Text style={styles.mealDesc} numberOfLines={1}>
-                                {plannedMeal.description}
+                              <Text
+                                numberOfLines={1}
+                                style={styles.consumedMealDesc}
+                              >
+                                {consumedMeal.description}
                               </Text>
                             </View>
-                          ) : (
-                            <Text style={styles.noMeal}>
-                              No hay comida asignada
-                            </Text>
-                          )}
+                          </View>
+                          <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons
+                              name={
+                                consumedMeal.isOffPlan
+                                  ? "alert-circle"
+                                  : "check-circle"
+                              }
+                              size={24}
+                              color={
+                                consumedMeal.isOffPlan ? "#287D76" : "#287D76"
+                              }
+                            />
+                          </View>
                         </View>
-                        <View style={styles.iconContainer}>
-                          <MaterialCommunityIcons
-                            name="silverware-fork-knife"
-                            size={24}
-                            color={"#287D76"}
-                            onPress={() => {
-                              handleAddFoodConsumed(plannedMeal, moment);
-                            }}
-                          />
+                      ) : (
+                        // Mostrar el plan original
+                        <View
+                          style={{
+                            padding: 10,
+                            gap: 10,
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <View style={styles.consumedMealInfo}>
+                            <Text style={styles.momentLabel}>{moment}</Text>
+                            {plannedMeal ? (
+                              <View>
+                                <Text style={styles.mealName}>
+                                  {plannedMeal.name}
+                                </Text>
+                                <Text style={styles.mealDesc} numberOfLines={1}>
+                                  {plannedMeal.description}
+                                </Text>
+                              </View>
+                            ) : (
+                              <Text style={styles.noMeal}>
+                                No hay comida asignada
+                              </Text>
+                            )}
+                          </View>
+                          <View style={styles.iconContainer}>
+                            <MaterialCommunityIcons
+                              name="silverware-fork-knife"
+                              size={24}
+                              color={"#287D76"}
+                              onPress={() => {
+                                handleAddFoodConsumed(plannedMeal, moment);
+                              }}
+                            />
+                          </View>
                         </View>
-                      </View>
-                    )}
+                      )}
+                    </View>
                   </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
-      </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
+        <IndicatorList
+          title={""}
+          indicators={[
+            {
+              icon: "bullseye-arrow",
+              value: "67%",
+              label: "Calorías diarias alcanzadas",
+              color: "#287D76",
+            },
+            {
+              icon: "fire",
+              value: "768",
+              label: "Calorías consumidas",
+              color: "red",
+            },
+          ]}
+        />
+      </ScrollView>
     </View>
   );
 }
@@ -258,10 +290,10 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     borderLeftWidth: 6,
     alignContent: "center",
+    borderLeftColor: "#287D76",
     justifyContent: "center",
     paddingVertical: 20,
     paddingHorizontal: 10,
-    borderLeftColor: "#287D76",
     gap: 20,
     minWidth: 350,
   },
