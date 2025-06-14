@@ -35,44 +35,14 @@ export default function UserRoutinesSection() {
       }
       console.log("Fetching routines for user ID: ", userId);
       const response = await axiosProgress.get(`/users/${userId}/routines/`);
-      console.log("Routines fetched: ", response.data.data);
-      setRoutines(response.data.data);
-
-      // Mock de rutinas - reemplaza esto con la llamada real al backend
-      // const response = await axiosUser.get(`/users/${userId}/routines/`);
-      // setRoutines(response.data.data);
-
-      // Datos mock mientras implementas el backend
-      // const mockRoutines: RoutineType[] = [
-      //   {
-      //     name: "Rutina de Fuerza",
-      //     description: "Entrenamiento de fuerza con pesas",
-      //     day: "Monday",
-      //     start_hour: 8,
-      //     end_hour: 10,
-      //   },
-      //   {
-      //     name: "Cardio Matutino",
-      //     description: "Ejercicio cardiovascular intenso",
-      //     day: "Wednesday",
-      //     start_hour: 7,
-      //     end_hour: 8,
-      //   },
-      //   {
-      //     name: "Yoga y Estiramiento",
-      //     description: "Relajación y flexibilidad",
-      //     day: "Friday",
-      //     start_hour: 18,
-      //     end_hour: 19,
-      //   },
-      // ];
-
-      // Simular delay de red
-      //await new Promise((resolve) => setTimeout(resolve, 1000));
-      //setRoutines(mockRoutines);
+      if (!response.data || !response.data.data) {
+        setRoutines([]);
+      } else {
+        setRoutines(response.data.data);
+      }
       setError(null);
     } catch (err) {
-      console.log("Error fetching routines: ", err);
+      // console.log("Error fetching routines: ", err);
       setError("No se pudieron obtener las rutinas.");
     } finally {
       setLoading(false);
