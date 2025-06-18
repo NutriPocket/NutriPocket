@@ -29,6 +29,9 @@ export default function StatisticsScreen() {
   const [filteredData, setFilteredData] = useState<boolean>(false);
   const userId = auth?.id;
 
+  const thisYear = new Date().getFullYear();
+  console.log("Año actual:", thisYear);
+
   const createObjectiveData = (objective: string): LineChartDataPoint[] => {
     if (!objectiveData) return [];
 
@@ -232,30 +235,10 @@ export default function StatisticsScreen() {
       fetchObjectiveData();
     }, [])
   );
-
-  console.info("Objective data: ", objectiveData);
-  console.log(
-    "Masa muscular (y):",
-    muscleMassSeries[0].data.map((d) => d.y)
-  );
-  console.log(
-    "Masa muscular (x):",
-    muscleMassSeries[0].data.map((d) => d.x)
-  );
-
-  console.log(
-    "Masa ósea (y):",
-    boneMassSeries[0].data.map((d) => d.y)
-  );
-  console.log(
-    "Porcentaje graso (y):",
-    fatMassSeries[0].data.map((d) => d.y)
-  );
-
   return (
     <View style={styles.screenContainer}>
       <Header title="Estadísticas" showBack={false} />
-      <View style={styles.dateInputsContainer}>
+      {/* <View style={styles.dateInputsContainer}>
         <TextInput
           label="Fecha de inicio"
           placeholder="YYYY-MM-DD"
@@ -277,7 +260,7 @@ export default function StatisticsScreen() {
           style={styles.searchButton}
           iconColor="#F0F0F0"
         />
-      </View>
+      </View> */}
       <ScrollView contentContainerStyle={{ gap: 20 }}>
         <LineChart
           title="Masa Muscular"
