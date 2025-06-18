@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { View, Text, Alert, StyleSheet } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import {useRouter, useLocalSearchParams, useFocusEffect} from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import {Button, Icon, TextInput} from "react-native-paper";
 import { TouchableOpacity } from "react-native";
@@ -12,13 +12,13 @@ const EventDetails = () => {
     const axiosInstance = useAxiosInstance("group");
     const [event, setEvent] = useState<any>(null);
 
-    useEffect(() => {
+    useFocusEffect(() => {
         if (id && eventId) {
             axiosInstance.get(`/groups/${id}/events/${eventId}`)
                 .then(res => setEvent(res.data.data))
                 .catch(() => Alert.alert("Error", "No se pudo cargar el evento"));
         }
-    }, [id, eventId]);
+    });
 
     const handleDelete = () => {
         Alert.alert(
