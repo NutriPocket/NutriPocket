@@ -121,14 +121,13 @@ export default function LineChart({
   };
 
   // Para labels de X: todos o solo algunos
-  let xLabelIndexes: number[];
+  let xLabelValues: number[];
   if (showAllXLabels || allX.length <= 1) {
-    xLabelIndexes = allX.map((_, i) => i);
+    xLabelValues = allX;
   } else {
     const steps = Math.min(xLabelSteps, allX.length);
-    xLabelIndexes = Array.from({ length: steps }, (_, i) =>
-      steps === 1 ? 0 : Math.round((i * (allX.length - 1)) / (steps - 1))
-    );
+    const stepSize = (xMax - xMin) / (steps - 1);
+    xLabelValues = Array.from({ length: steps }, (_, i) => xMin + i * stepSize);
   }
 
   // Para labels de Y: todos o solo algunos
@@ -225,25 +224,22 @@ export default function LineChart({
             </SvgText>
           ))}
           {/* Labels de eje X */}
-          {xLabelIndexes.map((i) => {
-            const x = allX[i];
-            return (
-              <SvgText
-                key={i}
-                x={getX(x)}
-                y={height - margin + 22}
-                fontSize={12}
-                fill="#888"
-                textAnchor="middle"
-                alignmentBaseline="hanging"
-                fontWeight={
-                  i === 0 || i === allX.length - 1 ? "bold" : "normal"
-                }
-              >
-                {renderXLabel(x)}
-              </SvgText>
-            );
-          })}
+          {xLabelValues.map((xValue, i) => (
+            <SvgText
+              key={i}
+              x={getX(xValue)}
+              y={height - margin + 22}
+              fontSize={12}
+              fill="#888"
+              textAnchor="middle"
+              alignmentBaseline="hanging"
+              fontWeight={
+                i === 0 || i === xLabelValues.length - 1 ? "bold" : "normal"
+              }
+            >
+              {renderXLabel(xValue)}
+            </SvgText>
+          ))}
           {/* Label de eje Y principal ARRIBA */}
           {yLabel && (
             <SvgText

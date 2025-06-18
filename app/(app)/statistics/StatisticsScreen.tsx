@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { TextInput, Button, IconButton } from "react-native-paper";
+import { IconButton, TextInput } from "react-native-paper";
+
 import Header from "@/components/Header";
 import LineChart, {
   LineChartDataPoint,
@@ -14,7 +15,8 @@ import { useFocusEffect } from "@react-navigation/native";
 
 export default function StatisticsScreen() {
   const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+  const [daysBeforeToday, setDaysBeforeToday] = useState<string>("30");
+
   const axiosInstance = useAxiosInstance("progress");
   const [auth] = useAtom(authenticatedAtom);
   const [objectiveData, setObjectiveData] = useState<ObjectiveType | null>(
@@ -29,9 +31,6 @@ export default function StatisticsScreen() {
   const [filteredData, setFilteredData] = useState<boolean>(false);
   const userId = auth?.id;
 
-  const thisYear = new Date().getFullYear();
-  console.log("Año actual:", thisYear);
-
   const createObjectiveData = (objective: string): LineChartDataPoint[] => {
     if (!objectiveData) return [];
 
@@ -42,7 +41,7 @@ export default function StatisticsScreen() {
           y: Number(objective),
         },
         {
-          x: new Date(endDate).getTime(),
+          x: new Date().getTime(),
           y: Number(objective),
         },
       ];
@@ -155,19 +154,37 @@ export default function StatisticsScreen() {
   ];
 
   const handleSearch = () => {
-    if (!startDate || !endDate) {
+    if (!daysBeforeToday) {
       console.warn("Por favor, ingresa ambas fechas.");
       return;
     }
 
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
+    if (
+      isNaN(parseInt(daysBeforeToday)) ||
+      parseInt(daysBeforeToday) <= 0 ||
+      parseInt(daysBeforeToday) > 365
+    ) {
+      console.warn("Por favor, ingresa un número válido de días.");
+      return;
+    }
+
+    const start = new Date();
+    start.setDate(
+      start.getDate() - (daysBeforeToday ? parseInt(daysBeforeToday) : 30)
+    );
+
+    const end = new Date();
 
     if (start >= end) {
       console.warn("La fecha de inicio debe ser anterior a la fecha de fin.");
       return;
     }
-    fetchAnthropometricDataInRange(start, end);
+
+    fetchAnthropometricDataInRange(
+      start.toISOString().split("T")[0],
+      end.toISOString().split("T")[0]
+    );
+    setStartDate(start.toISOString().split("T")[0]);
     setFilteredData(true);
   };
 
@@ -216,14 +233,14 @@ export default function StatisticsScreen() {
     }
   };
 
-  const fetchAnthropometricDataInRange = async (start: number, end: number) => {
+  const fetchAnthropometricDataInRange = async (start: string, end: string) => {
     try {
       const response = await axiosInstance.get(
         `/users/${userId}/anthropometrics/?startDate=${start}&endDate=${end}`
       );
       const data = response.data.data;
-      setAnthropometricData(mapAnthropometricData(data));
       console.log("Anthropometric data fetched in range: ", data);
+      setAnthropometricData(mapAnthropometricData(data));
     } catch (error) {
       console.error("Error fetching anthropometric data in range: ", error);
     }
@@ -233,34 +250,28 @@ export default function StatisticsScreen() {
     useCallback(() => {
       fetchAnthropometricData();
       fetchObjectiveData();
+      setDaysBeforeToday("30");
     }, [])
   );
   return (
     <View style={styles.screenContainer}>
       <Header title="Estadísticas" showBack={false} />
-      {/* <View style={styles.dateInputsContainer}>
+      <View style={styles.dateInputsContainer}>
         <TextInput
-          label="Fecha de inicio"
-          placeholder="YYYY-MM-DD"
-          value={startDate}
-          onChangeText={setStartDate}
-          style={styles.dateInput}
-        />
-        <TextInput
-          label="Fecha de fin"
-          placeholder="YYYY-MM-DD"
-          value={endDate}
-          onChangeText={setEndDate}
+          label="Cantidad de días atrás"
+          placeholder="Cantidad de días"
+          value={daysBeforeToday}
+          onChangeText={setDaysBeforeToday}
           style={styles.dateInput}
         />
         <IconButton
           mode="contained"
           icon="magnify"
-          onPress={handleSearch}
+          onPress={() => handleSearch()}
           style={styles.searchButton}
           iconColor="#F0F0F0"
         />
-      </View> */}
+      </View>
       <ScrollView contentContainerStyle={{ gap: 20 }}>
         <LineChart
           title="Masa Muscular"
@@ -271,12 +282,14 @@ export default function StatisticsScreen() {
             new Date(x).toLocaleDateString("es-ES", {
               day: "2-digit",
               month: "short",
+              year: "2-digit",
             })
           }
           yLabel="%"
           showAllXLabels={false}
           showAllYLabels={false}
           xLabelSteps={5}
+          yLabelSteps={5}
         />
         <LineChart
           title="Peso"
@@ -291,6 +304,7 @@ export default function StatisticsScreen() {
           }
           yLabel="kg"
           xLabelSteps={5}
+          yLabelSteps={5}
           showAllXLabels={false}
           showAllYLabels={false}
         />
@@ -305,6 +319,8 @@ export default function StatisticsScreen() {
               month: "short",
             })
           }
+          xLabelSteps={5}
+          yLabelSteps={5}
           yLabel="%"
         />
         <LineChart
@@ -319,6 +335,8 @@ export default function StatisticsScreen() {
             })
           }
           yLabel="%"
+          xLabelSteps={5}
+          yLabelSteps={5}
         />
       </ScrollView>
     </View>
