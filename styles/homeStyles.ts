@@ -2,7 +2,6 @@ import { StyleSheet } from "react-native";
 
 export const homeStyles = StyleSheet.create({
   screenContainer: {
-    flex: 1,
     backgroundColor: '#fff',  
     padding: 30,  
     gap: 40,
@@ -13,6 +12,7 @@ export const homeStyles = StyleSheet.create({
     justifyContent: 'flex-start',
     padding: 40,
     width: '100%',
+    gap: 20,
   },
   formFields: {
     width: 350,

@@ -219,12 +219,12 @@ export default function HomeScreen() {
       const todayDate = new Date();
       const dateString = todayDate.toISOString().split("T")[0]; // yyyy-mm-dd
       const response = await axiosInstance.get(
-          `/users/${auth?.id}/water_consumption/`
+        `/users/${auth?.id}/water_consumption/`
       );
       const consumptions = response.data?.consumptions ?? [];
       const todayTotal = consumptions
-          .filter((c: any) => c.consumption_date === dateString)
-          .reduce((sum: number, c: any) => sum + (c.amount_ml || 0), 0);
+        .filter((c: any) => c.consumption_date === dateString)
+        .reduce((sum: number, c: any) => sum + (c.amount_ml || 0), 0);
       console.log("Water consumption for today:", todayTotal);
       setWaterConsumption(todayTotal);
     } catch (err) {
@@ -240,8 +240,6 @@ export default function HomeScreen() {
       fetchWaterConsumption();
     }, [auth?.id])
   );
-
-  getTodayMealIds();
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -404,7 +402,9 @@ export default function HomeScreen() {
               marginTop: 10,
             }}
           >
-            <Text style={{ color: "#fff", fontWeight: "bold", marginRight: 8 }}>💧</Text>
+            <Text style={{ color: "#fff", fontWeight: "bold", marginRight: 8 }}>
+              💧
+            </Text>
             <Text style={{ color: "#fff", fontWeight: "bold" }}>+ Agua</Text>
           </TouchableOpacity>
         </View>
