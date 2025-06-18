@@ -30,6 +30,14 @@ export type IngredientType = {
     quantity: number;
 }
 
+export type IngredientPrincipalInfo = {
+    id: number;
+    name : string;
+    measure_type: string;
+    quantity: number;
+}
+
+
 export type ItineraryPlan = {
     id_plan: string;
     title: string;
@@ -51,3 +59,23 @@ export type MealPlan = {
     };
 }
 
+export type MealPlanDay = {
+    [dayMoment: string]: {
+        name: string;
+        description: string;
+        isOffPlan: boolean;
+    };
+};
+
+
+export type MealConsumed = {
+    id_extra_food: number;
+    name: string;
+    description: string;
+    ingredients: IngredientType[];
+    date: string;
+    day: string;
+    moment: string;
+    image_url: string;
+    created_at: Date;
+};

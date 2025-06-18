@@ -1,4 +1,4 @@
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 
@@ -19,7 +19,11 @@ export default function HomeLayout() {
   return (
     <>
       <View style={styles.container}>
-        <Slot />
+        <Stack
+          screenOptions={{
+            headerShown: false, // Hide the header for all screens
+          }}
+        />
       </View>
     </>
   );

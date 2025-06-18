@@ -16,6 +16,10 @@ import * as Yup from 'yup';
     { key: 'deadline', label: 'Fecha objetivo', keyboardType: 'numeric', placeholder: undefined },
   ] as const;
 
+export const userPersonalFields = [
+  { key: 'height', label: 'Altura (cm)', keyboardType: 'numeric', placeholder: undefined },
+  { key: 'birthday', label: 'Fecha de nacimiento', keyboardType: 'default', placeholder: "YYYY-MM-DD" },
+];
 
   export const objectiveValidationSchema = Yup.object({
   weight: Yup.number()

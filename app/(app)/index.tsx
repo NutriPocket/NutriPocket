@@ -1,15 +1,16 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import HomeScreen from "./HomeScreen";
-import UserScreen from "../user/UserScreen";
-import MealPlanScreen from "../mealplan/MealPlanScreen";
-import GroupsScreen from "../groups/tab";
-import PlanView from "../mealplan/PlanView";
+import HomeScreen from "./home/HomeScreen";
+import UserScreen from "./user/UserScreen";
+import MealPlanScreen from "./mealplan/MealPlanScreen";
+import GroupsScreen from "./groups/tab";
+import StatisticsScreen from "./statistics/StatisticsScreen";
+import PlanView from "./mealplan/PlanView";
 import { useAtom, useAtomValue } from "jotai";
-import { authenticatedAtom } from "../../../atoms/authAtom";
+import { authenticatedAtom } from "../../atoms/authAtom";
 import { Redirect } from "expo-router";
-import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
+import { selectedPlanIdAtom } from "../../atoms/mealPlanAtom";
 
 const Tab = createBottomTabNavigator();
 
@@ -23,6 +24,7 @@ export default function HomeTabs() {
   return (
     <Tab.Navigator
       initialRouteName="Home"
+      backBehavior="history"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#287D76",
@@ -41,6 +43,17 @@ export default function HomeTabs() {
         }}
       />
       <Tab.Screen
+        name="MealPlan"
+        component={selectedPlanId ? PlanView : MealPlanScreen}
+        key={selectedPlanId ? `plan-${selectedPlanId}` : "mealplan-list"}
+        options={{
+          tabBarLabel: "Plan de comidas",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="food" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="User"
         component={UserScreen}
         options={{
@@ -50,14 +63,18 @@ export default function HomeTabs() {
           ),
         }}
       />
+
       <Tab.Screen
-        name="MealPlan"
-        component={selectedPlanId ? PlanView : MealPlanScreen}
-        key={selectedPlanId ? `plan-${selectedPlanId}` : "mealplan-list"}
+        name="Statistics"
+        component={StatisticsScreen}
         options={{
-          tabBarLabel: "Plan de comidas",
+          tabBarLabel: "Statistics",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="food" color={color} size={size} />
+            <MaterialCommunityIcons
+              name="chart-bar"
+              color={color}
+              size={size}
+            />
           ),
         }}
       />

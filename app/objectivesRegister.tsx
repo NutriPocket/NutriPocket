@@ -6,13 +6,12 @@ import { router } from "expo-router";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../atoms/authAtom";
 import { objectiveValidationSchema } from "../utils/validationSchemas";
-import useAxiosInstance from "@/hooks/useAxios"
-
+import useAxiosInstance from "@/hooks/useAxios";
 
 const ObjectivesRegister = () => {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
-  const axiosProgress = useAxiosInstance('progress');
+  const axiosProgress = useAxiosInstance("progress");
 
   const handleSubmit = async (values: any) => {
     const data = {
@@ -34,11 +33,15 @@ const ObjectivesRegister = () => {
         }
       );
       if (response.status === 201 || response.status === 200) {
-        setIsAuthenticated((prev) => prev ? {
-          ...prev,
-          objectives: data,
-        } : prev);
-        router.replace("/home");
+        setIsAuthenticated((prev) =>
+          prev
+            ? {
+                ...prev,
+                objectives: data,
+              }
+            : prev
+        );
+        router.replace("/(app)");
       }
     } catch (err: any) {
       if (err.response && err.response.status === 401) {
@@ -61,7 +64,14 @@ const ObjectivesRegister = () => {
       validationSchema={objectiveValidationSchema}
       onSubmit={handleSubmit}
     >
-      {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+      {({
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        values,
+        errors,
+        touched,
+      }) => (
         <View style={styles.container}>
           <Text style={styles.title}>Cargar Objetivos</Text>
           <TextInput
@@ -71,9 +81,17 @@ const ObjectivesRegister = () => {
             onBlur={handleBlur("deadline")}
             style={styles.input}
             keyboardType="default"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.deadline && errors.deadline ? "red" : "black" } }}
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant:
+                  touched.deadline && errors.deadline ? "red" : "black",
+              },
+            }}
             outlineColor={touched.deadline && errors.deadline ? "red" : "gray"}
-            activeOutlineColor={touched.deadline && errors.deadline ? "red" : "blue"}
+            activeOutlineColor={
+              touched.deadline && errors.deadline ? "red" : "blue"
+            }
             placeholder="YYYY-MM-DD"
           />
           {touched.deadline && errors.deadline && (
@@ -86,9 +104,17 @@ const ObjectivesRegister = () => {
             onBlur={handleBlur("weight")}
             style={styles.input}
             keyboardType="numeric"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.weight && errors.weight ? "red" : "black" } }}
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant:
+                  touched.weight && errors.weight ? "red" : "black",
+              },
+            }}
             outlineColor={touched.weight && errors.weight ? "red" : "gray"}
-            activeOutlineColor={touched.weight && errors.weight ? "red" : "blue"}
+            activeOutlineColor={
+              touched.weight && errors.weight ? "red" : "blue"
+            }
           />
           {touched.weight && errors.weight && (
             <Text style={styles.error}>{errors.weight}</Text>
@@ -101,9 +127,19 @@ const ObjectivesRegister = () => {
             onBlur={handleBlur("muscleMass")}
             style={styles.input}
             keyboardType="numeric"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.muscleMass && errors.muscleMass ? "red" : "black" } }}
-            outlineColor={touched.muscleMass && errors.muscleMass ? "red" : "gray"}
-            activeOutlineColor={touched.muscleMass && errors.muscleMass ? "red" : "blue"}
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant:
+                  touched.muscleMass && errors.muscleMass ? "red" : "black",
+              },
+            }}
+            outlineColor={
+              touched.muscleMass && errors.muscleMass ? "red" : "gray"
+            }
+            activeOutlineColor={
+              touched.muscleMass && errors.muscleMass ? "red" : "blue"
+            }
           />
           {touched.muscleMass && errors.muscleMass && (
             <Text style={styles.error}>{errors.muscleMass}</Text>
@@ -116,9 +152,17 @@ const ObjectivesRegister = () => {
             onBlur={handleBlur("fatMass")}
             style={styles.input}
             keyboardType="numeric"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.fatMass && errors.fatMass ? "red" : "black" } }}
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant:
+                  touched.fatMass && errors.fatMass ? "red" : "black",
+              },
+            }}
             outlineColor={touched.fatMass && errors.fatMass ? "red" : "gray"}
-            activeOutlineColor={touched.fatMass && errors.fatMass ? "red" : "blue"}
+            activeOutlineColor={
+              touched.fatMass && errors.fatMass ? "red" : "blue"
+            }
           />
           {touched.fatMass && errors.fatMass && (
             <Text style={styles.error}>{errors.fatMass}</Text>
@@ -131,15 +175,21 @@ const ObjectivesRegister = () => {
             onBlur={handleBlur("boneMass")}
             style={styles.input}
             keyboardType="numeric"
-            theme={{ colors: { background: "white", onSurfaceVariant: touched.boneMass && errors.boneMass ? "red" : "black" } }}
+            theme={{
+              colors: {
+                background: "white",
+                onSurfaceVariant:
+                  touched.boneMass && errors.boneMass ? "red" : "black",
+              },
+            }}
             outlineColor={touched.boneMass && errors.boneMass ? "red" : "gray"}
-            activeOutlineColor={touched.boneMass && errors.boneMass ? "red" : "blue"}
-
+            activeOutlineColor={
+              touched.boneMass && errors.boneMass ? "red" : "blue"
+            }
           />
           {touched.boneMass && errors.boneMass && (
             <Text style={styles.error}>{errors.boneMass}</Text>
           )}
-
 
           {error && <Text style={styles.error}>{error}</Text>}
 

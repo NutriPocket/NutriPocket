@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Button } from "react-native-paper";
 import { router, useLocalSearchParams } from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
-import Header from "../../../components/Header";
+import Header from "@/components/Header";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { useAtom } from "jotai";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import { MealType } from "../../../types/mealTypes";
+import type { ViewStyle } from "react-native";
 
 const INTERESES = [
   "Vegetariano",
@@ -154,8 +154,6 @@ export default function PlanPreferences() {
     </View>
   );
 }
-
-import type { ViewStyle } from "react-native";
 
 const styles: { planButtonCreate: ViewStyle } = {
   planButtonCreate: {

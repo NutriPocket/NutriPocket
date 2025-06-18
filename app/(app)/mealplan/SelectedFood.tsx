@@ -223,7 +223,7 @@ export default function SelectedFood() {
                 style={styles.addIngredientButton}
                 onPress={() =>
                   router.push({
-                    pathname: "/mealplan/AddIngredientToPlan",
+                    pathname: "/mealplan/AddIngredientToFood",
                     params: { selectedMealId },
                   })
                 }

@@ -3,24 +3,20 @@ import { StyleSheet } from "react-native";
 export const homeStyles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    gap: 70,
+    backgroundColor: '#fff',  
+    padding: 30,  
+    gap: 40,
   },
-
   formContainer: {  
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start',
     padding: 40,
-    marginBottom: 20,
     width: '100%',
   },
   formFields: {
     width: 350,
-    marginTop: 20,
+
     borderRadius: 10,
     overflow: 'hidden',
     padding: 0,
@@ -57,7 +53,7 @@ export const homeStyles = StyleSheet.create({
   welcome: {
     fontSize: 24,
     color: '#287D76',
-    fontWeight: 'bold',
+    fontWeight: 'bold', 
     textAlign: 'center',
   },
   sectionTitle: {

@@ -9,7 +9,6 @@ export type UserAuth = {
     bodyFatPercentage?: number;
     boneMass?: number;
     token: string;
-
 };
 
 
