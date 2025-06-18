@@ -1,18 +1,46 @@
 import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import {View, Text, ScrollView, StyleSheet} from "react-native";
 import { FAB } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { GroupType } from "@/types/groupType";
 import { UserType } from "@/types/userType";
+import { useEffect, useState } from "react";
+import useAxiosInstance from "@/hooks/useAxios";
+import { Button } from "react-native-paper";
+import EventCard from "@/components/EventCard";
 
 interface Props {
   group: GroupType | null;
   participants: Array<UserType>;
+  events: Array<{
+    id: string;
+    name: string;
+    description: string;
+    date: string; // ISO date string
+    start_hour: number;
+    end_hour: number;
+    creator_id: string;
+  }>;
 }
 
-export const RoutinesTab: React.FC<Props> = ({ group, participants }) => {
+export const RoutinesTab: React.FC<Props> = ({ group, participants, events: eventsFromProps }) => {
   const router = useRouter();
+  const axiosInstance = useAxiosInstance("group");
+  const [fetchedEvents, setFetchedEvents] = useState<Props["events"]>([]);
+  const [isFabOpen, setIsFabOpen] = useState(false);
 
+  useEffect(() => {
+    if (group?.id) {
+      axiosInstance
+        .get(`/groups/${group.id}/events`)
+        .then((res) => {
+          setFetchedEvents(res.data.data);
+        })
+        .catch((err) => {
+          // handle error as needed
+        });
+    }
+  }, [group?.id]);
   const dayMap: Record<string, string> = {
     Monday: "Lunes",
     Tuesday: "Martes",
@@ -23,31 +51,75 @@ export const RoutinesTab: React.FC<Props> = ({ group, participants }) => {
     Sunday: "Domingo",
   };
 
-  return (
-    <View style={{ flex: 1 }}>
-      {group && group.routines && group.routines.length > 0 ? (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {Array.from(
-            group.routines.reduce((acc, routine) => {
-              if (!acc.has(routine.day)) acc.set(routine.day, []);
-              acc.get(routine.day)!.push(routine);
-              return acc;
-            }, new Map<string, typeof group.routines>())
-          )
-            .sort(([a], [b]) => {
-              const weekOrder = [
+  const getNextDateForDay = (day: string, weekOffset = 0) => {
+    const weekDays = [
+                "Sunday",
                 "Monday",
                 "Tuesday",
                 "Wednesday",
                 "Thursday",
                 "Friday",
-                "Saturday",
-                "Sunday",
+                "Saturday"
               ];
-              return weekOrder.indexOf(a) - weekOrder.indexOf(b);
-            })
-            .map(([day, routines]) => (
-              <View key={day} style={{ marginBottom: 16, gap: 8 }}>
+
+    const englishDay = Object.entries(dayMap).find(([eng, spa]) => spa === day)?.[0] || day;
+
+    const today = new Date();
+    const todayIdx = today.getDay();
+    const targetIdx = weekDays.indexOf(englishDay);
+
+    // If day not found, return today's date
+    if (targetIdx === -1) {
+      console.warn(`Invalid day name: ${day}`);
+      return today.toISOString().split("T")[0];
+    }
+
+    let diff = targetIdx - todayIdx;
+    if (diff < 0) diff += 7;
+    const nextDate = new Date(today);
+    nextDate.setDate(today.getDate() + diff + weekOffset * 7);
+    return nextDate.toISOString().split("T")[0];
+  };
+
+  const weeksToShow = 4;
+  const routineEvents =
+    group?.routines?.flatMap((routine) => {
+      return Array.from({ length: weeksToShow }).map((_, i) => ({
+      ...routine,
+        date: getNextDateForDay(routine.day, i),
+      isRoutine: true,
+      }));
+    }) || [];
+
+  const eventsToUse = fetchedEvents.length > 0 ? fetchedEvents : (eventsFromProps || []);
+  const oneTimeEvents = eventsToUse.map((event) => ({
+    ...event,
+    isRoutine: false,
+  }));
+
+  const allEvents = [...oneTimeEvents, ...routineEvents];
+  const grouped = allEvents.reduce((acc, event) => {
+    if (!acc[event.date]) acc[event.date] = [];
+    acc[event.date].push(event);
+    return acc;
+  }, {} as Record<string, typeof allEvents>);
+
+  const sortedDates = Object.keys(grouped).sort();
+
+  return (
+    <View style={{ flex: 1 }}>
+      {sortedDates.length > 0 ? (
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {sortedDates.map((date) => {
+            const formattedDate = new Date(date);
+            const displayDate = formattedDate.toLocaleDateString('es-ES', {
+              weekday: 'long',
+              month: 'long',
+              day: 'numeric'
+            });
+
+            return (
+            <View key={date} style={{ marginBottom: 16, gap: 8 }}>
                 <Text
                   style={{
                     fontWeight: "bold",
@@ -56,61 +128,81 @@ export const RoutinesTab: React.FC<Props> = ({ group, participants }) => {
                     marginBottom: 8,
                   }}
                 >
-                  {dayMap[day] || day}
+                  {displayDate}
                 </Text>
-                {routines.map((routine, idx) => {
+              {grouped[date].map((event, idx) => {
                   const creator =
-                    routine.creator_id &&
-                    participants.find((p) => p.id === routine.creator_id);
+                  event.creator_id &&
+                  participants.find((p) => p.id === event.creator_id);
                   return (
-                    <View key={idx} style={styles.userCard}>
-                      <Text style={styles.userName}>{routine.name}</Text>
-                      <Text style={styles.userEmail}>
-                        {routine.description}
-                      </Text>
-                      <Text style={styles.userEmail}>
-                        Horario: {routine.start_hour} - {routine.end_hour}
-                      </Text>
-                      {creator && (
-                        <Text style={styles.creatorId}>
-                          Creador: {creator.email}
-                        </Text>
-                      )}
-                    </View>
+                    <EventCard
+                      event={event}
+                      groupId={group?.id}
+                      participants={participants}
+                      router={router}
+                    />
                   );
                 })}
               </View>
-            ))}
+            );
+          })}
         </ScrollView>
       ) : (
-        <Text style={styles.noParticipantsText}>No hay rutinas</Text>
+        <Text style={styles.noParticipantsText}>No hay eventos ni rutinas</Text>
       )}
-      <FAB
-        icon="plus"
-        label="Añadir Rutina"
-        style={styles.fab}
-        color="#fff"
-        onPress={() => {
+      <FAB.Group
+        open={isFabOpen}
+          visible={true}
+        icon={isFabOpen ? 'close' : 'plus'}
+        actions={[
+          {
+            icon: 'plus',
+            label: 'Añadir Evento',
+            onPress: () => {
+            if (group?.id) {
+              router.push({
+                pathname: "/groups/[id]/addEvent",
+                params: { id: group.id },
+              });
+            }
+            },
+          },
+          {
+            icon: 'plus',
+            label: 'Añadir Rutina',
+            onPress: () => {
           if (group?.id) {
             router.push({
               pathname: "/groups/[id]/addRoutine",
               params: { id: group.id },
             });
           }
-        }}
+            },
+          },
+        ]}
+        onStateChange={({ open }) => setIsFabOpen(open)}
+        fabStyle={{ backgroundColor: '#287D76' }}
+        color="#fff"
       />
     </View>
-  );
+    );
 };
 
 const styles = StyleSheet.create({
   scrollContainer: {
     gap: 16,
+    padding: 16,
   },
   userCard: {
     padding: 16,
-    backgroundColor: "#E8F5E9",
     borderRadius: 10,
+    marginBottom: 8,
+  },
+  eventCard: {
+    backgroundColor: "#E8F5E9",
+  },
+  routineCard: {
+    backgroundColor: "#E3F2FD",
   },
   userName: {
     fontSize: 18,
@@ -130,10 +222,45 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 18,
     color: "#287D76",
+    textAlign: "center",
+    marginTop: 40,
+  },
+  routineTag: {
+    fontSize: 12,
+    color: "#1565C0",
+    backgroundColor: "#BBDEFB",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    overflow: "hidden",
+    marginLeft: 6,
+  },
+  eventTag: {
+    fontSize: 12,
+    color: "#2E7D32",
+    backgroundColor: "#C8E6C9",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    overflow: "hidden",
+    marginLeft: 6,
+  },
+  detailsButton: {
+    backgroundColor: "#287D76",
+    height: 28,
+    alignSelf: "center",
+    borderRadius: 999,
+    paddingHorizontal: 10,
   },
   fab: {
     position: "absolute",
     bottom: 16,
+    right: 16,
+    backgroundColor: "#287D76",
+  },
+  fabEvent: {
+    position: "absolute",
+    bottom: 80,
     right: 16,
     backgroundColor: "#287D76",
   },
