@@ -11,7 +11,12 @@ import { authenticatedAtom } from "../../../atoms/authAtom";
 import { homeStyles } from "../../../styles/homeStyles";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import useAxiosInstance from "@/hooks/useAxios";
-import { ItineraryPlan, MealType, MealPlanDay } from "../../../types/mealTypes";
+import {
+  ItineraryPlan,
+  MealType,
+  MealPlanDay,
+  MealConsumed,
+} from "../../../types/mealTypes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
@@ -35,10 +40,12 @@ export default function HomeScreen() {
   ];
   const dayMoments = ["Desayuno", "Almuerzo", "Merienda", "Cena"];
   const today = days[new Date().getDay()];
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
   const todayDate = new Date();
   const todaysFoods = itinerary?.weekly_plan?.[today] || null;
   const router = useRouter();
-  const [todayFoodsEaten, setTodayFoodsEaten] = useState<MealType[]>([]);
+  const [todayFoodsEaten, setTodayFoodsEaten] = useState<MealConsumed[]>([]);
 
   // // Momentos del día disponibles
 
@@ -59,25 +66,23 @@ export default function HomeScreen() {
   // };
 
   const structuredMeals = (
-    todayEatenMeals: MealType[],
+    todayEatenMeals: MealConsumed[],
     itinerary: ItineraryPlan | null
   ) => {
     const structuredMeals: MealPlanDay = {};
     todayEatenMeals.forEach((meal) => {
-      for (const moment of dayMoments) {
-        if (itinerary?.weekly_plan[today][moment]?.name === meal.name) {
-          structuredMeals[moment] = {
-            name: meal.name,
-            description: meal.description,
-            isOffPlan: false,
-          };
-        } else {
-          structuredMeals[moment] = {
-            name: meal.name,
-            description: meal.description,
-            isOffPlan: true,
-          };
-        }
+      if (itinerary?.weekly_plan[today][meal.moment]?.name === meal.name) {
+        structuredMeals[meal.moment] = {
+          name: meal.name,
+          description: meal.description,
+          isOffPlan: false,
+        };
+      } else {
+        structuredMeals[meal.moment] = {
+          name: meal.name,
+          description: meal.description,
+          isOffPlan: true,
+        };
       }
     });
     return structuredMeals;
@@ -111,10 +116,9 @@ export default function HomeScreen() {
       const response = await axiosInstance.get(
         `/extrafoods/${
           auth?.id
-        }/?start_date=${todayDate.toISOString()}&end_date=${todayDate.toISOString()}`
+        }/?start_date=${yesterday.toISOString()}&end_date=${todayDate.toISOString()}`
       );
 
-      console.log("date: ", todayDate.toISOString());
       const data = response.data.data || [];
       console.log("Comidas consumidas hoy: ", data);
       setTodayFoodsEaten(data);

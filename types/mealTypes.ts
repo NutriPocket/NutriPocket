@@ -74,3 +74,15 @@ export type MealPlanDay = {
         isOffPlan: boolean;
     };
 };
+
+
+export type MealConsumed = {
+    name: string;
+    description: string;
+    ingredients: IngredientType[];
+    date: string;
+    day: string;
+    moment: string;
+    image_url: string;
+    created_at: Date;
+};
