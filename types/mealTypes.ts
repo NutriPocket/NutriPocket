@@ -77,6 +77,7 @@ export type MealPlanDay = {
 
 
 export type MealConsumed = {
+    id_extra_food: number;
     name: string;
     description: string;
     ingredients: IngredientType[];

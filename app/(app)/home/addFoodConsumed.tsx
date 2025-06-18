@@ -23,13 +23,13 @@ export default function AddFoodConsumed() {
   const [auth] = useAtom(authenticatedAtom);
   const { mealId, moment, day } = params;
 
+  const todayDateString = new Date().toISOString().split("T")[0];
+
   const axiosInstance = useAxiosInstance("food");
 
   const [ingredientsToLoad, setIngredientsToLoad] = useAtom(
     consumedIngredientsAtom
   );
-
-  const todayDate = new Date();
 
   const [error, setError] = useState<string | null>(null);
   const [selectedFood, setSelectedFood] = useState<MealType>({
@@ -144,19 +144,22 @@ export default function AddFoodConsumed() {
               : ing.quantity,
         };
       });
+      const extraFood = {
+        name: selectedFood.name,
+        description: selectedFood.description,
+        image_url: selectedFood.image_url,
+        day: day,
+        moment: moment,
+        ingredients: ingredientsWithUpdatedQuantities,
+        date: todayDateString,
+      };
+
+      console.log("Extra food to be added: ", extraFood);
 
       const response = await axiosInstance.post(
         `/users/${auth?.id}/extrafood`,
         {
-          extraFood: {
-            name: selectedFood.name,
-            description: selectedFood.description,
-            image_url: selectedFood.image_url,
-            day: day,
-            moment: moment,
-            ingredients: ingredientsWithUpdatedQuantities,
-            date: todayDate.toISOString(),
-          },
+          extraFood: extraFood,
         }
       );
 

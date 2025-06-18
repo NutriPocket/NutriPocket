@@ -25,7 +25,6 @@ import Header from "../../../components/Header";
 
 export default function HomeScreen() {
   const [auth] = useAtom(authenticatedAtom);
-  const [selectedPlanId] = useAtom(selectedPlanIdAtom);
   const axiosInstance = useAxiosInstance("food");
   const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -40,30 +39,13 @@ export default function HomeScreen() {
   ];
   const dayMoments = ["Desayuno", "Almuerzo", "Merienda", "Cena"];
   const today = days[new Date().getDay()];
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const todayDate = new Date();
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const todayDateString = new Date().toISOString().split("T")[0];
   const todaysFoods = itinerary?.weekly_plan?.[today] || null;
   const router = useRouter();
   const [todayFoodsEaten, setTodayFoodsEaten] = useState<MealConsumed[]>([]);
-
-  // // Momentos del día disponibles
-
-  // // Mock data - comidas que realmente comí hoy
-  // const consumedFoodsToday = {
-  //   Desayuno: {
-  //     name: "Avena con fresas y almendras",
-  //     description: "Tazón de avena con fresas frescas, almendras y miel",
-  //     isOffPlan: false, // Esta comida estaba en el plan
-  //   },
-
-  //   Cena: {
-  //     name: "Salmón a la parrilla con verduras asadas",
-  //     description:
-  //       "Filete de salmón a la parrilla con espárragos y zanahorias asadas",
-  //     isOffPlan: true, // Esta comida NO estaba en el plan
-  //   },
-  // };
+  const [caloriesPercentage, setCaloriesPercentage] = useState<number>(0);
 
   const structuredMeals = (
     todayEatenMeals: MealConsumed[],
@@ -71,7 +53,7 @@ export default function HomeScreen() {
   ) => {
     const structuredMeals: MealPlanDay = {};
     todayEatenMeals.forEach((meal) => {
-      if (itinerary?.weekly_plan[today][meal.moment]?.name === meal.name) {
+      if (itinerary?.weekly_plan[today]?.[meal.moment]?.name === meal.name) {
         structuredMeals[meal.moment] = {
           name: meal.name,
           description: meal.description,
@@ -86,6 +68,81 @@ export default function HomeScreen() {
       }
     });
     return structuredMeals;
+  };
+
+  const expectedsCalories = () => {
+    let totalCalories = 0;
+    todayFoodsEaten.forEach((meal) => {
+      if (!meal.ingredients || !Array.isArray(meal.ingredients)) return;
+      totalCalories += meal.ingredients.reduce(
+        (sum, ingredient) => sum + ingredient.calories * ingredient.quantity,
+        0
+      );
+    });
+    return totalCalories;
+  };
+
+  const getTodayMealIds = () => {
+    let result: number[] = [];
+
+    if (todaysFoods && typeof todaysFoods === "object") {
+      Object.values(todaysFoods).forEach((meal) => {
+        if (meal && typeof meal.id === "number") {
+          result.push(meal.id);
+        }
+      });
+    }
+
+    return result;
+  };
+
+  const fetchFoodById = async (id: number) => {
+    try {
+      const response = await axiosInstance.get(`/foods/${id}/nutrition`);
+      return response.data.data;
+    } catch (error) {
+      console.error(`Error fetching food with ID ${id}:`, error);
+      return null;
+    }
+  };
+
+  const fetchAllFoods = async (ids: number[]) => {
+    const foodPromises = ids.map((id) => fetchFoodById(id));
+    try {
+      const foods = await Promise.all(foodPromises);
+
+      return foods.filter((food) => food !== null);
+    } catch (error) {
+      console.error("Error fetching all foods:", error);
+      return [];
+    }
+  };
+
+  const totalCalories = async () => {
+    const mealIds = getTodayMealIds();
+    var proteinValues: number = 0;
+    if (mealIds.length === 0) {
+      console.log("No hay comidas asignadas para hoy.");
+      return 0;
+    }
+    const foods = await fetchAllFoods(mealIds);
+    if (foods.length === 0) {
+      console.log("No se encontraron comidas para los IDs proporcionados.");
+      return 0;
+    }
+    foods.forEach((food) => {
+      proteinValues += food.protein;
+    });
+
+    return Math.round(proteinValues * 100) / 100;
+  };
+
+  const getPercentageCalories = async () => {
+    const totalConsumed = expectedsCalories();
+    const totalPlanned = await totalCalories();
+    const percentageCalories =
+      totalPlanned > 0 ? (totalConsumed / totalPlanned) * 100 : 0;
+    setCaloriesPercentage(percentageCalories);
   };
 
   const handleAddFoodConsumed = (meal: MealType | null, moment: string) => {
@@ -111,12 +168,9 @@ export default function HomeScreen() {
 
   const fetchFoodConsumed = async () => {
     try {
-      console.log("Fetching consumed foods for today: ", todayDate);
       console.log("User ID: ", auth?.id);
       const response = await axiosInstance.get(
-        `/extrafoods/${
-          auth?.id
-        }/?start_date=${yesterday.toISOString()}&end_date=${todayDate.toISOString()}`
+        `/extrafoods/${auth?.id}/?start_date=${todayDateString}&end_date=${todayDateString}`
       );
 
       const data = response.data.data || [];
@@ -129,40 +183,42 @@ export default function HomeScreen() {
     }
   };
 
+  const fetchPlan = async () => {
+    try {
+      const planResponse = await axiosInstance.get(`/users/${auth?.id}/plan`);
+      if (!planResponse.data.data) {
+        setError(null);
+        setItinerary(null);
+        return;
+      }
+      const response = await axiosInstance.get(
+        `/plans/${planResponse.data.data.id_plan}`
+      );
+      setItinerary(response.data.data);
+      setError(null);
+    } catch (err: any) {
+      if (err?.response?.status === 404) {
+        // No mostrar error en consola, es esperado
+        setError("No tienes un plan de comidas asignado.");
+        setItinerary(null);
+      } else {
+        // Solo mostrar en consola si es un error real
+        console.error(err);
+        setError("No se pudo cargar el plan de comidas.");
+        setItinerary(null);
+      }
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
-      const fetchPlan = async () => {
-        try {
-          const planResponse = await axiosInstance.get(
-            `/users/${auth?.id}/plan`
-          );
-          if (!planResponse.data.data) {
-            setError(null);
-            setItinerary(null);
-            return;
-          }
-          const response = await axiosInstance.get(
-            `/plans/${planResponse.data.data.id_plan}`
-          );
-          setItinerary(response.data.data);
-          setError(null);
-        } catch (err: any) {
-          if (err?.response?.status === 404) {
-            // No mostrar error en consola, es esperado
-            setError("No tienes un plan de comidas asignado.");
-            setItinerary(null);
-          } else {
-            // Solo mostrar en consola si es un error real
-            console.error(err);
-            setError("No se pudo cargar el plan de comidas.");
-            setItinerary(null);
-          }
-        }
-      };
       fetchPlan();
       fetchFoodConsumed();
+      getPercentageCalories();
     }, [auth?.id])
   );
+
+  getTodayMealIds();
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -195,10 +251,6 @@ export default function HomeScreen() {
                 const plannedMeal = todaysFoods?.[moment] || null;
                 const consumedMeal =
                   structuredMeals(todayFoodsEaten, itinerary)[moment] || null;
-                console.log(
-                  `structuredMeals para ${moment}:`,
-                  structuredMeals(todayFoodsEaten, itinerary)[moment] || null
-                );
 
                 return (
                   <View key={moment} style={styles.momentRow}>
@@ -298,13 +350,13 @@ export default function HomeScreen() {
           indicators={[
             {
               icon: "bullseye-arrow",
-              value: "67%",
+              value: caloriesPercentage,
               label: "Calorías diarias alcanzadas",
               color: "#287D76",
             },
             {
               icon: "fire",
-              value: "768",
+              value: expectedsCalories(),
               label: "Calorías consumidas",
               color: "red",
             },
