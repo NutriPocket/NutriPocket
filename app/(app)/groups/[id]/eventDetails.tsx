@@ -5,12 +5,15 @@ import {useRouter, useLocalSearchParams, useFocusEffect} from "expo-router";
 import useAxiosInstance from "@/hooks/useAxios";
 import {Button, Icon, TextInput} from "react-native-paper";
 import { TouchableOpacity } from "react-native";
+import {useAtom} from "jotai/index";
+import {authenticatedAtom} from "@/atoms/authAtom";
 
 const EventDetails = () => {
     const router = useRouter();
     const { id, eventId } = useLocalSearchParams();
     const axiosInstance = useAxiosInstance("group");
     const [event, setEvent] = useState<any>(null);
+    const [auth] = useAtom(authenticatedAtom);
 
     useFocusEffect(() => {
         if (id && eventId) {
@@ -113,28 +116,30 @@ const handleVote = (optionId: number, pollId: number) => {
                 )}
             </View>
             <View style={{ flex: 1 }} />
-            <View style={styles.fixedButtons}>
-                <View style={{ flex: 1 }}>
-                    <Button
-                        mode="outlined"
-                        style={{ backgroundColor: "#287D76", borderRadius: 8, marginTop: 8, borderColor: "#287D76" }}
-                        textColor="#ffff"
-                        onPress={handleEdit}
-                    >
-                        Editar
-                    </Button>
+            {event.creator_id === auth?.id && (
+                <View style={styles.fixedButtons}>
+                    <View style={{ flex: 1 }}>
+                        <Button
+                            mode="outlined"
+                            style={{ backgroundColor: "#287D76", borderRadius: 8, marginTop: 8, borderColor: "#287D76" }}
+                            textColor="#ffff"
+                            onPress={handleEdit}
+                        >
+                            Editar
+                        </Button>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <Button
+                            mode="outlined"
+                            style={{ borderColor: "#d32f2f", borderRadius: 8, marginTop: 8 }}
+                            textColor="#d32f2f"
+                            onPress={handleDelete}
+                        >
+                            Eliminar
+                        </Button>
+                    </View>
                 </View>
-                <View style={{ flex: 1 }}>
-                    <Button
-                        mode="outlined"
-                        style={{ borderColor: "#d32f2f", borderRadius: 8, marginTop: 8 }}
-                        textColor="#d32f2f"
-                        onPress={handleDelete}
-                    >
-                        Eliminar
-                    </Button>
-                </View>
-            </View>
+            )}
         </View>
     );
 };
