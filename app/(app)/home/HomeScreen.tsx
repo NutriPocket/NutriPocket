@@ -22,6 +22,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { IndicatorList } from "@/components/IndicatorList";
 import Header from "../../../components/Header";
+import WaterConsumptionModal from "@/components/WaterConsumptionModal";
 
 export default function HomeScreen() {
   const [auth] = useAtom(authenticatedAtom);
@@ -46,6 +47,9 @@ export default function HomeScreen() {
   const router = useRouter();
   const [todayFoodsEaten, setTodayFoodsEaten] = useState<MealConsumed[]>([]);
   const [caloriesPercentage, setCaloriesPercentage] = useState<number>(0);
+
+  const [waterConsumption, setWaterConsumption] = useState<number | null>(null);
+  const [showWaterModal, setShowWaterModal] = useState(false);
 
   const structuredMeals = (
     todayEatenMeals: MealConsumed[],
@@ -210,11 +214,30 @@ export default function HomeScreen() {
     }
   };
 
+  const fetchWaterConsumption = async () => {
+    try {
+      const todayDate = new Date();
+      const dateString = todayDate.toISOString().split("T")[0]; // yyyy-mm-dd
+      const response = await axiosInstance.get(
+          `/users/${auth?.id}/water_consumption/`
+      );
+      const consumptions = response.data?.consumptions ?? [];
+      const todayTotal = consumptions
+          .filter((c: any) => c.consumption_date === dateString)
+          .reduce((sum: number, c: any) => sum + (c.amount_ml || 0), 0);
+      console.log("Water consumption for today:", todayTotal);
+      setWaterConsumption(todayTotal);
+    } catch (err) {
+      setWaterConsumption(null);
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       fetchPlan();
       fetchFoodConsumed();
       getPercentageCalories();
+      fetchWaterConsumption();
     }, [auth?.id])
   );
 
@@ -345,24 +368,53 @@ export default function HomeScreen() {
           )}
         </View>
 
-        <IndicatorList
-          title={""}
-          indicators={[
-            {
-              icon: "bullseye-arrow",
-              value: caloriesPercentage,
-              label: "Calorías diarias alcanzadas",
-              color: "#287D76",
-            },
-            {
-              icon: "fire",
-              value: expectedsCalories(),
-              label: "Calorías consumidas",
-              color: "red",
-            },
-          ]}
-        />
+        <View>
+          <IndicatorList
+            title={""}
+            indicators={[
+              {
+                icon: "bullseye-arrow",
+                value: caloriesPercentage,
+                label: "Calorías diarias alcanzadas",
+                color: "#287D76",
+              },
+              {
+                icon: "fire",
+                value: expectedsCalories(),
+                label: "Calorías consumidas",
+                color: "red",
+              },
+              {
+                icon: "water",
+                value: waterConsumption ? `${waterConsumption} ml` : "0 ml",
+                label: "Agua consumida hoy",
+                color: "#4FC3F7",
+              },
+            ]}
+          />
+          <TouchableOpacity
+            onPress={() => setShowWaterModal(true)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginRight: 10,
+              backgroundColor: "#4FC3F7",
+              borderRadius: 4,
+              padding: 8,
+              marginTop: 10,
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold", marginRight: 8 }}>💧</Text>
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>+ Agua</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
+      <WaterConsumptionModal
+        visible={showWaterModal}
+        onClose={() => setShowWaterModal(false)}
+        userId={auth?.id}
+        axiosInstance={axiosInstance}
+      />
     </View>
   );
 }
