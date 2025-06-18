@@ -20,6 +20,7 @@ import { consumedIngredientsAtom } from "../../../atoms/consumedIngredientsAtom"
 export default function AddFoodConsumed() {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const [auth] = useAtom(authenticatedAtom);
   const { mealId, moment, day } = params;
 
   const axiosInstance = useAxiosInstance("food");
@@ -27,6 +28,8 @@ export default function AddFoodConsumed() {
   const [ingredientsToLoad, setIngredientsToLoad] = useAtom(
     consumedIngredientsAtom
   );
+
+  const todayDate = new Date();
 
   const [error, setError] = useState<string | null>(null);
   const [selectedFood, setSelectedFood] = useState<MealType>({
@@ -131,32 +134,39 @@ export default function AddFoodConsumed() {
 
   const handleSaveAll = async () => {
     try {
-      // const updates = Object.entries(editedQuantities).filter(([name, val]) => {
-      //   const ing = ingredients.find((i) => i.name === name);
-      //   return ing && val !== ing.quantity.toString();
-      // });
-      // for (const [name, value] of updates) {
-      //   await axiosInstance.put(`/foods/${mealId}/ingredients/${name}`, {
-      //     quantity: Number(value),
-      //   });
-      // }
-      // setIngredients((prev) =>
-      //   prev.map((ing) =>
-      //     editedQuantities[ing.name] !== undefined
-      //       ? { ...ing, quantity: Number(editedQuantities[ing.name]) }
-      //       : ing
-      //   )
-      // );
-      // setEditedQuantities({});
+      const ingredientsWithUpdatedQuantities = ingredientsToLoad.map((ing) => {
+        const updatedQuantity = editedQuantities[ing.name];
+        return {
+          ingredient_id: ing.id,
+          quantity:
+            updatedQuantity !== undefined
+              ? Number(updatedQuantity)
+              : ing.quantity,
+        };
+      });
 
-      // const response = await axiosInstance.post(`/users/${authId}/extrafood`, {
-      //   ingredients: ingredientsToLoad,
-      // });
+      const response = await axiosInstance.post(
+        `/users/${auth?.id}/extrafood`,
+        {
+          extraFood: {
+            name: selectedFood.name,
+            description: selectedFood.description,
+            image_url: selectedFood.image_url,
+            day: day,
+            moment: moment,
+            ingredients: ingredientsWithUpdatedQuantities,
+            date: todayDate.toISOString(),
+          },
+        }
+      );
+
       router.push({
         pathname: "/(app)",
       });
+      console.log("Comida consumida agregada exitosamente: ", response.data);
     } catch (error) {
-      setError("No se pudo guardar los cambios.");
+      console.error("Error al agregar comida consumida: ", error);
+      setError("No se pudo agregar la comida consumida.");
     }
   };
 

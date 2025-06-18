@@ -67,3 +67,10 @@ export type MealPlan = {
     };
 }
 
+export type MealPlanDay = {
+    [dayMoment: string]: {
+        name: string;
+        description: string;
+        isOffPlan: boolean;
+    };
+};

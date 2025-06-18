@@ -11,7 +11,7 @@ import { authenticatedAtom } from "../../../atoms/authAtom";
 import { homeStyles } from "../../../styles/homeStyles";
 import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import useAxiosInstance from "@/hooks/useAxios";
-import { ItineraryPlan, MealType } from "../../../types/mealTypes";
+import { ItineraryPlan, MealType, MealPlanDay } from "../../../types/mealTypes";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
@@ -33,29 +33,54 @@ export default function HomeScreen() {
     "Viernes",
     "Sábado",
   ];
+  const dayMoments = ["Desayuno", "Almuerzo", "Merienda", "Cena"];
   const today = days[new Date().getDay()];
-  //const todayDate = new Date();
+  const todayDate = new Date();
   const todaysFoods = itinerary?.weekly_plan?.[today] || null;
   const router = useRouter();
-  //const [todayFoodsEaten, setTodayFoodsEaten] = useState<MealType[]>([]);
+  const [todayFoodsEaten, setTodayFoodsEaten] = useState<MealType[]>([]);
 
-  // Momentos del día disponibles
-  const dayMoments = ["Desayuno", "Almuerzo", "Merienda", "Cena"];
+  // // Momentos del día disponibles
 
-  // Mock data - comidas que realmente comí hoy
-  const consumedFoodsToday = {
-    Desayuno: {
-      name: "Avena con fresas y almendras",
-      description: "Tazón de avena con fresas frescas, almendras y miel",
-      isOffPlan: false, // Esta comida estaba en el plan
-    },
+  // // Mock data - comidas que realmente comí hoy
+  // const consumedFoodsToday = {
+  //   Desayuno: {
+  //     name: "Avena con fresas y almendras",
+  //     description: "Tazón de avena con fresas frescas, almendras y miel",
+  //     isOffPlan: false, // Esta comida estaba en el plan
+  //   },
 
-    Cena: {
-      name: "Salmón a la parrilla con verduras asadas",
-      description:
-        "Filete de salmón a la parrilla con espárragos y zanahorias asadas",
-      isOffPlan: true, // Esta comida NO estaba en el plan
-    },
+  //   Cena: {
+  //     name: "Salmón a la parrilla con verduras asadas",
+  //     description:
+  //       "Filete de salmón a la parrilla con espárragos y zanahorias asadas",
+  //     isOffPlan: true, // Esta comida NO estaba en el plan
+  //   },
+  // };
+
+  const structuredMeals = (
+    todayEatenMeals: MealType[],
+    itinerary: ItineraryPlan | null
+  ) => {
+    const structuredMeals: MealPlanDay = {};
+    todayEatenMeals.forEach((meal) => {
+      for (const moment of dayMoments) {
+        if (itinerary?.weekly_plan[today][moment]?.name === meal.name) {
+          structuredMeals[moment] = {
+            name: meal.name,
+            description: meal.description,
+            isOffPlan: false,
+          };
+        } else {
+          structuredMeals[moment] = {
+            name: meal.name,
+            description: meal.description,
+            isOffPlan: true,
+          };
+        }
+      }
+    });
+    return structuredMeals;
   };
 
   const handleAddFoodConsumed = (meal: MealType | null, moment: string) => {
@@ -79,24 +104,26 @@ export default function HomeScreen() {
     }
   };
 
-  // const fetchFoodConsumed = async () => {
-  //   try {
-  //     console.log("Fetching consumed foods for today: ", todayDate);
-  //     console.log("User ID: ", auth?.id);
-  //     const response = await axiosInstance.get(
-  //       `/extrafoods/${
-  //         auth?.id
-  //       }/?start_date=${todayDate.toISOString()}&end_date=${todayDate.toISOString()}`
-  //     );
-  //     const data = response.data.data;
-  //     console.log("Comidas consumidas hoy: ", data);
-  //     setTodayFoodsEaten(data);
-  //   } catch (error) {
-  //     console.error("Error fetching consumed foods: ", error);
-  //     setError("No se pudieron obtener las comidas consumidas.");
-  //     setTodayFoodsEaten([]);
-  //   }
-  // };
+  const fetchFoodConsumed = async () => {
+    try {
+      console.log("Fetching consumed foods for today: ", todayDate);
+      console.log("User ID: ", auth?.id);
+      const response = await axiosInstance.get(
+        `/extrafoods/${
+          auth?.id
+        }/?start_date=${todayDate.toISOString()}&end_date=${todayDate.toISOString()}`
+      );
+
+      console.log("date: ", todayDate.toISOString());
+      const data = response.data.data || [];
+      console.log("Comidas consumidas hoy: ", data);
+      setTodayFoodsEaten(data);
+    } catch (error) {
+      console.error("Error fetching consumed foods: ", error);
+      setError("No se pudieron obtener las comidas consumidas.");
+      setTodayFoodsEaten([]);
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -129,9 +156,10 @@ export default function HomeScreen() {
         }
       };
       fetchPlan();
-      //fetchFoodConsumed();
+      fetchFoodConsumed();
     }, [auth?.id])
   );
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Header showBack={false} />
@@ -162,9 +190,11 @@ export default function HomeScreen() {
               {dayMoments.map((moment) => {
                 const plannedMeal = todaysFoods?.[moment] || null;
                 const consumedMeal =
-                  consumedFoodsToday[
-                    moment as keyof typeof consumedFoodsToday
-                  ] || null;
+                  structuredMeals(todayFoodsEaten, itinerary)[moment] || null;
+                console.log(
+                  `structuredMeals para ${moment}:`,
+                  structuredMeals(todayFoodsEaten, itinerary)[moment] || null
+                );
 
                 return (
                   <View key={moment} style={styles.momentRow}>
