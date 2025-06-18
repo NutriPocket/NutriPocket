@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { FAB, Button } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { GroupType } from "@/types/groupType";
@@ -42,7 +42,7 @@ type EventCardProps = {
     router: ReturnType<typeof useRouter>;
 };
 
-const EventCard: React.FC<EventCardProps> = ({ event, groupId, participants, router }) => {
+const EventCard = ({ event, groupId, participants, router }: EventCardProps) => {
     const creator =
         event.creator_id &&
         participants.find((p) => p.id === event.creator_id);
@@ -51,55 +51,44 @@ const EventCard: React.FC<EventCardProps> = ({ event, groupId, participants, rou
     const eventId = "id" in event ? event.id : undefined;
 
     return (
-        <View
+        <TouchableOpacity
+            activeOpacity={event.isRoutine ? 1 : 0.7}
+            disabled={event.isRoutine}
+            onPress={() => {
+                if (!event.isRoutine && eventId) {
+                    router.push({
+                        pathname: "/groups/[id]/eventDetails",
+                        params: { id: groupId ?? "", eventId: eventId ?? "" },
+                    });
+                }
+            }}
             style={[
                 styles.userCard,
                 event.isRoutine ? styles.routineCard : styles.eventCard
             ]}
         >
-            <Text style={styles.userName}>
-                {event.name} {event.isRoutine ?
-                <Text style={styles.routineTag}>Rutina</Text> :
-                <Text style={styles.eventTag}>Evento</Text>}
-                {!event.isRoutine && eventId && (
-                    <Button
-                        mode="contained"
-                        compact
-                        style={[styles.detailsButton, { marginLeft: 8 }]}
-                        labelStyle={{ fontSize: 12 }}
-                        onPress={() => {
-                            router.push({
-                                pathname: "/groups/[id]/eventDetails",
-                                params: { id: groupId, eventId },
-                            });
-                        }}
-                    >
-                        Ver Detalles
-                    </Button>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.userName}>{event.name}</Text>
+                {event.isRoutine ? (
+                    <View style={styles.routineTag}>
+                        <Text style={{ color: "#1565C0", fontSize: 12 }}>Rutina</Text>
+                    </View>
+                ) : (
+                    <View style={styles.eventTag}>
+                        <Text style={{ color: "#2E7D32", fontSize: 12 }}>Evento</Text>
+                    </View>
                 )}
-            </Text>
+            </View>
             {creator && (
                 <Text style={styles.creatorId}>
                     Creador: {creator.email}
                 </Text>
             )}
-            {!event.isRoutine && eventId && (
-                <Button
-                    mode="contained"
-                    style={{ backgroundColor: "#287D76", marginTop: 8 }}
-                    onPress={() => {
-                        router.push({
-                            pathname: "/groups/[id]/eventDetails",
-                            params: { id: groupId, eventId },
-                        });
-                    }}
-                >
-                    Ver Detalles
-                </Button>
-            )}
-        </View>
+        </TouchableOpacity>
     );
 };
+
+export default EventCard;
 
 export const RoutinesTab: React.FC<Props> = ({ group, participants, events: eventsFromProps }) => {
     const router = useRouter();
