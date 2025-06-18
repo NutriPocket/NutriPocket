@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { TextInput, Button, IconButton } from "react-native-paper";
 import Header from "@/components/Header";
@@ -10,6 +10,7 @@ import useAxiosInstance from "@/hooks/useAxios";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "@/atoms/authAtom";
 import { AnthropometricType, ObjectiveType } from "@/types/anthropometricTypes";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function StatisticsScreen() {
   const [startDate, setStartDate] = useState<string>("");
@@ -64,10 +65,16 @@ export default function StatisticsScreen() {
     {
       label: "Masa Muscular",
       color: "#287D76",
-      data: anthropometricData.map(({ created_at: date, anthropometric }) => ({
-        x: new Date(date).getTime(),
-        y: Number(anthropometric.muscleMass),
-      })),
+      data: anthropometricData
+        .filter(
+          ({ anthropometric }) =>
+            anthropometric.muscleMass !== null &&
+            anthropometric.muscleMass !== undefined
+        )
+        .map(({ created_at: date, anthropometric }) => ({
+          x: new Date(date).getTime(),
+          y: Number(anthropometric.muscleMass),
+        })),
       showPoints: true,
     },
     {
@@ -100,10 +107,16 @@ export default function StatisticsScreen() {
     {
       label: "Masa Ósea",
       color: "#287D76",
-      data: anthropometricData.map(({ created_at: date, anthropometric }) => ({
-        x: new Date(date).getTime(),
-        y: Number(anthropometric.boneMass),
-      })),
+      data: anthropometricData
+        .filter(
+          ({ anthropometric }) =>
+            anthropometric.boneMass !== null &&
+            anthropometric.boneMass !== undefined
+        )
+        .map(({ created_at: date, anthropometric }) => ({
+          x: new Date(date).getTime(),
+          y: Number(anthropometric.boneMass),
+        })),
       showPoints: true,
     },
     {
@@ -118,10 +131,16 @@ export default function StatisticsScreen() {
     {
       label: "Porcentaje Graso",
       color: "#287D76",
-      data: anthropometricData.map(({ created_at: date, anthropometric }) => ({
-        x: new Date(date).getTime(),
-        y: Number(anthropometric.bodyMass),
-      })),
+      data: anthropometricData
+        .filter(
+          ({ anthropometric }) =>
+            anthropometric.bodyMass !== null &&
+            anthropometric.bodyMass !== undefined
+        )
+        .map(({ created_at: date, anthropometric }) => ({
+          x: new Date(date).getTime(),
+          y: Number(anthropometric.bodyMass),
+        })),
       showPoints: true,
     },
     {
@@ -145,8 +164,6 @@ export default function StatisticsScreen() {
       console.warn("La fecha de inicio debe ser anterior a la fecha de fin.");
       return;
     }
-
-    // console.log("Fetching data from", start, "to", end);
     fetchAnthropometricDataInRange(start, end);
     setFilteredData(true);
   };
@@ -155,8 +172,14 @@ export default function StatisticsScreen() {
     try {
       const response = await axiosInstance.get(`/users/${userId}/objectives/`);
       const data = response.data.data;
-      setObjectiveData(data);
-      console.log("Objective data fetched: ", data);
+      setObjectiveData({
+        weight: data.weight || "0",
+        muscleMass: data.muscle_mass,
+        bodyMass: data.fat_mass,
+        boneMass: data.bone_mass,
+        deadline: data.deadline || "",
+      });
+
       if (data) {
         setFilteredData(false); // Reset filter state when fetching new objective data
       }
@@ -170,9 +193,9 @@ export default function StatisticsScreen() {
       created_at: new Date(item.created_at),
       anthropometric: {
         weight: item.weight,
-        muscleMass: item.muscleMass,
-        boneMass: item.boneMass,
-        bodyMass: item.bodyMass,
+        muscleMass: item.muscle_mass,
+        boneMass: item.bone_mass,
+        bodyMass: item.fat_mass,
       },
     }));
   };
@@ -183,9 +206,8 @@ export default function StatisticsScreen() {
         `/users/${userId}/anthropometrics/`
       );
       const data = response.data.data;
-      setAnthropometricData(mapAnthropometricData(data));
-
       console.log("Anthropometric data fetched: ", data);
+      setAnthropometricData(mapAnthropometricData(data));
     } catch (error) {
       console.error("Error fetching anthropometric data: ", error);
     }
@@ -204,10 +226,32 @@ export default function StatisticsScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchAnthropometricData();
-    fetchObjectiveData();
-  }, [userId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchAnthropometricData();
+      fetchObjectiveData();
+    }, [])
+  );
+
+  console.info("Objective data: ", objectiveData);
+  console.log(
+    "Masa muscular (y):",
+    muscleMassSeries[0].data.map((d) => d.y)
+  );
+  console.log(
+    "Masa muscular (x):",
+    muscleMassSeries[0].data.map((d) => d.x)
+  );
+
+  console.log(
+    "Masa ósea (y):",
+    boneMassSeries[0].data.map((d) => d.y)
+  );
+  console.log(
+    "Porcentaje graso (y):",
+    fatMassSeries[0].data.map((d) => d.y)
+  );
+
   return (
     <View style={styles.screenContainer}>
       <Header title="Estadísticas" showBack={false} />
@@ -235,19 +279,22 @@ export default function StatisticsScreen() {
         />
       </View>
       <ScrollView contentContainerStyle={{ gap: 20 }}>
-        {/* <LineChart
-        title="Masa Muscular"
-        series={muscleMassSeries}
-        width={350}
-        height={220}
-        renderXLabel={(x) =>
-          new Date(x).toLocaleDateString("es-ES", {
-            day: "2-digit",
-            month: "short",
-          })
-        }
-        yLabel="%"
-      /> */}
+        <LineChart
+          title="Masa Muscular"
+          series={muscleMassSeries}
+          width={350}
+          height={220}
+          renderXLabel={(x) =>
+            new Date(x).toLocaleDateString("es-ES", {
+              day: "2-digit",
+              month: "short",
+            })
+          }
+          yLabel="%"
+          showAllXLabels={false}
+          showAllYLabels={false}
+          xLabelSteps={5}
+        />
         <LineChart
           title="Peso"
           series={weightSeries}
@@ -260,6 +307,9 @@ export default function StatisticsScreen() {
             })
           }
           yLabel="kg"
+          xLabelSteps={5}
+          showAllXLabels={false}
+          showAllYLabels={false}
         />
         <LineChart
           title="Masa Ósea"
