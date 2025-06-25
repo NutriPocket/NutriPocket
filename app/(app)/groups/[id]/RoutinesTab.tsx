@@ -6,7 +6,6 @@ import { GroupType } from "@/types/groupType";
 import { UserType } from "@/types/userType";
 import { useEffect, useState } from "react";
 import useAxiosInstance from "@/hooks/useAxios";
-import { Button } from "react-native-paper";
 import EventCard from "@/components/EventCard";
 
 interface Props {
@@ -92,7 +91,7 @@ export const RoutinesTab: React.FC<Props> = ({
       return Array.from({ length: weeksToShow }).map((_, i) => ({
         ...routine,
         date: getNextDateForDay(routine.day, i),
-        isRoutine: true,
+        isRoutine: true as const,
       }));
     }) || [];
 
@@ -100,7 +99,7 @@ export const RoutinesTab: React.FC<Props> = ({
     fetchedEvents.length > 0 ? fetchedEvents : eventsFromProps || [];
   const oneTimeEvents = eventsToUse.map((event) => ({
     ...event,
-    isRoutine: false,
+    isRoutine: false as const,
   }));
 
   const allEvents = [...oneTimeEvents, ...routineEvents];
