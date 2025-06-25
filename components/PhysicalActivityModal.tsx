@@ -10,7 +10,7 @@ type Props = {
   axiosInstance: any;
 };
 
-export default function WaterConsumptionModal({
+export default function PhysicalActivityModal({
   visible,
   onClose,
   userId,
@@ -41,30 +41,31 @@ export default function WaterConsumptionModal({
           }}
         >
           <Text style={{ fontWeight: "bold", fontSize: 18, marginBottom: 10 }}>
-            Agregar agua consumida
+            Registrar actividad física
           </Text>
           <Formik
-            initialValues={{ water: "" }}
+            initialValues={{
+              exerciseName: "",
+              caloriesBurned: 0.0,
+            }}
             validate={(values) => {
-              const errors: { water?: string } = {};
-              if (!values.water) {
-                errors.water = "Requerido";
-              } else if (
-                !/^\d+$/.test(values.water) ||
-                parseInt(values.water) <= 0
-              ) {
-                errors.water = "Ingrese un número válido mayor a 0";
+              const errors: any = {};
+              if (!values.exerciseName) {
+                errors.exerciseName = "El nombre del ejercicio es requerido";
+              }
+              if (values.caloriesBurned < 0) {
+                errors.caloriesBurned =
+                  "Las calorías quemadas no pueden ser negativas";
               }
               return errors;
             }}
             onSubmit={async (values, { setSubmitting, resetForm }) => {
               try {
-                console.log("Submitting water consumption:", values.water);
-                await axiosInstance.post(
-                  `/users/${userId}/water_consumption/${parseInt(
-                    values.water
-                  )}/`
-                );
+                await axiosInstance.post(`/users/${userId}/exercises/`, {
+                  userId: userId,
+                  exerciseName: values.exerciseName,
+                  caloriesBurned: parseFloat(values.caloriesBurned.toString()),
+                });
                 onClose();
                 resetForm();
               } catch (e) {
@@ -84,12 +85,11 @@ export default function WaterConsumptionModal({
               isSubmitting,
             }) => (
               <View>
-                <Text>¿Cuánta agua consumiste? (ml)</Text>
+                <Text>Actividad física</Text>
                 <TextInput
-                  keyboardType="numeric"
-                  onChangeText={handleChange("water")}
-                  onBlur={handleBlur("water")}
-                  value={values.water}
+                  onChangeText={handleChange("exerciseName")}
+                  onBlur={handleBlur("exerciseName")}
+                  value={values.exerciseName}
                   style={{
                     borderColor: "#2196F3",
                     borderRadius: 5,
@@ -97,11 +97,31 @@ export default function WaterConsumptionModal({
                     marginTop: 8,
                     marginBottom: 4,
                   }}
-                  placeholder="Ej: 250"
+                  placeholder="Ej: Correr 5km"
                 />
-                {errors.water && touched.water && (
+                {touched.exerciseName && errors.exerciseName && (
                   <Text style={{ color: "red", marginBottom: 8 }}>
-                    {errors.water}
+                    {errors.exerciseName}
+                  </Text>
+                )}
+                <Text>Calorías quemadas</Text>
+                <TextInput
+                  onChangeText={handleChange("caloriesBurned")}
+                  onBlur={handleBlur("caloriesBurned")}
+                  value={values.caloriesBurned.toString()}
+                  keyboardType="numeric"
+                  style={{
+                    borderColor: "#2196F3",
+                    borderRadius: 5,
+                    padding: 8,
+                    marginTop: 8,
+                    marginBottom: 4,
+                  }}
+                  placeholder="Ej: 300"
+                />
+                {touched.caloriesBurned && errors.caloriesBurned && (
+                  <Text style={{ color: "red", marginBottom: 8 }}>
+                    {errors.caloriesBurned}
                   </Text>
                 )}
                 <View

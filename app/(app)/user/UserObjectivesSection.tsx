@@ -26,7 +26,6 @@ export default function UserObjectivesSection() {
     bodyMass: "",
     boneMass: "",
     deadline: "",
-    waterIntake: "",
   });
   const axiosProgress = useAxiosInstance("progress");
   const axiosFood = useAxiosInstance("food");
@@ -61,32 +60,32 @@ export default function UserObjectivesSection() {
     }
   };
 
-  const fetchWaterObjectives = async () => {
-    try {
-      const response = await axiosFood.get(
-        `/users/${auth?.id}/water_consumption/`
-      );
+  // const fetchWaterObjectives = async () => {
+  //   try {
+  //     const response = await axiosFood.get(
+  //       `/users/${auth?.id}/water_consumption/`
+  //     );
 
-      console.log("Water objectives response: ", response.data);
+  //     console.log("Water objectives response: ", response.data);
 
-      const goal = response.data?.goal.goal_ml;
-      setObjectives((prev) => ({
-        ...prev,
-        waterIntake: goal ? String(goal) : "",
-      }));
-    } catch (err) {
-      console.log("Error fetching water objectives: ", err);
-      setObjectivesError(
-        "No se pudieron obtener los datos de los objetivos de agua."
-      );
-    }
-  };
+  //     const goal = response.data?.goal.goal_ml;
+  //     setObjectives((prev) => ({
+  //       ...prev,
+  //       waterIntake: goal ? String(goal) : "",
+  //     }));
+  //   } catch (err) {
+  //     console.log("Error fetching water objectives: ", err);
+  //     setObjectivesError(
+  //       "No se pudieron obtener los datos de los objetivos de agua."
+  //     );
+  //   }
+  // };
 
   useFocusEffect(
     React.useCallback(() => {
       if (auth?.id && auth?.token) {
         fetchObjectiveData();
-        fetchWaterObjectives();
+        // fetchWaterObjectives();
       }
     }, [])
   );
@@ -126,13 +125,6 @@ export default function UserObjectivesSection() {
           headers: { "Content-Type": "application/json" },
         }
       );
-
-      if (values.waterIntake) {
-        await axiosFood.post(
-          `/users/${userId}/water_consumption_goal/${values.waterIntake}`,
-          {}
-        );
-      }
 
       setObjectives((prev) => ({
         ...prev,

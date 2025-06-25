@@ -56,12 +56,9 @@ export default function PlanPreferences() {
   };
 
   const handleCreate = async () => {
-    console.log("Creando plan con preferencias:", selected);
-    console.log("id del usuario:", auth?.id);
     try {
       const response = await axiosInstance.post(
         "/plans",
-
         {
           plan: {
             title: title,
@@ -82,13 +79,17 @@ export default function PlanPreferences() {
           },
         }
       );
-      console.log("Foods selected: ", selected);
-      console.log("Plan data: ", response.data);
 
       const planId = response.data.data.id_plan;
+
+      await axiosInstance.post(
+        `/users/${auth?.id}/water_consumption_goal/${2000}`,
+        {}
+      );
+
       setSelectedPlanId(planId);
-      router.back();
       console.log("Plan creado con ID:", planId);
+      router.back();
     } catch (error) {
       console.error("Error al crear el plan:", error);
     }

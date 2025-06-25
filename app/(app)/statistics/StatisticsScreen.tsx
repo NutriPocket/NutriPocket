@@ -288,7 +288,7 @@ export default function StatisticsScreen() {
           yLabel="%"
           showAllXLabels={false}
           showAllYLabels={false}
-          xLabelSteps={5}
+          xLabelSteps={4}
           yLabelSteps={5}
         />
         <LineChart
@@ -300,10 +300,11 @@ export default function StatisticsScreen() {
             new Date(x).toLocaleDateString("es-ES", {
               day: "2-digit",
               month: "short",
+              year: "2-digit",
             })
           }
           yLabel="kg"
-          xLabelSteps={5}
+          xLabelSteps={4}
           yLabelSteps={5}
           showAllXLabels={false}
           showAllYLabels={false}
@@ -317,9 +318,10 @@ export default function StatisticsScreen() {
             new Date(x).toLocaleDateString("es-ES", {
               day: "2-digit",
               month: "short",
+              year: "2-digit",
             })
           }
-          xLabelSteps={5}
+          xLabelSteps={4}
           yLabelSteps={5}
           yLabel="%"
         />
@@ -332,10 +334,11 @@ export default function StatisticsScreen() {
             new Date(x).toLocaleDateString("es-ES", {
               day: "2-digit",
               month: "short",
+              year: "2-digit",
             })
           }
           yLabel="%"
-          xLabelSteps={5}
+          xLabelSteps={4}
           yLabelSteps={5}
         />
       </ScrollView>

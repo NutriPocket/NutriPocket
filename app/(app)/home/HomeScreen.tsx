@@ -1,34 +1,26 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
 import { homeStyles } from "../../../styles/homeStyles";
-import { selectedPlanIdAtom } from "../../../atoms/mealPlanAtom";
 import useAxiosInstance from "@/hooks/useAxios";
-import {
-  ItineraryPlan,
-  MealType,
-  MealPlanDay,
-  MealConsumed,
-} from "../../../types/mealTypes";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ItineraryPlan, MealConsumed } from "../../../types/mealTypes";
 import { useFocusEffect } from "@react-navigation/native";
-import { useRouter } from "expo-router";
-import { IndicatorList } from "@/components/IndicatorList";
 import Header from "../../../components/Header";
-import WaterConsumptionModal from "@/components/WaterConsumptionModal";
+import { SegmentedButtons } from "react-native-paper";
+import { LoadDataTab } from "./LoadData";
+import { DailyResumeTab } from "./DailyResumeTab";
+import { string } from "yup";
 
 export default function HomeScreen() {
   const [auth] = useAtom(authenticatedAtom);
-  const axiosInstance = useAxiosInstance("food");
+
+  const foodAxiosInstance = useAxiosInstance("food");
+  const progressAxiosInstance = useAxiosInstance("progress");
+
   const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
+
   const days = [
     "Domingo",
     "Lunes",
@@ -38,53 +30,29 @@ export default function HomeScreen() {
     "Viernes",
     "Sábado",
   ];
-  const dayMoments = ["Desayuno", "Almuerzo", "Merienda", "Cena"];
+
   const today = days[new Date().getDay()];
   const yesterdayDate = new Date();
   yesterdayDate.setDate(yesterdayDate.getDate() - 1);
   const todayDateString = new Date().toISOString().split("T")[0];
   const todaysFoods = itinerary?.weekly_plan?.[today] || null;
-  const router = useRouter();
+
   const [todayFoodsEaten, setTodayFoodsEaten] = useState<MealConsumed[]>([]);
-  const [caloriesPercentage, setCaloriesPercentage] = useState<number>(0);
 
-  const [waterConsumption, setWaterConsumption] = useState<number | null>(null);
-  const [showWaterModal, setShowWaterModal] = useState(false);
+  const [physicalActivity, setPhysicalActivity] = useState<any[]>([]);
+  const [burnedCalories, setBurnedCalories] = useState<number>(0);
 
-  const structuredMeals = (
-    todayEatenMeals: MealConsumed[],
-    itinerary: ItineraryPlan | null
-  ) => {
-    const structuredMeals: MealPlanDay = {};
-    todayEatenMeals.forEach((meal) => {
-      if (itinerary?.weekly_plan[today]?.[meal.moment]?.name === meal.name) {
-        structuredMeals[meal.moment] = {
-          name: meal.name,
-          description: meal.description,
-          isOffPlan: false,
-        };
-      } else {
-        structuredMeals[meal.moment] = {
-          name: meal.name,
-          description: meal.description,
-          isOffPlan: true,
-        };
-      }
-    });
-    return structuredMeals;
-  };
+  const [waterConsumption, setWaterConsumption] = useState<number>(0);
 
-  const expectedsCalories = () => {
-    let totalCalories = 0;
-    todayFoodsEaten.forEach((meal) => {
-      if (!meal.ingredients || !Array.isArray(meal.ingredients)) return;
-      totalCalories += meal.ingredients.reduce(
-        (sum, ingredient) => sum + ingredient.calories * ingredient.quantity,
-        0
-      );
-    });
-    return totalCalories;
-  };
+  const [expectedCalories, setExpectedCalories] = useState<number>(0);
+  const [consumedCalories, setConsumedCalories] = useState<number>(0);
+
+  const [consumedProteins, setConsumeProteins] = useState<number>(0);
+  const [consumedCarbs, setConsumedCarbs] = useState<number>(0);
+  const [consumedFibers, setConsumedFibers] = useState<number>(0);
+  // const [consumedFat, setConsumedFat] = useState<number>(0);
+
+  const [tab, setTab] = useState<"load" | "daily">("load");
 
   const getTodayMealIds = () => {
     let result: number[] = [];
@@ -102,7 +70,7 @@ export default function HomeScreen() {
 
   const fetchFoodById = async (id: number) => {
     try {
-      const response = await axiosInstance.get(`/foods/${id}/nutrition`);
+      const response = await foodAxiosInstance.get(`/foods/${id}/nutrition`);
       return response.data.data;
     } catch (error) {
       console.error(`Error fetching food with ID ${id}:`, error);
@@ -122,9 +90,63 @@ export default function HomeScreen() {
     }
   };
 
-  const totalCalories = async () => {
+  const fetchConsumedNutrients = async () => {
+    var calories = 0;
+    var protein = 0;
+    var carbs = 0;
+    var fiber = 0;
+
+    for (const meal of todayFoodsEaten) {
+      try {
+        console.log(`Fetching ingredients for meal ID: ${meal.id_extra_food}`);
+        const response = await foodAxiosInstance.get(
+          `/extraFood/{extraFoodId}/ingredients`,
+          { params: { extraFood_id: meal.id_extra_food } }
+        );
+        const extraFoodIngredient = response.data.data;
+
+        if (!extraFoodIngredient || !Array.isArray(extraFoodIngredient)) return;
+
+        function calculateNutrients(
+          ingridients: any[],
+          nutrient: "calories" | "protein" | "carbs" | "fiber"
+        ): number {
+          return ingridients.reduce((sum, ingredient) => {
+            if (ingredient.ingredient.measure_type === "gram") {
+              return Math.round(
+                sum +
+                  (ingredient.ingredient[nutrient] / 100) * ingredient.quantity
+              );
+            } else if (ingredient.ingredient.measure_type === "unit") {
+              return Math.round(
+                sum + ingredient.ingredient[nutrient] * ingredient.quantity
+              );
+            } else {
+              return sum; // Si el tipo no es ninguno de los anteriores, no suma nada
+            }
+          }, 0);
+        }
+
+        calories = calculateNutrients(extraFoodIngredient, "calories");
+        carbs = calculateNutrients(extraFoodIngredient, "carbs");
+        fiber = calculateNutrients(extraFoodIngredient, "fiber");
+        protein = calculateNutrients(extraFoodIngredient, "protein");
+      } catch (error) {
+        console.error(
+          `Error fetching ingredients for meal ID ${meal.id_extra_food}:`,
+          error
+        );
+      }
+    }
+    setConsumedCalories(calories);
+    setConsumeProteins(protein);
+    setConsumedCarbs(carbs);
+    setConsumedFibers(fiber);
+  };
+
+  const fetchExpectedCalories = async () => {
     const mealIds = getTodayMealIds();
-    var proteinValues: number = 0;
+    var calories: number = 0;
     if (mealIds.length === 0) {
       console.log("No hay comidas asignadas para hoy.");
       return 0;
@@ -134,46 +156,20 @@ export default function HomeScreen() {
       console.log("No se encontraron comidas para los IDs proporcionados.");
       return 0;
     }
+
+    console.log("Comidas asignadas para hoy:", foods);
+
     foods.forEach((food) => {
-      proteinValues += food.protein;
+      calories += food.calories;
     });
 
-    return Math.round(proteinValues * 100) / 100;
-  };
-
-  const getPercentageCalories = async () => {
-    const totalConsumed = expectedsCalories();
-    const totalPlanned = await totalCalories();
-    const percentageCalories =
-      totalPlanned > 0 ? (totalConsumed / totalPlanned) * 100 : 0;
-    setCaloriesPercentage(percentageCalories);
-  };
-
-  const handleAddFoodConsumed = (meal: MealType | null, moment: string) => {
-    if (meal?.id) {
-      router.push({
-        pathname: "/home/addFoodConsumed",
-        params: {
-          moment: moment,
-          day: today,
-          mealId: meal.id,
-        },
-      });
-    } else {
-      router.push({
-        pathname: "/home/AllMeals",
-        params: {
-          moment: moment,
-          day: today,
-        },
-      });
-    }
+    setExpectedCalories(Math.round(calories * 100) / 100);
   };
 
   const fetchFoodConsumed = async () => {
     try {
       console.log("User ID: ", auth?.id);
-      const response = await axiosInstance.get(
+      const response = await foodAxiosInstance.get(
         `/extrafoods/${auth?.id}/?start_date=${todayDateString}&end_date=${todayDateString}`
       );
 
@@ -187,15 +183,34 @@ export default function HomeScreen() {
     }
   };
 
+  const fetchPhysicalActivity = async () => {
+    try {
+      const response = await progressAxiosInstance.get(
+        `/users/${auth?.id}/exercises/`
+      );
+      const data = response.data.data;
+      console.log("Actividad física de hoy: ", data);
+
+      setPhysicalActivity(data.exercises || []);
+      setBurnedCalories(data.totalBurned || 0);
+    } catch (error) {
+      console.error("Error fetching physical activity: ", error);
+      setPhysicalActivity([]);
+      setError("No se pudieron obtener los datos de actividad física.");
+    }
+  };
+
   const fetchPlan = async () => {
     try {
-      const planResponse = await axiosInstance.get(`/users/${auth?.id}/plan`);
+      const planResponse = await foodAxiosInstance.get(
+        `/users/${auth?.id}/plan`
+      );
       if (!planResponse.data.data) {
         setError(null);
         setItinerary(null);
         return;
       }
-      const response = await axiosInstance.get(
+      const response = await foodAxiosInstance.get(
         `/plans/${planResponse.data.data.id_plan}`
       );
       setItinerary(response.data.data);
@@ -218,7 +233,7 @@ export default function HomeScreen() {
     try {
       const todayDate = new Date();
       const dateString = todayDate.toISOString().split("T")[0]; // yyyy-mm-dd
-      const response = await axiosInstance.get(
+      const response = await foodAxiosInstance.get(
         `/users/${auth?.id}/water_consumption/`
       );
       const consumptions = response.data?.consumptions ?? [];
@@ -228,193 +243,80 @@ export default function HomeScreen() {
       console.log("Water consumption for today:", todayTotal);
       setWaterConsumption(todayTotal);
     } catch (err) {
-      setWaterConsumption(null);
+      setWaterConsumption(0);
     }
   };
+
+  useEffect(() => {
+    fetchExpectedCalories();
+  }, [itinerary]);
+
+  useEffect(() => {
+    fetchConsumedNutrients();
+  }, [todayFoodsEaten]);
 
   useFocusEffect(
     React.useCallback(() => {
       fetchPlan();
       fetchFoodConsumed();
-      getPercentageCalories();
       fetchWaterConsumption();
-    }, [auth?.id])
+      fetchPhysicalActivity();
+    }, [auth?.id, tab])
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View
+      style={{ flex: 1, backgroundColor: "#fff", justifyContent: "center" }}
+    >
       <Header showBack={false} />
-      <ScrollView contentContainerStyle={homeStyles.screenContainer}>
+      <View style={{ gap: 10 }}>
         <View>
           <Text style={homeStyles.welcome}>
             ¡Bienvenido/a, {auth?.username || "usuario"}!
           </Text>
           <Text style={homeStyles.info}>
-            Aquí verás tu resumen y novedades.
+            {itinerary
+              ? "Aquí verás tu resumen y novedades del día."
+              : "Elige un plan de comidas para comenzar"}
           </Text>
         </View>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Comidas de hoy</Text>
-          {error === "No tienes un plan de comidas asignado." ? (
-            <Text
-              style={{
-                color: "#287D76",
-                textAlign: "center",
+        {itinerary && (
+          <View>
+            <SegmentedButtons
+              value={tab}
+              onValueChange={setTab}
+              buttons={[
+                { value: "load", label: "Carga" },
+                { value: "daily", label: "Resumen diario" },
+              ]}
+              style={styles.tab}
+              theme={{
+                colors: {
+                  surface: "#E0F2F1", // color de fondo de los botones
+                  secondaryContainer: "#E0F2F1", // color de fondo de los no seleccionados
+                },
               }}
-            >
-              {error}
-            </Text>
-          ) : error ? (
-            <Text style={{ color: "red" }}>{error}</Text>
-          ) : (
-            <View style={{ gap: 15 }}>
-              {dayMoments.map((moment) => {
-                const plannedMeal = todaysFoods?.[moment] || null;
-                const consumedMeal =
-                  structuredMeals(todayFoodsEaten, itinerary)[moment] || null;
-
-                return (
-                  <View key={moment} style={styles.momentRow}>
-                    <View>
-                      {consumedMeal ? (
-                        // Mostrar lo que realmente comió (prioridad máxima)
-                        <View style={styles.consumedMealCard}>
-                          <View style={styles.consumedMealInfo}>
-                            <View style={styles.momentLabelContainer}>
-                              <Text style={styles.momentLabel}>{moment}</Text>
-                              {consumedMeal.isOffPlan && (
-                                <View style={styles.offPlanBadge}>
-                                  <Text style={styles.offPlanBadgeText}>
-                                    Fuera del plan
-                                  </Text>
-                                </View>
-                              )}
-                            </View>
-                            <View>
-                              <Text
-                                numberOfLines={1}
-                                style={styles.consumedMealName}
-                              >
-                                {consumedMeal.name}
-                              </Text>
-                              <Text
-                                numberOfLines={1}
-                                style={styles.consumedMealDesc}
-                              >
-                                {consumedMeal.description}
-                              </Text>
-                            </View>
-                          </View>
-                          <View style={styles.iconContainer}>
-                            <MaterialCommunityIcons
-                              name={
-                                consumedMeal.isOffPlan
-                                  ? "alert-circle"
-                                  : "check-circle"
-                              }
-                              size={24}
-                              color={
-                                consumedMeal.isOffPlan ? "#287D76" : "#287D76"
-                              }
-                            />
-                          </View>
-                        </View>
-                      ) : (
-                        // Mostrar el plan original
-                        <View
-                          style={{
-                            padding: 10,
-                            gap: 10,
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <View style={styles.consumedMealInfo}>
-                            <Text style={styles.momentLabel}>{moment}</Text>
-                            {plannedMeal ? (
-                              <View>
-                                <Text style={styles.mealName}>
-                                  {plannedMeal.name}
-                                </Text>
-                                <Text style={styles.mealDesc} numberOfLines={1}>
-                                  {plannedMeal.description}
-                                </Text>
-                              </View>
-                            ) : (
-                              <Text style={styles.noMeal}>
-                                No hay comida asignada
-                              </Text>
-                            )}
-                          </View>
-                          <View style={styles.iconContainer}>
-                            <MaterialCommunityIcons
-                              name="silverware-fork-knife"
-                              size={24}
-                              color={"#287D76"}
-                              onPress={() => {
-                                handleAddFoodConsumed(plannedMeal, moment);
-                              }}
-                            />
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-        </View>
-
-        <View>
-          <IndicatorList
-            title={""}
-            indicators={[
-              {
-                icon: "bullseye-arrow",
-                value: caloriesPercentage,
-                label: "Calorías diarias alcanzadas",
-                color: "#287D76",
-              },
-              {
-                icon: "fire",
-                value: expectedsCalories(),
-                label: "Calorías consumidas",
-                color: "red",
-              },
-              {
-                icon: "water",
-                value: waterConsumption ? `${waterConsumption} ml` : "0 ml",
-                label: "Agua consumida hoy",
-                color: "#4FC3F7",
-              },
-            ]}
-          />
-          <TouchableOpacity
-            onPress={() => setShowWaterModal(true)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginRight: 10,
-              backgroundColor: "#4FC3F7",
-              borderRadius: 4,
-              padding: 8,
-              marginTop: 10,
-            }}
-          >
-            <Text style={{ color: "#fff", fontWeight: "bold", marginRight: 8 }}>
-              💧
-            </Text>
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>+ Agua</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-      <WaterConsumptionModal
-        visible={showWaterModal}
-        onClose={() => setShowWaterModal(false)}
-        userId={auth?.id}
-        axiosInstance={axiosInstance}
-      />
+            />
+            {tab === "load" ? (
+              <LoadDataTab
+                foodsConsumed={todayFoodsEaten}
+                itinerary={itinerary}
+              />
+            ) : (
+              <DailyResumeTab
+                expectedCalories={expectedCalories}
+                consumedCalories={consumedCalories}
+                waterConsumption={waterConsumption}
+                consumedProteins={consumedProteins}
+                consumedCarbs={consumedCarbs}
+                consumedFibers={consumedFibers}
+                physicalActivity={physicalActivity}
+                burnedCalories={burnedCalories}
+              />
+            )}
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -527,5 +429,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 10,
     fontWeight: "bold",
+  },
+  tab: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
 });

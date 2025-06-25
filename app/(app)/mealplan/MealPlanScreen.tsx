@@ -24,6 +24,7 @@ export default function MealPlanScreen() {
   const [error, setError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const axiosInstance = useAxiosInstance("food");
+
   const scrollRef = useRef<ScrollView>(null);
   // Ref para guardar la posición X de la card de nuevo plan
   const [newPlanCardX, setNewPlanCardX] = useState(0);
@@ -45,6 +46,12 @@ export default function MealPlanScreen() {
           },
         }
       );
+
+      await axiosInstance.post(
+        `/users/${auth?.id}/water_consumption_goal/${2000}`,
+        {}
+      );
+
       setSelectedPlanId(planId);
     } catch (error) {
       console.error("Error selecting plan: ", error);

@@ -12,6 +12,7 @@ const ObjectivesRegister = () => {
   const [auth, setIsAuthenticated] = useAtom(authenticatedAtom);
   const [error, setError] = useState<string | null>(null);
   const axiosProgress = useAxiosInstance("progress");
+  const axiosFood = useAxiosInstance("food");
 
   const handleSubmit = async (values: any) => {
     const data = {
@@ -21,8 +22,8 @@ const ObjectivesRegister = () => {
       bone_mass: values.boneMass ? parseFloat(values.boneMass) : null,
       deadline: values.deadline ? values.deadline : null,
     };
+    const userId = auth?.id;
     try {
-      const userId = auth?.id;
       const response = await axiosProgress.put(
         `/users/${userId}/objectives/`,
         data,

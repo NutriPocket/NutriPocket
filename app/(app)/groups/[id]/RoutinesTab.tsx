@@ -1,5 +1,5 @@
 import React from "react";
-import {View, Text, ScrollView, StyleSheet} from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { FAB } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { GroupType } from "@/types/groupType";
@@ -23,7 +23,11 @@ interface Props {
   }>;
 }
 
-export const RoutinesTab: React.FC<Props> = ({ group, participants, events: eventsFromProps }) => {
+export const RoutinesTab: React.FC<Props> = ({
+  group,
+  participants,
+  events: eventsFromProps,
+}) => {
   const router = useRouter();
   const axiosInstance = useAxiosInstance("group");
   const [fetchedEvents, setFetchedEvents] = useState<Props["events"]>([]);
@@ -53,16 +57,17 @@ export const RoutinesTab: React.FC<Props> = ({ group, participants, events: even
 
   const getNextDateForDay = (day: string, weekOffset = 0) => {
     const weekDays = [
-                "Sunday",
-                "Monday",
-                "Tuesday",
-                "Wednesday",
-                "Thursday",
-                "Friday",
-                "Saturday"
-              ];
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
 
-    const englishDay = Object.entries(dayMap).find(([eng, spa]) => spa === day)?.[0] || day;
+    const englishDay =
+      Object.entries(dayMap).find(([eng, spa]) => spa === day)?.[0] || day;
 
     const today = new Date();
     const todayIdx = today.getDay();
@@ -85,13 +90,14 @@ export const RoutinesTab: React.FC<Props> = ({ group, participants, events: even
   const routineEvents =
     group?.routines?.flatMap((routine) => {
       return Array.from({ length: weeksToShow }).map((_, i) => ({
-      ...routine,
+        ...routine,
         date: getNextDateForDay(routine.day, i),
-      isRoutine: true,
+        isRoutine: true,
       }));
     }) || [];
 
-  const eventsToUse = fetchedEvents.length > 0 ? fetchedEvents : (eventsFromProps || []);
+  const eventsToUse =
+    fetchedEvents.length > 0 ? fetchedEvents : eventsFromProps || [];
   const oneTimeEvents = eventsToUse.map((event) => ({
     ...event,
     isRoutine: false,
@@ -112,14 +118,14 @@ export const RoutinesTab: React.FC<Props> = ({ group, participants, events: even
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           {sortedDates.map((date) => {
             const formattedDate = new Date(date);
-            const displayDate = formattedDate.toLocaleDateString('es-ES', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric'
+            const displayDate = formattedDate.toLocaleDateString("es-ES", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
             });
 
             return (
-            <View key={date} style={{ marginBottom: 16, gap: 8 }}>
+              <View key={date} style={{ marginBottom: 16, gap: 8 }}>
                 <Text
                   style={{
                     fontWeight: "bold",
@@ -130,10 +136,10 @@ export const RoutinesTab: React.FC<Props> = ({ group, participants, events: even
                 >
                   {displayDate}
                 </Text>
-              {grouped[date].map((event, idx) => {
+                {grouped[date].map((event, idx) => {
                   const creator =
-                  event.creator_id &&
-                  participants.find((p) => p.id === event.creator_id);
+                    event.creator_id &&
+                    participants.find((p) => p.id === event.creator_id);
                   return (
                     <EventCard
                       event={event}
@@ -152,40 +158,40 @@ export const RoutinesTab: React.FC<Props> = ({ group, participants, events: even
       )}
       <FAB.Group
         open={isFabOpen}
-          visible={true}
-        icon={isFabOpen ? 'close' : 'plus'}
+        visible={true}
+        icon={isFabOpen ? "close" : "plus"}
         actions={[
           {
-            icon: 'plus',
-            label: 'Añadir Evento',
+            icon: "plus",
+            label: "Añadir Evento",
             onPress: () => {
-            if (group?.id) {
-              router.push({
-                pathname: "/groups/[id]/addEvent",
-                params: { id: group.id },
-              });
-            }
+              if (group?.id) {
+                router.push({
+                  pathname: "/groups/[id]/addEvent",
+                  params: { id: group.id },
+                });
+              }
             },
           },
           {
-            icon: 'plus',
-            label: 'Añadir Rutina',
+            icon: "plus",
+            label: "Añadir Rutina",
             onPress: () => {
-          if (group?.id) {
-            router.push({
-              pathname: "/groups/[id]/addRoutine",
-              params: { id: group.id },
-            });
-          }
+              if (group?.id) {
+                router.push({
+                  pathname: "/groups/[id]/addRoutine",
+                  params: { id: group.id },
+                });
+              }
             },
           },
         ]}
         onStateChange={({ open }) => setIsFabOpen(open)}
-        fabStyle={{ backgroundColor: '#287D76' }}
+        fabStyle={{ backgroundColor: "#287D76" }}
         color="#fff"
       />
     </View>
-    );
+  );
 };
 
 const styles = StyleSheet.create({

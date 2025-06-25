@@ -14,7 +14,6 @@ import * as Yup from 'yup';
     { key: 'bodyMass', label: 'Porcentaje de grasa (%)', keyboardType: 'numeric', placeholder: undefined },
     { key: 'boneMass', label: 'Masa ósea (%)', keyboardType: 'numeric', placeholder: undefined },
     { key: 'deadline', label: 'Fecha objetivo', keyboardType: 'numeric', placeholder: undefined },
-    { key: 'waterIntake', label: 'Consumo de agua díario (ml)', keyboardType: 'numeric', placeholder: undefined },
   ] as const;
 
 export const userPersonalFields = [

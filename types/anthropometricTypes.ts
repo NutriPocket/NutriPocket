@@ -11,5 +11,4 @@ export type ObjectiveType = {
   bodyMass: string;
   boneMass: string;
   deadline: string;
-  waterIntake: string;
 };
