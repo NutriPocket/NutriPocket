@@ -1,6 +1,10 @@
 import React, { useState, useCallback } from "react";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
-import { MealType, IngredientType } from "../../../types/mealTypes";
+import {
+  MealType,
+  IngredientType,
+  MealTypeWithNutrients,
+} from "../../../types/mealTypes";
 import Header from "../../../components/Header";
 import useAxiosInstance from "@/hooks/useAxios";
 import {
@@ -16,7 +20,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 const NUTRITION_LABELS: Record<string, string> = {
   calories: "Calorías ",
   protein: "Proteínas ",
-  carbohydrates: "Carbohidratos ",
+  carbs: "Carbohidratos ",
   fiber: "Fibra ",
   saturated_fats: "Grasas Saturadas ",
   monounsaturated_fats: "Grasas Monoinsaturadas ",
@@ -27,9 +31,9 @@ const NUTRITION_LABELS: Record<string, string> = {
 
 // Unidades para cada campo nutricional
 const NUTRITION_UNITS: Record<string, string> = {
-  calories: "kcal",
+  calories: "cal",
   protein: "g",
-  carbohydrates: "g",
+  carbs: "g",
   fiber: "g",
   saturated_fats: "g",
   monounsaturated_fats: "g",
@@ -41,15 +45,16 @@ const NUTRITION_UNITS: Record<string, string> = {
 export default function SelectedFood() {
   const { selectedMealId } = useLocalSearchParams();
   const [ingredients, setIngredients] = useState<IngredientType[]>([]);
-  const [selectedFood, setSelectedFood] = useState<MealType>({
+  const [selectedFood, setSelectedFood] = useState<MealTypeWithNutrients>({
     id: 0,
     name: "",
     description: "",
     image_url: "",
     price: 0,
+    ingredients: [],
     calories: 0,
     protein: 0,
-    carbohydrates: 0,
+    carbs: 0,
     fiber: 0,
     saturated_fats: 0,
     monounsaturated_fats: 0,
@@ -158,7 +163,7 @@ export default function SelectedFood() {
                   let unit = "";
                   switch (key) {
                     case "calories":
-                      unit = "(kcal)";
+                      unit = "(cal)";
                       break;
                     case "cholesterol":
                       unit = "(mg)";
@@ -172,7 +177,11 @@ export default function SelectedFood() {
                         {NUTRITION_LABELS[key]}:
                       </Text>
                       <Text style={styles.nutritionValue}>
-                        {typeof value === "number" ? value.toFixed(2) : value}{" "}
+                        {typeof value === "number"
+                          ? value.toFixed(2)
+                          : typeof value === "string"
+                          ? value
+                          : ""}
                         {unit}
                       </Text>
                     </View>

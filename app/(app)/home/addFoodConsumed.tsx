@@ -5,13 +5,12 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  Image,
 } from "react-native";
 import useAxiosInstance from "@/hooks/useAxios";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Header from "@/components/Header";
-import { TextInput, ActivityIndicator, IconButton } from "react-native-paper";
+import { TextInput, ActivityIndicator } from "react-native-paper";
 import { IngredientType, MealType } from "../../../types/mealTypes";
 import { useAtom } from "jotai";
 import { authenticatedAtom } from "../../../atoms/authAtom";
@@ -38,15 +37,7 @@ export default function AddFoodConsumed() {
     description: "",
     image_url: "",
     price: 0,
-    calories: 0,
-    protein: 0,
-    carbohydrates: 0,
-    fiber: 0,
-    saturated_fats: 0,
-    monounsaturated_fats: 0,
-    polyunsaturated_fats: 0,
-    trans_fats: 0,
-    cholesterol: 0,
+    ingredients: [],
   });
 
   const [loading, setLoading] = useState(true);
@@ -60,6 +51,10 @@ export default function AddFoodConsumed() {
         return;
       }
       const response = await axiosInstance.get(`/foods/${mealId}/ingredients`);
+      console.log(
+        "Respuesta de la API al obtener ingredientes de la comida: ",
+        response.data.data
+      );
 
       const apiIngredients = response.data.data;
       const parsedIngredients: IngredientType[] = apiIngredients.map(
@@ -83,6 +78,10 @@ export default function AddFoodConsumed() {
         return;
       }
       const response = await axiosInstance.get(`/foods/${mealId}`);
+      console.log(
+        "Respuesta de la API al obtener información de la comida: ",
+        response.data.data
+      );
       const data = response.data.data;
       setSelectedFood(data);
     } catch (error) {
@@ -91,7 +90,6 @@ export default function AddFoodConsumed() {
   };
 
   useEffect(() => {
-    console.log("Se montó el componente");
     fetchIngredients();
     fetchFoodInfo();
   }, []);
@@ -116,12 +114,17 @@ export default function AddFoodConsumed() {
 
   const handleIngredientChange = (name: string, value: string) => {
     setEditedQuantities((prev) => ({ ...prev, [name]: value }));
-    setIngredientsToLoad((prev) => ({
-      ...prev,
-      ingredients: prev.map((ing) =>
-        ing.name === name ? { ...ing, quantity: Number(value) } : ing
-      ),
-    }));
+
+    const newIngredientsToLoad = ingredientsToLoad.map((ing) => {
+      if (ing.name === name) {
+        return {
+          ...ing,
+          quantity: value ? Number(value) : 0, // Convert to number or set to 0 if empty
+        };
+      }
+      return ing;
+    });
+    setIngredientsToLoad(newIngredientsToLoad);
   };
 
   const handleBackToHome = () => {
