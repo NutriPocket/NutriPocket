@@ -11,7 +11,7 @@ export default function UserScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <Header showBack={false} />
+      <Header showBack={false} showLogout={true} />
       <View style={{ padding: 16, gap: 16 }}>
         {/* Tabs con SegmentedButtons */}
         <SegmentedButtons
