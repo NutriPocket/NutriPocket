@@ -105,7 +105,7 @@ export default function HomeScreen() {
         );
         const extraFoodIngredient = response.data.data;
 
-        if (!extraFoodIngredient || !Array.isArray(extraFoodIngredient)) return;
+        // if (!extraFoodIngredient || !Array.isArray(extraFoodIngredient)) return;
 
         function calculateNutrients(
           ingridients: any[],
@@ -127,10 +127,10 @@ export default function HomeScreen() {
           }, 0);
         }
 
-        calories = calculateNutrients(extraFoodIngredient, "calories");
-        carbs = calculateNutrients(extraFoodIngredient, "carbs");
-        fiber = calculateNutrients(extraFoodIngredient, "fiber");
-        protein = calculateNutrients(extraFoodIngredient, "protein");
+        calories += calculateNutrients(extraFoodIngredient, "calories");
+        carbs += calculateNutrients(extraFoodIngredient, "carbs");
+        fiber += calculateNutrients(extraFoodIngredient, "fiber");
+        protein += calculateNutrients(extraFoodIngredient, "protein");
       } catch (error) {
         console.error(
           `Error fetching ingredients for meal ID ${meal.id_extra_food}:`,
@@ -138,6 +138,14 @@ export default function HomeScreen() {
         );
       }
     }
+
+    console.log("Nutrientes consumidos hoy:", {
+      calories,
+      protein,
+      carbs,
+      fiber,
+    });
+
     setConsumedCalories(calories);
     setConsumeProteins(protein);
     setConsumedCarbs(carbs);

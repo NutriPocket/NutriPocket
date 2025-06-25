@@ -32,10 +32,7 @@ export const DailyResumeTab: React.FC<Props> = ({
             icon: "bullseye-arrow",
             value: consumedCalories
               ? expectedCalories
-                ? `${
-                    Math.round((consumedCalories / expectedCalories) * 10000) /
-                    100
-                  }%`
+                ? `${Math.round((consumedCalories / expectedCalories) * 100)}%`
                 : "0%"
               : "0%",
             label: "Calorías diarias alcanzadas",

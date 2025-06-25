@@ -69,7 +69,8 @@ export const RoutinesTab: React.FC<Props> = ({
     // Accept both English and Spanish day names
     let englishDay = day;
     if (Object.values(dayMap).includes(day)) {
-      englishDay = Object.entries(dayMap).find(([eng, spa]) => spa === day)?.[0] || day;
+      englishDay =
+        Object.entries(dayMap).find(([eng, spa]) => spa === day)?.[0] || day;
     }
 
     const today = new Date();
@@ -121,7 +122,7 @@ export const RoutinesTab: React.FC<Props> = ({
     <View style={{ flex: 1 }}>
       {sortedDates.length > 0 ? (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {sortedDates.map((date) => {
+          {sortedDates.map((date, idx) => {
             const formattedDate = new Date(date);
             const displayDate = formattedDate.toLocaleDateString("es-ES", {
               weekday: "long",
@@ -130,7 +131,7 @@ export const RoutinesTab: React.FC<Props> = ({
             });
 
             return (
-              <View key={date} style={{ marginBottom: 16, gap: 8 }}>
+              <View key={`${date}${idx}`} style={{ marginBottom: 16, gap: 8 }}>
                 <Text
                   style={{
                     fontWeight: "bold",
