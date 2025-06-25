@@ -57,17 +57,21 @@ export const RoutinesTab: React.FC<Props> = ({
 
   const getNextDateForDay = (day: string, weekOffset = 0) => {
     const weekDays = [
+      "Saturday",
       "Sunday",
       "Monday",
       "Tuesday",
       "Wednesday",
       "Thursday",
       "Friday",
-      "Saturday",
+      // "Saturday",
     ];
 
-    const englishDay =
-      Object.entries(dayMap).find(([eng, spa]) => spa === day)?.[0] || day;
+    // Accept both English and Spanish day names
+    let englishDay = day;
+    if (Object.values(dayMap).includes(day)) {
+      englishDay = Object.entries(dayMap).find(([eng, spa]) => spa === day)?.[0] || day;
+    }
 
     const today = new Date();
     const todayIdx = today.getDay();
@@ -81,6 +85,8 @@ export const RoutinesTab: React.FC<Props> = ({
 
     let diff = targetIdx - todayIdx;
     if (diff < 0) diff += 7;
+    // Always get the next occurrence, not today if today matches
+    if (diff === 0) diff = 7;
     const nextDate = new Date(today);
     nextDate.setDate(today.getDate() + diff + weekOffset * 7);
     return nextDate.toISOString().split("T")[0];

@@ -49,7 +49,7 @@ const EventCard = ({ event, groupId, participants, router }: EventCardProps) => 
 
     // Only one-time events have an id property
     const eventId = "id" in event ? event.id : undefined;
-
+    console.log(event);
     return (
         <TouchableOpacity
             activeOpacity={event.isRoutine ? 1 : 0.7}
@@ -68,7 +68,10 @@ const EventCard = ({ event, groupId, participants, router }: EventCardProps) => 
             ]}
         >
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={styles.userName}>{event.name}</Text>
+                <Text style={styles.userName}>
+                    {event.name}{" "}
+
+                </Text>
                 {event.isRoutine ? (
                     <View style={styles.routineTag}>
                         <Text style={{ color: "#1565C0", fontSize: 12 }}>Rutina</Text>
@@ -79,6 +82,9 @@ const EventCard = ({ event, groupId, participants, router }: EventCardProps) => 
                     </View>
                 )}
             </View>
+            <Text style={{ fontSize: 14, fontWeight: "normal", color: "#555", marginTop: 6 }}>
+                {`${event.start_hour.toString().padStart(2, "0")}:00-${event.end_hour.toString().padStart(2, "0")}:00hs`}
+            </Text>
             {creator && (
                 <Text style={styles.creatorId}>
                     Creador: {creator.email}
