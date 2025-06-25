@@ -200,9 +200,9 @@ export const RoutinesTab: React.FC<Props> = ({ group, participants, events: even
                                 >
                                     {displayDate}
                                 </Text>
-                                {grouped[date].map((event, idx) => (
+                                {grouped[date].map((event) => (
                                     <EventCard
-                                        key={idx}
+                                        key={event.isRoutine ? `routine-${event.name}-${event.day}` : `event-${event.id}`}
                                         event={event}
                                         groupId={group?.id}
                                         participants={participants}
